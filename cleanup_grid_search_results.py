@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Utility for pruning grid-search artifacts and renaming result folders.
+"""Utility for pruning search artifacts and renaming result folders.
 
-The script expects a grid-search output directory such as
+The script expects a search output directory such as
 ```
-/home/user/elvis/grid_search_results
+/home/user/elvis/grid_search_results or random_search_results
 ```
 containing one subfolder per experiment. Inside each subfolder there must be
 an ``analysis_results.json`` containing the configuration used for that run.

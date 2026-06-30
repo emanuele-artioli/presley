@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "presley"
+version = "0.1.0"
+description = "PRESLEY: Perceptual Refinement of an End-to-End Video Streaming Pipeline via Generative AI Layers"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy<2",
+  "pandas",
+  "tqdm",
+  "regex",
+  "matplotlib",
+  "imageio",
+  "tensorboard",
+  "timm",
+  "openmim",
+  "pywavelets",
+  "scikit-image",
+  "scipy==1.10.1",
+  "ipykernel",
+  "decord",
+  "pytorch_msssim",
+  "dahuffman",
+  "pytorchvideo",
+  "lpips",
+  "opencv-python==4.8.0.76",
+  "basicsr",
+  "facexlib",
+  "gfpgan",
+  "diffusers==0.30",
+  "accelerate",
+  "datasets",
+  "einops==0.6.1",
+  "kornia",
+  "peft==0.10.0",
+  "pyrallis",
+  "tokenizers>=0.14,<0.19",
+  "transformers==4.36",
+  "gradio",
+  "fvmd"
+]
+
+[project.scripts]
+presley = "presley.cli:main"
+presley-search = "presley.search:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["presley*"]
