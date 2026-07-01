@@ -77,7 +77,7 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     for i in range(len(stretched_frames_list)):
         cv2.imwrite(os.path.join(stretched_dir, f"{i:05d}.png"), stretched_frames_list[i])
         # Inpainting models usually expect mask where 255 is the region to inpaint
-        inpainting_mask = ((1 - masks_list[i]) * 255).astype(np.uint8)
+        inpainting_mask = (masks_list[i] * 255).astype(np.uint8)
         # resize mask to full resolution
         inpainting_mask_full = cv2.resize(inpainting_mask, (width, height), interpolation=cv2.INTER_NEAREST)
         cv2.imwrite(os.path.join(masks_dir, f"{i:05d}.png"), inpainting_mask_full)

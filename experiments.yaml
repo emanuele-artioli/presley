@@ -67,6 +67,44 @@ experiments:
       aq_mode: 1
       aq_strength: 1.0
 
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_qp
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_downsample
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_noise
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+
   # --- Component 3: ELVIS ---
   - component: elvis
     video: bear
@@ -77,6 +115,20 @@ experiments:
     beta: 0.5
     shrink_amount: 0.25
     inpainter: propainter
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: e2fgvi
     target_bitrate: 460800
     codec: x265
     codec_params:

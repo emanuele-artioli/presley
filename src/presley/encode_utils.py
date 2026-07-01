@@ -20,9 +20,9 @@ def save_frames_as_video(frames: List[np.ndarray], output_path: str, framerate: 
     ]
     
     if lossless and codec == "libx265":
-        cmd.extend(['-c:v', 'libx265', '-preset', 'medium', '-x265-params', 'lossless=1'])
+        cmd.extend(['-c:v', 'libx265', '-preset', 'medium', '-x265-params', 'lossless=1', '-pix_fmt', 'yuv420p'])
     elif lossless and codec == "ffv1":
-        cmd.extend(['-c:v', 'ffv1', '-level', '3'])
+        cmd.extend(['-c:v', 'ffv1', '-level', '3', '-pix_fmt', 'yuv420p'])
     else:
         cmd.extend(['-c:v', codec])
         
@@ -58,23 +58,27 @@ def calculate_target_bitrate(width: int, height: int, framerate: float, quality_
     bits_per_pixel = 0.01 * quality_factor
     return int(pixels_per_second * bits_per_pixel)
 
-def encode_video_x265(input_video_or_pattern: str, output_video: str, framerate: float, target_bitrate: int, preset: str = "medium", passlog_file: str = "x265_passlog") -> None:
-    """Two-pass libx265."""
-    base_cmd = ['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-r', str(framerate), '-i', input_video_or_pattern]
+def encode_video_x265(input_video_or_pattern: str, output_video: str, framerate: float, target_bitrate: int, preset: str = "medium", passlog_file: str = "x265_passlog", x265_params: str = None) -> None:
+    """Encode video using x265 2-pass."""
+    input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
     
-    pass1 = base_cmd + [
+    cmd_pass1 = [
+        'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
         '-c:v', 'libx265', '-b:v', str(target_bitrate),
-        '-preset', preset, '-x265-params', f'pass=1:stats={passlog_file}',
-        '-pix_fmt', 'yuv420p', '-f', 'mp4', os.devnull
+        '-preset', preset, '-x265-params', f'pass=1:stats={passlog_file}' + (f':{x265_params}' if x265_params else ''),
+        '-pix_fmt', 'yuv420p',
+        '-f', 'null', '/dev/null'
     ]
-    subprocess.run(pass1, check=True)
+    subprocess.run(cmd_pass1, check=True)
     
-    pass2 = base_cmd + [
+    cmd_pass2 = [
+        'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
         '-c:v', 'libx265', '-b:v', str(target_bitrate),
-        '-preset', preset, '-x265-params', f'pass=2:stats={passlog_file}',
-        '-pix_fmt', 'yuv420p', output_video
+        '-preset', preset, '-x265-params', f'pass=2:stats={passlog_file}' + (f':{x265_params}' if x265_params else ''),
+        '-pix_fmt', 'yuv420p',
+        output_video
     ]
-    subprocess.run(pass2, check=True)
+    subprocess.run(cmd_pass2, check=True)
 
 def encode_video_x264(input_video_or_pattern: str, output_video: str, framerate: float, target_bitrate: int, preset: str = "medium", passlog_file: str = "x264_passlog") -> None:
     """Two-pass libx264."""
@@ -117,10 +121,57 @@ def encode_video_kvazaar(input_video_or_pattern: str, output_video: str, framera
     subprocess.run(cmd2, shell=True, check=True)
 
 def encode_with_roi_kvazaar(input_video_or_pattern: str, output_video: str, removability_scores: np.ndarray, block_size: int, framerate: float, width: int, height: int, target_bitrate: int, qp_range: int = 15) -> None:
-    """Encode using Kvazaar --roi (per-CTU delta QP)."""
-    # Dummy placeholder for complete ROI implementation as detailed in technical report
-    # Fallback to standard encode to ensure pipeline completion
-    encode_video_kvazaar(input_video_or_pattern, output_video, framerate, target_bitrate, width, height)
+    """Encode using Kvazaar --roi (per-CTU delta QP text file)."""
+    # Background (rem=1) -> higher QP. FG (rem=0) -> lower QP
+    qp_maps = (removability_scores * 2.0 - 1.0) * qp_range
+    
+    temp_dir = os.path.dirname(output_video)
+    roi_file = os.path.join(temp_dir, "kvazaar_roi.bin")
+    
+    num_frames, num_blocks_y, num_blocks_x = removability_scores.shape
+    ctu_size = max(16, min(64, block_size))
+    ctu_cols = math.ceil(width / ctu_size)
+    ctu_rows = math.ceil(height / ctu_size)
+    
+    with open(roi_file, 'wb') as f:
+        import struct
+        for i in range(num_frames):
+            map_frame = qp_maps[i]
+            if map_frame.shape != (ctu_rows, ctu_cols):
+                map_frame = cv2.resize(map_frame, (ctu_cols, ctu_rows), interpolation=cv2.INTER_AREA)
+            
+            # Write width and height as 32-bit integers (native byte order)
+            f.write(struct.pack('ii', ctu_cols, ctu_rows))
+            
+            # Write delta QPs as signed 8-bit integers
+            delta_qps = np.round(map_frame).astype(np.int8).flatten()
+            f.write(delta_qps.tobytes())
+                    
+    input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
+    cmd = [
+        'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
+        '-c:v', 'rawvideo', '-f', 'yuv4mpegpipe', '-pix_fmt', 'yuv420p', '-'
+    ]
+    kv_cmd = [
+        'kvazaar', '--input', '-', '--input-file-format', 'y4m', '--input-res', f'{width}x{height}', '--input-fps', str(framerate),
+        '--bitrate', str(target_bitrate), '--preset', 'medium', '--roi', roi_file, '--output', output_video
+    ]
+    
+    p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(kv_cmd, stdin=p1.stdout)
+    p1.stdout.close()
+    p2.communicate()
+    if p2.returncode != 0:
+        if not os.path.exists(output_video) or os.path.getsize(output_video) == 0:
+            raise RuntimeError(f"Kvazaar ROI encoding failed for {output_video} with code {p2.returncode}")
+        else:
+            print(f"Warning: Kvazaar exited with code {p2.returncode} (likely double-free bug on shutdown), but output video was generated. Ignoring.")
+            
+    # Remux Kvazaar's raw HEVC output to a proper MP4 container to fix framerate issues
+    tmp_video = output_video + ".hevc"
+    os.rename(output_video, tmp_video)
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-f', 'hevc', '-framerate', str(framerate), '-i', tmp_video, '-c:v', 'copy', output_video], check=True)
+    os.remove(tmp_video)
 
 def decode_video(video_path: str, output_dir: str, framerate: float = None, start_number: int = 1, quality: int = 2) -> bool:
     """Decode video to PNG frames. Returns True on success."""

@@ -305,3 +305,32 @@ def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_siz
         new_image = new_image[:, :-pad_x, :]
         blur_strengths = blur_strengths[:, :-1]
     return (new_image, blur_strengths)
+
+def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: int) -> Tuple[np.ndarray, np.ndarray]:
+    """Apply adaptive Gaussian noise per block based on scores. Returns (image, noise_strengths)."""
+    (h, w, c) = image.shape
+    pad_y = (block_size - h % block_size) % block_size
+    pad_x = (block_size - w % block_size) % block_size
+    if pad_y > 0 or pad_x > 0:
+        image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
+        frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
+    blocks = split_image_into_blocks(image, block_size)
+    noise_strengths = np.round(frame_scores * 50).astype(np.float32)
+    processed_blocks = blocks.copy()
+    (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
+    for by in range(num_blocks_y):
+        for bx in range(num_blocks_x):
+            strength = noise_strengths[by, bx]
+            if strength > 0:
+                block = blocks[by, bx]
+                noise = np.random.normal(0, strength, block.shape)
+                noisy_block = np.clip(block.astype(np.float32) + noise, 0, 255).astype(np.uint8)
+                processed_blocks[by, bx] = noisy_block
+    new_image = combine_blocks_into_image(processed_blocks)
+    if pad_y > 0:
+        new_image = new_image[:-pad_y, :, :]
+        noise_strengths = noise_strengths[:-1, :]
+    if pad_x > 0:
+        new_image = new_image[:, :-pad_x, :]
+        noise_strengths = noise_strengths[:, :-1]
+    return (new_image, noise_strengths)
