@@ -1,0 +1,118 @@
+# experiments.yaml
+# Each entry defines a single experiment.
+# The runner (runner.py) iterates over this list, skipping experiments
+# whose result.json already exists in results/ with a matching config hash.
+
+experiments:
+  # --- Component 1: Baselines ---
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x264
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: svtav1
+    target_bitrate: 460800
+    codec_params:
+      preset: 8
+
+  # --- Component 2: ROI ---
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: x265_aq
+    target_bitrate: 460800
+    codec_params:
+      aq_mode: 1
+      aq_strength: 1.0
+
+  # --- Component 3: ELVIS ---
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # --- Component 4: PRESLEY AI ---
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: downsample
+    restorer: realesrgan
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      denoise_strength: 1.0
+      tile: 0
+
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: blur
+    restorer: instantir
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      cfg: 7.0
+      creative_start: 1.0

@@ -14,7 +14,7 @@ import pandas as pd
 from tqdm import tqdm
 import torch
 
-from presley.config import *
+
 
 def normalize_array(arr: np.ndarray) -> np.ndarray:
     """Normalizes a NumPy array to the range [0, 1]."""
@@ -197,6 +197,7 @@ def split_image_into_blocks(image: np.ndarray, block_size: int) -> np.ndarray:
     Splits an image into a 5D array of blocks.
     Shape: (num_blocks_y, num_blocks_x, block_size, block_size, channels)
     """
+    block_size = int(block_size)
     (h, w, c) = image.shape
     num_blocks_y = h // block_size
     num_blocks_x = w // block_size

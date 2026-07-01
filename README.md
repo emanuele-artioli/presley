@@ -19,28 +19,45 @@ We use `conda` and `pyproject.toml` to manage the environment.
    ./install_openmmlab.sh
    ```
 
+## Dataset
+
+The `dataset/` directory contains symlinks to DAVIS video frame directories.
+Each subdirectory contains sequentially-numbered JPEG frames:
+
+    dataset/
+    ├── bear/
+    │   ├── 00000.jpg
+    │   ├── 00001.jpg
+    │   └── ...
+    ├── camel/
+    └── ...
+
+To set up the dataset, symlink your DAVIS frame directories:
+
+    mkdir -p dataset
+    ln -sfn /path/to/DAVIS/bear dataset/bear
+
+The pipeline reads frames directly from these directories as ground truth (no compression artifacts). Videos are resized to the experiment's target resolution at preprocessing time.
+
 ## Usage
 
-PRESLEY provides two main console scripts installed automatically via `pip` (defined in `pyproject.toml`):
+PRESLEY provides a modular component architecture driven by YAML configuration.
 
-### 1. Run a single pipeline test
-Run the main script to process a test video:
+### 1. Run experiments
+Define experiments in `experiments.yaml` and run them:
 ```bash
-presley
+presley-run experiments.yaml
 ```
-You can optionally provide a configuration file or command line arguments:
+The runner will skip any experiments that have already been computed.
+You can filter which experiments to run:
 ```bash
-presley --reference-video /path/to/video.mp4 --block-size 16 --target-bitrate 1500000
+presley-run experiments.yaml --filter component=baselines --filter video=bear
 ```
 
-### 2. Search Modes (Grid and Random Search)
-You can run automated parameter searches:
+### 2. Evaluate results
+The runner automatically calls the evaluation component, but you can also re-evaluate manually:
 ```bash
-# Run a grid search across defined parameters
-presley-search --mode grid
-
-# Run a random search over the grid space (defaults to 10 samples)
-presley-search --mode random --samples 20
+presley-evaluate results/
 ```
 
 ## Methods Implemented

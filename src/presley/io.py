@@ -14,7 +14,7 @@ import pandas as pd
 from tqdm import tqdm
 import torch
 
-from presley.config import *
+
 
 def load_frame(path: str) -> np.ndarray:
     """Load a single frame from disk as BGR numpy array."""

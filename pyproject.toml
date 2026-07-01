@@ -41,12 +41,14 @@ dependencies = [
   "tokenizers>=0.14,<0.19",
   "transformers==4.36",
   "gradio",
-  "fvmd"
+  "fvmd",
+  "pyyaml",
+  "DISTS_pytorch"
 ]
 
 [project.scripts]
-presley = "presley.cli:main"
-presley-search = "presley.search:main"
+presley-run = "presley.runner:main"
+presley-evaluate = "presley.components.evaluation:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

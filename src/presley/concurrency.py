@@ -24,7 +24,7 @@ import pandas as pd
 from tqdm import tqdm
 import torch
 
-from presley.config import *
+
 
 def chunk_for_devices(total: int, devices: List[torch.device], min_chunk_size: int=1) -> List[ChunkSpec]:
     """Split total items into chunks, one per device."""

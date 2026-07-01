@@ -21,7 +21,7 @@ import torch
 from presley.config import *
 from presley.io import *
 from presley.metrics import *
-from presley.encoding import *
+from presley.encode_utils import *
 from presley.degradation import *
 from presley.restoration import *
 from dataclasses import dataclass, asdict

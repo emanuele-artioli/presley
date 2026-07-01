@@ -10,7 +10,7 @@ from presley.utils import *
 from presley.degradation import split_image_into_blocks, combine_blocks_into_image
 from presley.io import clear_directory, load_frame, save_frame, get_frame_paths
 from presley.concurrency import chunk_for_devices, _resolve_device_list
-from presley.encoding import decode_video
+from presley.encode_utils import decode_video
 import glob
 import shutil
 import subprocess
@@ -24,7 +24,7 @@ import pandas as pd
 from tqdm import tqdm
 import torch
 
-from presley.config import *
+
 
 def stretch_frame(shrunk_frame: np.ndarray, binary_mask: np.ndarray, block_size: int) -> np.ndarray:
     """Reconstruct full-resolution frame from shrunk version using removal mask."""
@@ -809,7 +809,7 @@ def restore_with_instantir_adaptive(input_frames_dir: str, blur_maps: np.ndarray
     if batch_size < 1:
         raise ValueError('`batch_size` must be at least 1.')
     _safe_print('  Preparing InstantIR workers...')
-    weights_dir = Path('./InstantIR/models').expanduser()
+    weights_dir = Path('./weights/InstantIR/models').expanduser()
     weights_dir.mkdir(parents=True, exist_ok=True)
     if seed is not None:
         torch.manual_seed(seed)
