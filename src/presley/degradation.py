@@ -246,7 +246,7 @@ def combine_blocks_into_image(blocks: np.ndarray) -> np.ndarray:
     image = blocks.swapaxes(1, 2)
     image = image.reshape(num_blocks_y * block_size, num_blocks_x * block_size, c)
     return image
-def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int) -> Tuple[np.ndarray, np.ndarray]:
+def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5) -> Tuple[np.ndarray, np.ndarray]:
     """Adaptively downsample each block based on removability scores. Returns (image, downsample_maps)."""
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
@@ -255,16 +255,14 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
         image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
     blocks = split_image_into_blocks(image, block_size)
-    downsample_maps = np.round(frame_scores * int(np.log2(block_size))).astype(np.int32)
-    downsample_strengths = np.power(2.0, downsample_maps).astype(np.float32)
+    downsample_maps = np.round(frame_scores).astype(np.int32)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):
         for bx in range(num_blocks_x):
-            strength = downsample_strengths[by, bx]
-            if strength > 1:
+            if downsample_maps[by, bx] > 0:
                 block = blocks[by, bx]
-                small_size = max(1, int(block_size / strength))
+                small_size = max(1, int(block_size * scale))
                 small_block = cv2.resize(block, (small_size, small_size), interpolation=cv2.INTER_AREA)
                 upsampled_block = cv2.resize(small_block, (block_size, block_size), interpolation=cv2.INTER_LINEAR)
                 processed_blocks[by, bx] = upsampled_block
@@ -276,7 +274,7 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
         new_image = new_image[:, :-pad_x, :]
         downsample_maps = downsample_maps[:, :-1]
     return (new_image, downsample_maps)
-def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_size: int) -> Tuple[np.ndarray, np.ndarray]:
+def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_size: int, kernel_size: int = 15) -> Tuple[np.ndarray, np.ndarray]:
     """Apply adaptive Gaussian blur per block based on scores. Returns (image, blur_strengths)."""
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
@@ -285,17 +283,16 @@ def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_siz
         image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
     blocks = split_image_into_blocks(image, block_size)
-    blur_strengths = np.round(frame_scores * 10).astype(np.int32)
+    blur_strengths = np.round(frame_scores).astype(np.int32)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):
         for bx in range(num_blocks_x):
-            strength = blur_strengths[by, bx]
-            if strength > 0:
+            if blur_strengths[by, bx] > 0:
                 block = blocks[by, bx]
-                blurred_block = block.copy()
-                for _ in range(strength):
-                    blurred_block = cv2.GaussianBlur(blurred_block, (5, 5), sigmaX=1.0)
+                # Ensure kernel is odd
+                k = kernel_size if kernel_size % 2 == 1 else kernel_size + 1
+                blurred_block = cv2.GaussianBlur(block, (k, k), 0)
                 processed_blocks[by, bx] = blurred_block
     new_image = combine_blocks_into_image(processed_blocks)
     if pad_y > 0:
@@ -306,7 +303,7 @@ def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_siz
         blur_strengths = blur_strengths[:, :-1]
     return (new_image, blur_strengths)
 
-def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: int) -> Tuple[np.ndarray, np.ndarray]:
+def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: int, noise_variance: float = 50.0) -> Tuple[np.ndarray, np.ndarray]:
     """Apply adaptive Gaussian noise per block based on scores. Returns (image, noise_strengths)."""
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
@@ -315,7 +312,7 @@ def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: 
         image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
     blocks = split_image_into_blocks(image, block_size)
-    noise_strengths = np.round(frame_scores * 50).astype(np.float32)
+    noise_strengths = np.round(frame_scores * noise_variance).astype(np.float32)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):

@@ -716,7 +716,7 @@ def restore_blur_opencv_unsharp_mask(blurred_image: np.ndarray, blur_maps: np.nd
                 restored_blocks[i, j] = block
     restored_image = combine_blocks_into_image(restored_blocks)
     return _crop_after_restoration(restored_image, pad_y, pad_x)
-def _instantir_chunk_worker(frames_dir: str, frame_names: Sequence[str], blur_maps: np.ndarray, block_size: int, weights_dir: str, cfg: float, creative_start: float, preview_start: float, batch_size: int, device_str: str, seed: Optional[int], chunk_index: int, total_chunks: int, global_start: int, global_end: int) -> None:
+def _instantir_chunk_worker(frames_dir: str, output_frames_dir: str, frame_names: Sequence[str], blur_maps: np.ndarray, block_size: int, weights_dir: str, cfg: float, creative_start: float, preview_start: float, batch_size: int, device_str: str, seed: Optional[int], chunk_index: int, total_chunks: int, global_start: int, global_end: int) -> None:
     """Worker entry point that restores a contiguous frame chunk on a single device."""
     device = torch.device(device_str)
     if device.type == 'cuda':
@@ -788,10 +788,11 @@ def _instantir_chunk_worker(frames_dir: str, frame_names: Sequence[str], blur_ma
                         chunk_frames[local_idx] = combine_blocks_into_image(restored_blocks)
                 positive_mask = chunk_blur_maps > 0
                 chunk_blur_maps[positive_mask] -= 1
-        for (path, frame) in zip(frame_paths, chunk_frames):
+        for (name, frame) in zip(frame_names, chunk_frames):
             frame = _crop_after_restoration(frame, pad_y, pad_x)
-            if not cv2.imwrite(path, frame):
-                raise RuntimeError(f'Failed to write restored frame: {path}')
+            out_path = os.path.join(output_frames_dir, name)
+            if not cv2.imwrite(out_path, frame):
+                raise RuntimeError(f'Failed to write restored frame: {out_path}')
     finally:
         if runtime is not None:
             del runtime
@@ -803,7 +804,7 @@ def _instantir_chunk_worker(frames_dir: str, frame_names: Sequence[str], blur_ma
             except Exception:
                 pass
         gc.collect()
-def restore_with_instantir_adaptive(input_frames_dir: str, blur_maps: np.ndarray, block_size: int, cfg: float=7.0, creative_start: float=1.0, preview_start: float=0.0, seed: Optional[int]=42, devices: Optional[Sequence[Union[int, str, torch.device]]]=None, batch_size: int=4, parallel_chunk_length: Optional[int]=None) -> None:
+def restore_with_instantir_adaptive(input_frames_dir: str, output_frames_dir: str, blur_maps: np.ndarray, block_size: int, cfg: float=7.0, creative_start: float=1.0, preview_start: float=0.0, seed: Optional[int]=42, devices: Optional[Sequence[Union[int, str, torch.device]]]=None, batch_size: int=4, parallel_chunk_length: Optional[int]=None) -> None:
     """Apply adaptive InstantIR blind restoration with simple per-device chunking."""
     _ = parallel_chunk_length
     if batch_size < 1:
@@ -867,13 +868,13 @@ def restore_with_instantir_adaptive(input_frames_dir: str, blur_maps: np.ndarray
     if total_chunks == 1:
         job = jobs[0]
         worker_seed = seed
-        _instantir_chunk_worker(input_frames_dir, job['frames'], job['blur'], block_size, str(weights_dir), cfg, creative_start, preview_start, batch_size, job['device_str'], worker_seed, job['chunk_index'], total_chunks, job['start'], job['end'])
+        _instantir_chunk_worker(input_frames_dir, output_frames_dir, job['frames'], job['blur'], block_size, str(weights_dir), cfg, creative_start, preview_start, batch_size, job['device_str'], worker_seed, job['chunk_index'], total_chunks, job['start'], job['end'])
     else:
         ctx = multiprocessing.get_context('spawn')
         processes: List[multiprocessing.Process] = []
         for job in jobs:
             worker_seed = seed + job['chunk_index'] if seed is not None else None
-            proc = ctx.Process(target=_instantir_chunk_worker, args=(input_frames_dir, job['frames'], job['blur'], block_size, str(weights_dir), cfg, creative_start, preview_start, batch_size, job['device_str'], worker_seed, job['chunk_index'], total_chunks, job['start'], job['end']))
+            proc = ctx.Process(target=_instantir_chunk_worker, args=(input_frames_dir, output_frames_dir, job['frames'], job['blur'], block_size, str(weights_dir), cfg, creative_start, preview_start, batch_size, job['device_str'], worker_seed, job['chunk_index'], total_chunks, job['start'], job['end']))
             proc.start()
             processes.append(proc)
         errors: List[int] = []
@@ -883,4 +884,4 @@ def restore_with_instantir_adaptive(input_frames_dir: str, blur_maps: np.ndarray
                 errors.append(proc.exitcode)
         if errors:
             raise RuntimeError(f'InstantIR worker(s) exited with non-zero code(s): {errors}')
-    _safe_print(f'  Adaptive InstantIR restoration complete. Frames saved to {input_frames_dir}')
+    _safe_print(f'  Adaptive InstantIR restoration complete. Frames saved to {output_frames_dir}')

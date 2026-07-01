@@ -58,15 +58,16 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
         frames_arr = np.array(frames)
         degraded_frames_list = []
         
+        degradation_params = experiment.get('degradation_params', {})
         for i in range(len(frames)):
             frame = frames_arr[i]
             score = removability_scores[i]
             if roi_method == 'presley_downsample':
-                degraded, _ = filter_frame_downsample(frame, score, block_size)
+                degraded, _ = filter_frame_downsample(frame, score, block_size, scale=degradation_params.get('downsample_scale', 0.5))
             elif roi_method == 'presley_blur':
-                degraded, _ = filter_frame_gaussian(frame, score, block_size)
+                degraded, _ = filter_frame_gaussian(frame, score, block_size, kernel_size=degradation_params.get('blur_kernel', 15))
             else:
-                degraded, _ = filter_frame_noise(frame, score, block_size)
+                degraded, _ = filter_frame_noise(frame, score, block_size, noise_variance=degradation_params.get('noise_variance', 50))
             degraded_frames_list.append(degraded)
             
         temp_degraded_vid = os.path.join(results_dir, "temp_roi_presley.mkv")
