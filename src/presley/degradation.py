@@ -204,7 +204,7 @@ def split_image_into_blocks(image: np.ndarray, block_size: int) -> np.ndarray:
     blocks = image.reshape(num_blocks_y, block_size, num_blocks_x, block_size, c)
     blocks = blocks.swapaxes(1, 2)
     return blocks
-def apply_selective_removal(image: np.ndarray, frame_scores: np.ndarray, block_size: int, shrink_amount: float) -> Tuple[np.ndarray, np.ndarray, List[List[int]]]:
+def apply_selective_removal(image: np.ndarray, frame_scores: np.ndarray, block_size: int, shrink_amount: float, cluster_blocks: bool = False) -> Tuple[np.ndarray, np.ndarray, List[List[int]]]:
     """Remove blocks based on scores. Returns (new_image, removal_mask, removed_coords)."""
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
@@ -219,8 +219,14 @@ def apply_selective_removal(image: np.ndarray, frame_scores: np.ndarray, block_s
         num_blocks_to_remove = int(shrink_amount)
     num_blocks_to_remove = min(num_blocks_to_remove, num_blocks_x)
     block_coords_to_remove = []
+    
+    # Optional clustering: blur the scores so peaks are wider, forcing selected blocks to clump together
+    selection_scores = frame_scores
+    if cluster_blocks:
+        selection_scores = cv2.GaussianBlur(frame_scores.astype(np.float32), (5, 5), 0)
+        
     for j in range(num_blocks_y):
-        row_scores = frame_scores[j, :]
+        row_scores = selection_scores[j, :]
         indices_to_remove = np.argsort(-row_scores)[:num_blocks_to_remove]
         indices_to_remove.sort()
         block_coords_to_remove.append(indices_to_remove.tolist())
@@ -331,3 +337,56 @@ def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: 
         new_image = new_image[:, :-pad_x, :]
         noise_strengths = noise_strengths[:, :-1]
     return (new_image, noise_strengths)
+
+def filter_frame_qp(image: np.ndarray, frame_scores: np.ndarray, block_size: int, qp_range: int = 15, base_qp: int = 25) -> Tuple[np.ndarray, np.ndarray]:
+    """Apply DCT quantization per block based on scores to simulate QP degradation. Returns (image, qp_maps)."""
+    (h, w, c) = image.shape
+    pad_y = (block_size - h % block_size) % block_size
+    pad_x = (block_size - w % block_size) % block_size
+    if pad_y > 0 or pad_x > 0:
+        image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
+        frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
+    
+    # Convert to YCrCb to apply quantization in luminance and chrominance
+    img_ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb).astype(np.float32)
+    
+    blocks = split_image_into_blocks(img_ycrcb, block_size)
+    qp_maps = np.round(frame_scores * qp_range).astype(np.int32)
+    processed_blocks = blocks.copy()
+    
+    (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
+    
+    for by in range(num_blocks_y):
+        for bx in range(num_blocks_x):
+            delta_qp = qp_maps[by, bx]
+            if delta_qp > 0:
+                block = blocks[by, bx]
+                qp = base_qp + delta_qp
+                q_step = 2.0 ** (qp / 6.0)
+                
+                # Process each channel
+                for ch in range(c):
+                    # OpenCV dct requires float32
+                    channel_data = block[:, :, ch] - 128.0 # Shift for DCT
+                    dct_coeffs = cv2.dct(channel_data)
+                    
+                    # Quantize
+                    dc = dct_coeffs[0, 0]
+                    dct_quantized = np.round(dct_coeffs / q_step) * q_step
+                    dct_quantized[0, 0] = dc # preserving DC avoids massive color shifts
+                    
+                    idct_coeffs = cv2.idct(dct_quantized)
+                    processed_blocks[by, bx, :, :, ch] = idct_coeffs + 128.0
+
+    new_img_ycrcb = combine_blocks_into_image(processed_blocks)
+    new_img_ycrcb = np.clip(new_img_ycrcb, 0, 255).astype(np.uint8)
+    new_image = cv2.cvtColor(new_img_ycrcb, cv2.COLOR_YCrCb2BGR)
+    
+    if pad_y > 0:
+        new_image = new_image[:-pad_y, :, :]
+        qp_maps = qp_maps[:-1, :]
+    if pad_x > 0:
+        new_image = new_image[:, :-pad_x, :]
+        qp_maps = qp_maps[:, :-1]
+        
+    return (new_image, qp_maps)

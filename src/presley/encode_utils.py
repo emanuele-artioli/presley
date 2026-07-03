@@ -150,11 +150,11 @@ def encode_with_roi_kvazaar(input_video_or_pattern: str, output_video: str, remo
     input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
     cmd = [
         'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
-        '-c:v', 'rawvideo', '-f', 'yuv4mpegpipe', '-pix_fmt', 'yuv420p', '-'
+        '-f', 'rawvideo', '-pix_fmt', 'yuv420p', '-'
     ]
     kv_cmd = [
-        'kvazaar', '--input', '-', '--input-file-format', 'y4m', '--input-res', f'{width}x{height}', '--input-fps', str(framerate),
-        '--bitrate', str(target_bitrate), '--preset', 'medium', '--roi', roi_file, '--output', output_video
+        'kvazaar', '--input', '-', '--input-res', f'{width}x{height}', '--input-fps', str(framerate),
+        '--bitrate', str(target_bitrate), '--roi', roi_file, '--output', output_video
     ]
     
     p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)

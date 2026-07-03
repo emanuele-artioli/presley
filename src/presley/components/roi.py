@@ -47,13 +47,11 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
         # Wait, I will just call encode_video_x265 and it will need x265_params parameter!
         encode_video_x265(ref_frames_pattern, output_video, framerate, target_bitrate, preset=preset, x265_params=f"aq-mode={aq_mode}:aq-strength={aq_strength}")
         
-    elif roi_method == 'presley_qp':
-        encode_with_roi_kvazaar(ref_frames_pattern, output_video, removability_scores, block_size, framerate, width, height, target_bitrate, qp_range=codec_params.get('qp_range', 15))
-        
-    elif roi_method in ['presley_downsample', 'presley_blur', 'presley_noise']:
+
+    elif roi_method in ['presley_downsample', 'presley_blur', 'presley_noise', 'presley_qp']:
         # Apply degradation standalone, then encode lossy
         from presley.encode_utils import save_frames_as_video
-        from presley.degradation import filter_frame_downsample, filter_frame_gaussian, filter_frame_noise
+        from presley.degradation import filter_frame_downsample, filter_frame_gaussian, filter_frame_noise, filter_frame_qp
         
         frames_arr = np.array(frames)
         degraded_frames_list = []
@@ -66,6 +64,8 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
                 degraded, _ = filter_frame_downsample(frame, score, block_size, scale=degradation_params.get('downsample_scale', 0.5))
             elif roi_method == 'presley_blur':
                 degraded, _ = filter_frame_gaussian(frame, score, block_size, kernel_size=degradation_params.get('blur_kernel', 15))
+            elif roi_method == 'presley_qp':
+                degraded, _ = filter_frame_qp(frame, score, block_size, qp_range=codec_params.get('qp_range', 15))
             else:
                 degraded, _ = filter_frame_noise(frame, score, block_size, noise_variance=degradation_params.get('noise_variance', 50))
             degraded_frames_list.append(degraded)

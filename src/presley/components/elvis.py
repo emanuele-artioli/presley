@@ -36,7 +36,7 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     for i in range(len(frames)):
         frame = frames_arr[i]
         score = removability_scores[i]
-        shrunk, binary_mask, _ = apply_selective_removal(frame, score, block_size, shrink_amount)
+        shrunk, binary_mask, _ = apply_selective_removal(frame, score, block_size, shrink_amount, cluster_blocks=True)
         shrunk_frames_list.append(shrunk)
         masks_list.append(binary_mask)
         
@@ -44,10 +44,11 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     temp_shrunk_vid = os.path.join(results_dir, "temp_shrunk_lossless.mkv")
     save_frames_as_video(shrunk_frames_list, temp_shrunk_vid, framerate, lossless=True, codec="libx265")
     
-    # 3. Encode shrunk frames
-    transmitted_video = os.path.join(results_dir, "encoded_shrunk.mp4")
+    # 3. Encode shrunk video
+    encoded_shrunk = os.path.join(results_dir, "encoded_shrunk.mp4")
+    # For now, we reuse x265 encoding from baselines for the shrunk video
     if codec == 'x265':
-        encode_video_x265(temp_shrunk_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
+        encode_video_x265(temp_shrunk_vid, encoded_shrunk, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
     else:
         raise ValueError(f"Elvis currently requires x265 for encoding, got {codec}")
         
@@ -58,8 +59,8 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     masks_path = os.path.join(results_dir, "removal_masks.npz")
     np.savez_compressed(masks_path, masks=np.array(masks_list))
     
-    # 4. Decode shrunk frames
-    decoded_shrunk = load_frames_from_video(transmitted_video)
+    # 4. Decode shrunk video
+    decoded_shrunk = load_frames_from_video(encoded_shrunk)
     
     # 5. Stretch
     stretched_frames_list = []
@@ -68,8 +69,8 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         stretched_frames_list.append(stretched)
         
     # Save stretched to disk as PNGs because propainter/e2fgvi expect directories of PNGs
-    stretched_dir = os.path.join(results_dir, "temp_stretched")
-    masks_dir = os.path.join(results_dir, "temp_masks")
+    stretched_dir = os.path.join(results_dir, "stretched_frames")
+    masks_dir = os.path.join(results_dir, "masks")
     os.makedirs(stretched_dir, exist_ok=True)
     os.makedirs(masks_dir, exist_ok=True)
     
@@ -83,12 +84,11 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         cv2.imwrite(os.path.join(masks_dir, f"{i:05d}.png"), inpainting_mask_full)
         
     # 6. Inpaint
-    output_frames_dir = os.path.join(results_dir, "temp_inpainted")
-    os.makedirs(output_frames_dir, exist_ok=True)
+    output_frames_dir = os.path.join(results_dir, "restored_frames")
     
     if inpainter == 'propainter':
         from presley.restoration import inpaint_with_propainter
-        inpaint_with_propainter(stretched_dir, masks_dir, output_frames_dir, width, height, framerate)
+        inpaint_with_propainter(stretched_dir, masks_dir, output_frames_dir, width, height, framerate, mask_dilation=0)
     elif inpainter == 'e2fgvi':
         from presley.restoration import inpaint_with_e2fgvi
         inpaint_with_e2fgvi(stretched_dir, masks_dir, output_frames_dir, width, height, framerate)
@@ -120,7 +120,7 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         os.remove(temp_shrunk_vid)
         
     # Bitrate calculation
-    vid_size = os.path.getsize(transmitted_video)
+    vid_size = os.path.getsize(encoded_shrunk)
     masks_size = os.path.getsize(masks_path)
     total_transmitted_bytes = vid_size + masks_size
     duration = len(frames) / framerate
@@ -130,7 +130,7 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         "video_frames": len(frames),
         "video_framerate": framerate,
         "output_video": final_output,
-        "transmitted_video": transmitted_video,
+        "transmitted_video": encoded_shrunk,
         "actual_bitrate_bps": actual_bitrate,
         "file_size_bytes": os.path.getsize(final_output),
         "transmitted_size_bytes": total_transmitted_bytes,
