@@ -170,3 +170,9 @@ Real-ESRGAN/
 dataset/
 results/
 cache/
+
+# transient 2-pass encoder logs left in the repo root
+x264_passlog*
+x265_passlog*
+# stray dir from an unexpanded $CLAUDE_PROJECT_DIR in a hook invocation
+$CLAUDE_PROJECT_DIR/

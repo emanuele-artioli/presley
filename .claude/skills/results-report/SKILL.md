@@ -19,6 +19,26 @@ Also present: `output_video`, `actual_bitrate_bps`, `file_size_bytes`,
 `presley_ai` where strength maps are a separate cost), `encoding_time_seconds`,
 `restoration_time_seconds`, `total_time_seconds`.
 
+Entries with `metrics.fast_only: true` came from a `--fast-metrics` run and
+lack LPIPS/DISTS/VMAF/FVMD and block-level maps; run `presley-evaluate
+results/` to upgrade them before reporting perceptual metrics.
+
+## Report foreground-first, against the right target
+
+Follow the "Evaluation methodology" section of CLAUDE.md — the hypothesis
+chain is **presley_ai > elvis > roi > baseline** on *foreground* quality at
+matched bitrate:
+
+- A table that only shows `overall` metrics buries the result. Lead with
+  `foreground` vs `background`, per method.
+- Codec ROI methods (`kvazaar`/`x265_aq`/`svtav1`) → compare to the **same
+  codec's baseline**; the expected signature is FG↑/BG↓. Its absence is a
+  setup bug until proven otherwise.
+- `presley_*` ROI methods → compare to the codec ROI methods.
+- `elvis` → compare to baselines (same FG↑/BG↓ analysis).
+- `presley_ai` → compare to all of the above, using `transmitted_size_bytes`
+  for its bitrate (side-channel maps count).
+
 ## Workflow
 
 1. Scope the question: which video(s), which component(s), which metric.
@@ -27,11 +47,13 @@ Also present: `output_video`, `actual_bitrate_bps`, `file_size_bytes`,
 3. For a quick answer, compute directly (pandas/jq) rather than re-deriving
    plotting code. For a reusable chart, prefer extending
    `plot_grid_search_results.ipynb` over writing new one-off scripts.
-4. When comparing against a baseline, always match `video`/`width`/`height`/
-   `target_bitrate` across the compared configs — bitrate-mismatched
-   comparisons are the most common way to get misleading conclusions here
-   (see the ELVIS/PRESLEY bitrate-matching approach in
-   `68e8b6bb11d0dd9e62a67aef/main.tex`).
+4. When comparing against a baseline, always match `video`/`width`/`height`
+   and compare at similar **actual** bitrates (`actual_bitrate_bps`, not
+   `target_bitrate` — rate control over/undershoots, and svtav1-ROI only
+   approximates the target via CRF search). Bitrate-mismatched comparisons
+   are the most common way to get misleading conclusions here. For paper-grade
+   claims across bitrates, use BD-rate curves (multiple target bitrates per
+   method); similar-bitrate spot checks are fine for preliminary conclusions.
 5. If the user is feeding this into the paper (a table/figure for
    `main.tex`), hand off to the reviewer-response workflow so the relevant
    checklist item gets updated too.

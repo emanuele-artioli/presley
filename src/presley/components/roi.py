@@ -87,7 +87,12 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
         if os.path.exists(temp_degraded_vid):
             os.remove(temp_degraded_vid)
             
-    elif roi_method in ['svtav1', 'x264_addroi', 'x265_addroi']:
+    elif roi_method == 'svtav1':
+        from presley.encode_utils import encode_with_roi_svtav1
+        qp_range = codec_params.get('qp_range', 15)
+        preset = codec_params.get('preset', '8')
+        encode_with_roi_svtav1(ref_frames_pattern, output_video, removability_scores, block_size, framerate, width, height, target_bitrate, qp_range=qp_range, preset=preset)
+    elif roi_method in ['x264_addroi', 'x265_addroi']:
         raise NotImplementedError(f"{roi_method} ROI not yet fully implemented")
     else:
         raise ValueError(f"Unsupported ROI method: {roi_method}")

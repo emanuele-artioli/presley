@@ -10,7 +10,7 @@ description: Add or run PRESLEY experiments via experiments.yaml/presley-run. Us
 All experiments need: `component`, `video`, `width`, `height`.
 
 - **`baselines`** (`src/presley/components/baselines.py`): `codec` (`x264`|`x265`|`kvazaar`|`svtav1`; `hnerv`/`dcvc` are stubs that raise `NotImplementedError` — see reviewer-response skill), `target_bitrate`, `codec_params` (e.g. `{preset: medium}`).
-- **`roi`** (`components/roi.py`): `block_size`, `alpha`, `beta`, `roi_method` (`kvazaar`|`x265_aq`|`presley_downsample`|`presley_blur`|`presley_qp`|`presley_noise`; `x264_addroi`/`x265_addroi` are stubs), `target_bitrate`, `codec_params`, and for `presley_*` methods also `degradation_params` (`downsample_scale`, `blur_kernel`, `noise_variance`) and `codec` (default `x265`).
+- **`roi`** (`components/roi.py`): `block_size`, `alpha`, `beta`, `roi_method` (`kvazaar`|`x265_aq`|`svtav1`|`presley_downsample`|`presley_blur`|`presley_qp`|`presley_noise`; `x264_addroi`/`x265_addroi` are stubs), `target_bitrate`, `codec_params`, and for `presley_*` methods also `degradation_params` (`downsample_scale`, `blur_kernel`, `noise_variance`) and `codec` (default `x265`). `kvazaar` and `svtav1` ROI both encode in fixed-QP/CRF mode with a binary search toward `target_bitrate` (bitrate-targeted rate control absorbs/ignores ROI deltas — see TECHNICAL_REPORT_ELVIS_AND_ROI §4), so their `actual_bitrate_bps` is approximate — compare on actuals.
 - **`elvis`** (`components/elvis.py`): `block_size`, `alpha`, `beta`, `shrink_amount`, `inpainter` (`propainter`|`e2fgvi`), `target_bitrate`, `codec`, `codec_params`.
 - **`presley_ai`** (`components/presley_ai.py`): `block_size`, `alpha`, `beta`, `degradation` (`downsample`|`blur`), `restorer` (`realesrgan` requires `downsample`; `instantir` requires `blur`), `codec` (must be `x265`), `target_bitrate`, `codec_params`, `restorer_params` (`denoise_strength` for realesrgan; `cfg`, `creative_start`, `preview_start` for instantir).
 
@@ -29,11 +29,18 @@ Look at existing entries in `experiments.yaml` for concrete examples before writ
 4. Run for real. These are GPU jobs that can take minutes (baselines/roi) to
    hours (elvis in-painting, presley_ai restoration) — prefer
    `run_in_background` for anything beyond a `baselines`/`roi` smoke test.
+   For fast iteration add `--fast-metrics` (skips LPIPS/DISTS/VMAF/FVMD and
+   block-level maps; keeps FG/BG/overall PSNR/SSIM/MSE, which is what the
+   comparison methodology in CLAUDE.md needs). A later plain
+   `presley-evaluate results/` upgrades fast-only results to full metrics.
 5. Read back `results/<hash>/result.json`. The runner auto-calls
    `presley-evaluate` after a non-dry-run, which appends a `metrics` key
    (`foreground`/`background`/`overall` PSNR/SSIM/MSE, plus LPIPS/DISTS/VMAF/FVMD
    under `overall`, plus block-level `.npz` paths). If `metrics` is missing,
    evaluation didn't run yet — invoke `presley-evaluate results/` manually.
+6. Analyze against the experiment's comparison target per the
+   "Evaluation methodology" section in CLAUDE.md (foreground-first, matched
+   actual bitrates) — an experiment without that comparison is not a result.
 
 ## Gotchas
 

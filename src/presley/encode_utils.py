@@ -120,10 +120,37 @@ def encode_video_kvazaar(input_video_or_pattern: str, output_video: str, framera
     cmd2 = f"ffmpeg -hide_banner -loglevel error -y -i {hevc_out} -c copy {output_video}"
     subprocess.run(cmd2, shell=True, check=True)
 
+def scores_to_qp_offsets(removability_scores: np.ndarray, qp_range: int) -> np.ndarray:
+    """Map removability scores to bit-neutral per-block QP offsets in [-qp_range, +qp_range].
+
+    Removability scores are heavily skewed low (median ~0.2 on DAVIS), so the naive
+    `(score*2-1)*qp_range` mapping yields almost-uniformly negative offsets: the encoder
+    is told to spend more bits nearly everywhere, which rate control either fights
+    (kvazaar: massive bitrate overshoot) or cancels out (svtav1 CRF search: no FG/BG
+    differentiation). Mean-centering each frame makes the offsets bit-neutral by
+    construction — bits move from high-removability (background) to low-removability
+    (foreground) blocks without changing the total budget.
+    """
+    centered = removability_scores.astype(np.float32) - removability_scores.mean(axis=(1, 2), keepdims=True).astype(np.float32)
+    # Scale by the global (all-frames) max so offsets are comparable across frames;
+    # individual frames therefore may not reach the full +/-qp_range.
+    max_abs = float(np.abs(centered).max())
+    if max_abs < 1e-6:
+        return np.zeros_like(centered)
+    return np.clip(centered / max_abs * qp_range, -qp_range, qp_range)
+
 def encode_with_roi_kvazaar(input_video_or_pattern: str, output_video: str, removability_scores: np.ndarray, block_size: int, framerate: float, width: int, height: int, target_bitrate: int, qp_range: int = 15) -> None:
-    """Encode using Kvazaar --roi (per-CTU delta QP text file)."""
-    # Background (rem=1) -> higher QP. FG (rem=0) -> lower QP
-    qp_maps = (removability_scores * 2.0 - 1.0) * qp_range
+    """Encode using Kvazaar --roi (per-CTU delta QP file), fixed-QP mode.
+
+    Kvazaar's VBR rate control (--bitrate) absorbs the ROI deltas: measured on
+    bear @460kbps, --roi under VBR left FG-PSNR flat while fixed-QP + --roi
+    gained +1.47 dB FG for -0.43 dB BG. So we encode with a fixed base QP
+    (--qp, rate control off, ROI honored) and binary-search the base QP whose
+    actual bitrate is closest to target_bitrate — same strategy as
+    encode_with_roi_svtav1, whose CRF mode exists for the same reason.
+    """
+    # Background (high removability) -> positive delta QP (fewer bits), FG -> negative
+    qp_maps = scores_to_qp_offsets(removability_scores, qp_range)
     
     temp_dir = os.path.dirname(output_video)
     roi_file = os.path.join(temp_dir, "kvazaar_roi.bin")
@@ -147,31 +174,134 @@ def encode_with_roi_kvazaar(input_video_or_pattern: str, output_video: str, remo
             delta_qps = np.round(map_frame).astype(np.int8).flatten()
             f.write(delta_qps.tobytes())
                     
-    input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
-    cmd = [
-        'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
-        '-f', 'rawvideo', '-pix_fmt', 'yuv420p', '-'
-    ]
-    kv_cmd = [
-        'kvazaar', '--input', '-', '--input-res', f'{width}x{height}', '--input-fps', str(framerate),
-        '--bitrate', str(target_bitrate), '--roi', roi_file, '--output', output_video
-    ]
-    
-    p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(kv_cmd, stdin=p1.stdout)
-    p1.stdout.close()
-    p2.communicate()
-    if p2.returncode != 0:
-        if not os.path.exists(output_video) or os.path.getsize(output_video) == 0:
-            raise RuntimeError(f"Kvazaar ROI encoding failed for {output_video} with code {p2.returncode}")
-        else:
-            print(f"Warning: Kvazaar exited with code {p2.returncode} (likely double-free bug on shutdown), but output video was generated. Ignoring.")
-            
-    # Remux Kvazaar's raw HEVC output to a proper MP4 container to fix framerate issues
-    tmp_video = output_video + ".hevc"
-    os.rename(output_video, tmp_video)
-    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-f', 'hevc', '-framerate', str(framerate), '-i', tmp_video, '-c:v', 'copy', output_video], check=True)
-    os.remove(tmp_video)
+    input_args = ['-framerate', str(framerate), '-i', input_video_or_pattern] if '%' in input_video_or_pattern else ['-i', input_video_or_pattern]
+    yuv_path = os.path.join(temp_dir, "kvazaar_roi_input.yuv")
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
+                    '-pix_fmt', 'yuv420p', '-f', 'rawvideo', yuv_path], check=True)
+
+    duration = num_frames / framerate
+    hevc_path = output_video + ".hevc"
+
+    def _encode(qp: int) -> float:
+        cmd = ['kvazaar', '--input', yuv_path, '--input-res', f'{width}x{height}',
+               '--input-fps', str(framerate), '--qp', str(qp), '--roi', roi_file,
+               '--output', hevc_path]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        # Kvazaar sometimes crashes on shutdown (double-free) after writing a valid
+        # stream, so judge success by the output, not the exit code.
+        if not os.path.exists(hevc_path) or os.path.getsize(hevc_path) < 1024:
+            raise RuntimeError(f"Kvazaar ROI encoding failed (qp={qp}): {result.stderr}")
+        return os.path.getsize(hevc_path) * 8 / duration
+
+    try:
+        # Binary-search the fixed base QP whose actual bitrate is closest to target
+        lo, hi = 1, 51
+        best_qp, best_diff, last_qp = None, None, None
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            bitrate = _encode(mid)
+            last_qp = mid
+            diff = abs(bitrate - target_bitrate)
+            if best_diff is None or diff < best_diff:
+                best_qp, best_diff = mid, diff
+            if bitrate > target_bitrate:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+        if last_qp != best_qp:
+            _encode(best_qp)
+
+        subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-f', 'hevc',
+                        '-framerate', str(framerate), '-i', hevc_path, '-c:v', 'copy', output_video], check=True)
+    finally:
+        for path in (hevc_path, yuv_path):
+            if os.path.exists(path):
+                os.remove(path)
+
+def encode_with_roi_svtav1(input_video_or_pattern: str, output_video: str, removability_scores: np.ndarray, block_size: int, framerate: float, width: int, height: int, target_bitrate: int, qp_range: int = 15, preset: str = "8") -> None:
+    """Encode using SVT-AV1 --roi-map-file (per-64x64-superblock QP offsets).
+
+    SVT-AV1 (v1.8.0) silently ignores the ROI map under VBR (--rc 1) — verified
+    empirically: identical output with/without the map. In CRF mode the map is
+    honored, so we encode with CRF and binary-search the CRF value that best
+    approximates target_bitrate (SVT-AV1 at this resolution encodes in seconds,
+    so a handful of trial encodes is cheap).
+    """
+    temp_dir = os.path.dirname(output_video)
+
+    # Decode input to a raw yuv420p file (SvtAv1EncApp input)
+    yuv_path = os.path.join(temp_dir, "svtav1_roi_input.yuv")
+    input_args = ['-framerate', str(framerate), '-i', input_video_or_pattern] if '%' in input_video_or_pattern else ['-i', input_video_or_pattern]
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
+                    '-pix_fmt', 'yuv420p', '-f', 'rawvideo', yuv_path], check=True)
+
+    # ROI map: text file, one line per picture: "<picture_number> <offset per superblock...>"
+    # in raster order at 64x64 superblock granularity. Background (score=1) -> +qp_range,
+    # foreground (score=0) -> -qp_range (same convention as encode_with_roi_kvazaar).
+    # AV1 segmentation allows at most 8 distinct segments, so SvtAv1EncApp rejects maps
+    # with more than 8 distinct offset values ("Maximum number of segment supported by
+    # AV1 spec is eight") — quantize the continuous offsets to a fixed 8-level palette.
+    import cv2 as _cv2
+    sb_size = 64
+    sb_cols = math.ceil(width / sb_size)
+    sb_rows = math.ceil(height / sb_size)
+    num_frames = removability_scores.shape[0]
+    # 7 evenly spaced levels (not 8) so the palette includes 0: with 8 levels a
+    # near-zero offset gets pushed to the smallest nonzero level, uniformly
+    # shifting flat regions instead of leaving them neutral.
+    levels = np.unique(np.round(np.linspace(-qp_range, qp_range, 7)).astype(int))
+    qp_maps = scores_to_qp_offsets(removability_scores, qp_range)
+    roi_file = os.path.join(temp_dir, "svtav1_roi_map.txt")
+    with open(roi_file, 'w') as f:
+        for i in range(num_frames):
+            raw = _cv2.resize(qp_maps[i], (sb_cols, sb_rows), interpolation=_cv2.INTER_AREA)
+            offsets = levels[np.abs(raw.flatten()[:, None] - levels[None, :]).argmin(axis=1)]
+            f.write(f"{i} " + " ".join(str(v) for v in offsets) + "\n")
+
+    duration = num_frames / framerate
+    fps_num, fps_denom = int(round(framerate * 1000)), 1000
+    ivf_path = output_video + ".ivf"
+
+    def _encode(crf: int) -> float:
+        cmd = ['SvtAv1EncApp', '-i', yuv_path, '-w', str(width), '-h', str(height),
+               '--fps-num', str(fps_num), '--fps-denom', str(fps_denom),
+               '--preset', str(preset), '--crf', str(crf),
+               '--roi-map-file', roi_file, '-b', ivf_path]
+        for _ in range(2):  # rare flaky empty-output runs observed; retry once
+            try:
+                subprocess.run(cmd, check=True, capture_output=True, text=True)
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(f"SvtAv1EncApp failed (crf={crf}): {e.stderr}") from e
+            if os.path.getsize(ivf_path) > 1024:
+                return os.path.getsize(ivf_path) * 8 / duration
+        raise RuntimeError(f"SvtAv1EncApp produced empty output twice (crf={crf})")
+
+    try:
+        # Binary-search CRF for the closest actual bitrate to target
+        lo, hi = 1, 63
+        best_crf, best_diff = None, None
+        last_crf = None
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            bitrate = _encode(mid)
+            last_crf = mid
+            diff = abs(bitrate - target_bitrate)
+            if best_diff is None or diff < best_diff:
+                best_crf, best_diff = mid, diff
+            if bitrate > target_bitrate:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+        if last_crf != best_crf:
+            _encode(best_crf)
+
+        subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-i', ivf_path,
+                        '-c:v', 'copy', output_video], check=True)
+    finally:
+        # The yuv is large (hundreds of MB); the roi map is kept for diagnostics.
+        for path in (ivf_path, yuv_path):
+            if os.path.exists(path):
+                os.remove(path)
 
 def decode_video(video_path: str, output_dir: str, framerate: float = None, start_number: int = 1, quality: int = 2) -> bool:
     """Decode video to PNG frames. Returns True on success."""

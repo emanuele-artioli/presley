@@ -21,6 +21,8 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     codec = experiment['codec'].lower()
     target_bitrate = experiment['target_bitrate']
     codec_params = experiment.get('codec_params', {})
+    # Speed/quality knobs for the in-painter (forwarded to the restoration fn).
+    inpainter_params = experiment.get('inpainter_params', {})
     
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
@@ -88,10 +90,15 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     
     if inpainter == 'propainter':
         from presley.restoration import inpaint_with_propainter
-        inpaint_with_propainter(stretched_dir, masks_dir, output_frames_dir, width, height, framerate, mask_dilation=0)
+        # Forward only the knobs inpaint_with_propainter accepts; defaults preserved.
+        pp_keys = ('ref_stride', 'neighbor_length', 'subvideo_length', 'raft_iter', 'fp16', 'resize_ratio')
+        pp_kwargs = {k: inpainter_params[k] for k in pp_keys if k in inpainter_params}
+        inpaint_with_propainter(stretched_dir, masks_dir, output_frames_dir, width, height, framerate, mask_dilation=0, **pp_kwargs)
     elif inpainter == 'e2fgvi':
         from presley.restoration import inpaint_with_e2fgvi
-        inpaint_with_e2fgvi(stretched_dir, masks_dir, output_frames_dir, width, height, framerate)
+        e2_keys = ('ref_stride', 'neighbor_stride', 'num_ref')
+        e2_kwargs = {k: inpainter_params[k] for k in e2_keys if k in inpainter_params}
+        inpaint_with_e2fgvi(stretched_dir, masks_dir, output_frames_dir, width, height, framerate, **e2_kwargs)
     else:
         raise ValueError(f"Unknown inpainter: {inpainter}")
         

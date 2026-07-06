@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import yaml
@@ -7,10 +8,47 @@ import argparse
 from typing import Dict, Any, List
 
 def compute_experiment_hash(experiment: Dict[str, Any]) -> str:
-    """Deterministic hash of experiment config."""
-    # Exclude transient fields if any (though currently all are part of config)
-    canon = json.dumps(experiment, sort_keys=True)
+    """Deterministic hash of experiment config.
+
+    Keys named 'hash' or starting with '_' are annotation/bookkeeping fields and
+    are excluded, so annotating an experiment with its own hash never changes it.
+    """
+    canon_dict = {k: v for k, v in experiment.items() if k != 'hash' and not k.startswith('_')}
+    canon = json.dumps(canon_dict, sort_keys=True)
     return hashlib.sha256(canon.encode('utf-8')).hexdigest()[:16]
+
+def annotate_experiments_yaml(yaml_path: str) -> None:
+    """Rewrite experiments.yaml so each entry is preceded by a `# hash: <id>`
+    comment matching its results/<id>/ directory.
+
+    Uses a comment (not a real field) so it never enters the parsed config and
+    can't perturb the hash. Regenerates cleanly: stale `# hash:` lines are
+    stripped and replaced. Entries are the `  - ` top-level list items under
+    `experiments:`, in file order (PyYAML preserves list order), which lines up
+    1:1 with the parsed list since there are no nested sequences at that indent.
+    """
+    if not os.path.exists(yaml_path):
+        return
+    with open(yaml_path, 'r') as f:
+        experiments = (yaml.safe_load(f) or {}).get('experiments', []) or []
+    hashes = [compute_experiment_hash(e) for e in experiments]
+
+    with open(yaml_path, 'r') as f:
+        lines = f.readlines()
+
+    out, idx = [], 0
+    hash_re = re.compile(r'^\s*#\s*hash:\s*[0-9a-f]+\s*$')
+    item_re = re.compile(r'^  - ')
+    for line in lines:
+        if hash_re.match(line):
+            continue  # drop old annotation, will be regenerated
+        if item_re.match(line) and idx < len(hashes):
+            out.append(f"  # hash: {hashes[idx]}\n")
+            idx += 1
+        out.append(line)
+
+    with open(yaml_path, 'w') as f:
+        f.writelines(out)
 
 def load_experiments(yaml_path: str, filters: Dict[str, str]) -> List[Dict[str, Any]]:
     """Load and filter experiments from YAML."""
@@ -107,15 +145,25 @@ def main():
     parser.add_argument('--results-dir', type=str, default='results', help='Path to results output')
     parser.add_argument('--cache-dir', type=str, default='cache', help='Path to shared cache')
     parser.add_argument('--dry-run', action='store_true', help='Print what would run without running')
-    
+    parser.add_argument('--fast-metrics', action='store_true',
+                        help='Evaluate with fast metrics only (FG/BG/overall PSNR/SSIM/MSE); skip LPIPS/DISTS/VMAF/FVMD and block-level maps')
+    parser.add_argument('--annotate-only', action='store_true',
+                        help='Only refresh the `# hash:` annotations in the YAML, then exit (no experiments run)')
+
     args = parser.parse_args()
-    
+
+    # Keep each experiment's `# hash:` annotation in sync with its results/<hash>/ dir.
+    annotate_experiments_yaml(args.yaml_path)
+    if args.annotate_only:
+        print(f"Annotated hashes in {args.yaml_path}.")
+        return
+
     filters = {}
     for f in args.filter:
         if '=' in f:
             k, v = f.split('=', 1)
             filters[k] = v
-            
+
     experiments = load_experiments(args.yaml_path, filters)
     print(f"Found {len(experiments)} matching experiments.")
     
@@ -129,7 +177,7 @@ def main():
         # Run evaluation pass on all results (unless we are just dry-running)
         # We lazily import evaluation
         from presley.components.evaluation import evaluate_all
-        evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir)
+        evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
         
 if __name__ == '__main__':
     main()
