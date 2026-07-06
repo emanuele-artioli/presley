@@ -73,10 +73,20 @@ claims. If a link in the chain breaks, first search for regimes where it holds
 method is worse — and only after that, re-examine the implementation.
 
 **Fast iteration:** `presley-run … --fast-metrics` / `presley-evaluate
-results/ --fast-metrics` compute only FG/BG/overall PSNR/SSIM/MSE and skip the
-slow metrics (LPIPS/DISTS/VMAF/FVMD and block-level maps). Fast-only results
-are tagged `metrics.fast_only` and get upgraded in place by a later full
-`presley-evaluate results/`.
+results/ --fast-metrics` compute only FG/BG/overall **PSNR+MSE** (SSIM,
+LPIPS/DISTS/VMAF/FVMD and block-level maps are deferred to the full pass).
+Fast-only results are tagged `metrics.fast_only` and get upgraded in place by a
+later full `presley-evaluate results/`. The eval bottleneck is *not* the
+metrics (~7% of time) — it's loading reference frames/masks from NFS, so
+`evaluate_all` memoizes them across experiments in one pass (load once, not
+per-experiment).
+
+**Starved-bitrate rule:** generative methods (elvis, presley_ai) only pay off
+where the codec is bit-starved — hallucinating detail is only cheaper than
+coding it when the codec can't afford the detail. Run their experiments at
+bitrates low enough that the *baseline* is visibly quality-limited; a
+comfortable-bitrate result understates them. The claim to pursue is "presley
+wins in the starved regime," not "at every bitrate."
 
 ## Environment
 

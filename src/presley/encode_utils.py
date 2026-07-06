@@ -42,7 +42,28 @@ def save_frames_as_video(frames: List[np.ndarray], output_path: str, framerate: 
         raise RuntimeError(f"FFmpeg encoding failed for {output_path}")
 
 def load_frames_from_video(video_path: str) -> List[np.ndarray]:
-    """Decode video into a list of BGR numpy arrays."""
+    """Decode video into a list of BGR numpy arrays.
+
+    Decodes straight to a bgr24 rawvideo pipe (same ffmpeg decoder as the old
+    temp-PNG path, so frames are bit-identical — PNG is lossless — but without
+    writing/reading 82 files, which is slow on NFS). Falls back to the temp-PNG
+    path if the pipe decode yields nothing.
+    """
+    cap = cv2.VideoCapture(video_path)
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    cap.release()
+    if w > 0 and h > 0:
+        proc = subprocess.run(
+            ['ffmpeg', '-hide_banner', '-loglevel', 'error', '-i', video_path,
+             '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-'],
+            capture_output=True)
+        frame_bytes = h * w * 3
+        if proc.returncode == 0 and proc.stdout and len(proc.stdout) % frame_bytes == 0 and proc.stdout:
+            arr = np.frombuffer(proc.stdout, dtype=np.uint8).reshape(-1, h, w, 3)
+            return [f.copy() for f in arr]
+
+    # Fallback: decode via temp PNGs (handles codecs cv2 can't probe)
     import tempfile
     frames = []
     with tempfile.TemporaryDirectory() as tmpdir:

@@ -12,6 +12,25 @@ from typing import Dict, Any, List
 from presley.preprocessing import get_reference_frames, get_ufo_masks
 from presley.encode_utils import load_frames_from_video
 
+# Reference frames and UFO masks are identical across every experiment on the same
+# (video, resolution, block_size), but they live on NFS (slow small-file I/O:
+# ~38s to read 82 PNGs). evaluate_all() runs all experiments in one process, so
+# memoizing here turns N reloads into 1 — the dominant eval cost, not the metrics.
+_REF_CACHE: Dict[Any, Any] = {}
+_MASK_CACHE: Dict[Any, Any] = {}
+
+def _get_refs_cached(video_name, width, height, dataset_dir, cache_dir):
+    key = (video_name, width, height)
+    if key not in _REF_CACHE:
+        _REF_CACHE[key] = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
+    return _REF_CACHE[key]
+
+def _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir):
+    key = (video_name, width, height, block_size)
+    if key not in _MASK_CACHE:
+        _MASK_CACHE[key] = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    return _MASK_CACHE[key]
+
 def _masked_psnr(ref: np.ndarray, dec: np.ndarray, mask: np.ndarray = None) -> float:
     if ref is None or dec is None: return 0.0
     ref_f, dec_f = ref.astype(np.float32), dec.astype(np.float32)
@@ -138,9 +157,9 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     height = data['config']['height']
     block_size = data['config'].get('block_size', 8)
     
-    raw_yuv_path, refs, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
+    raw_yuv_path, refs, framerate = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-    ufo_masks = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
     
     output_video = data.get('output_video')
     if not output_video or not os.path.exists(output_video):
@@ -169,21 +188,21 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         d = decs[i]
         m = ufo_masks[i] > 127
 
-        # Frame level
+        # Frame level. Fast mode computes PSNR+MSE only (both ~free from one diff);
+        # SSIM (skimage, the slowest frame metric) is deferred to the full pass.
         fg_psnr.append(_masked_psnr(r, d, m))
-        fg_ssim.append(_masked_ssim(r, d, m))
         fg_mse.append(_masked_mse(r, d, m))
-
         bg_psnr.append(_masked_psnr(r, d, ~m))
-        bg_ssim.append(_masked_ssim(r, d, ~m))
         bg_mse.append(_masked_mse(r, d, ~m))
-
         ov_psnr.append(_masked_psnr(r, d))
-        ov_ssim.append(_masked_ssim(r, d))
         ov_mse.append(_masked_mse(r, d))
 
         if fast:
             continue
+
+        fg_ssim.append(_masked_ssim(r, d, m))
+        bg_ssim.append(_masked_ssim(r, d, ~m))
+        ov_ssim.append(_masked_ssim(r, d))
 
         # Block level
         r_b = split_image_into_blocks(r, block_size)
@@ -205,22 +224,20 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         np.savez_compressed(os.path.join(exp_results_dir, "block_ssim.npz"), block_ssim)
         np.savez_compressed(os.path.join(exp_results_dir, "block_mse.npz"), block_mse)
 
-    metrics = {
-        "foreground": {
-            "psnr_mean": float(np.mean(fg_psnr)), "psnr_std": float(np.std(fg_psnr)),
-            "ssim_mean": float(np.mean(fg_ssim)), "ssim_std": float(np.std(fg_ssim)),
-            "mse_mean": float(np.mean(fg_mse)), "mse_std": float(np.std(fg_mse))
-        },
-        "background": {
-            "psnr_mean": float(np.mean(bg_psnr)), "psnr_std": float(np.std(bg_psnr)),
-            "ssim_mean": float(np.mean(bg_ssim)), "ssim_std": float(np.std(bg_ssim)),
-            "mse_mean": float(np.mean(bg_mse)), "mse_std": float(np.std(bg_mse))
-        },
-        "overall": {
-            "psnr_mean": float(np.mean(ov_psnr)), "psnr_std": float(np.std(ov_psnr)),
-            "ssim_mean": float(np.mean(ov_ssim)), "ssim_std": float(np.std(ov_ssim)),
-            "mse_mean": float(np.mean(ov_mse)), "mse_std": float(np.std(ov_mse))
+    def _block(psnr, ssim, mse):
+        d = {
+            "psnr_mean": float(np.mean(psnr)), "psnr_std": float(np.std(psnr)),
+            "mse_mean": float(np.mean(mse)), "mse_std": float(np.std(mse)),
         }
+        if not fast:  # SSIM only computed in the full pass
+            d["ssim_mean"] = float(np.mean(ssim))
+            d["ssim_std"] = float(np.std(ssim))
+        return d
+
+    metrics = {
+        "foreground": _block(fg_psnr, fg_ssim, fg_mse),
+        "background": _block(bg_psnr, bg_ssim, bg_mse),
+        "overall": _block(ov_psnr, ov_ssim, ov_mse),
     }
 
     if fast:
