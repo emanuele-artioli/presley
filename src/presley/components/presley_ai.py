@@ -84,17 +84,27 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         if degradation != 'downsample':
             raise ValueError("RealESRGAN restorer expects 'downsample' degradation")
         from presley.restoration import restore_downsampled_with_realesrgan
-        denoise_strength = restorer_params.get('denoise_strength', 1.0)
-        restore_downsampled_with_realesrgan(temp_frames_dir, restored_frames_dir, smap_arr, block_size, denoise_strength=denoise_strength)
-        
+        # tile>0 processes the frame in tiles → much lower peak VRAM (lets the job
+        # fit alongside other GPU processes); tile=0 is full-frame (fastest, most VRAM).
+        restore_downsampled_with_realesrgan(
+            temp_frames_dir, restored_frames_dir, smap_arr, block_size,
+            denoise_strength=restorer_params.get('denoise_strength', 1.0),
+            tile=restorer_params.get('tile', 0),
+            tile_pad=restorer_params.get('tile_pad', 10),
+            fp32=restorer_params.get('fp32', False))
+
     elif restorer == 'instantir':
         if degradation != 'blur':
             raise ValueError("InstantIR restorer expects 'blur' degradation")
         from presley.restoration import restore_with_instantir_adaptive
-        cfg = restorer_params.get('cfg', 7.0)
-        creative_start = restorer_params.get('creative_start', 1.0)
-        preview_start = restorer_params.get('preview_start', 0.0)
-        restore_with_instantir_adaptive(temp_frames_dir, restored_frames_dir, smap_arr, block_size, cfg=cfg, creative_start=creative_start, preview_start=preview_start)
+        # batch_size is the main VRAM lever for InstantIR (SDXL-class); drop to 1–2
+        # to run alongside other GPU jobs instead of needing a whole free GPU.
+        restore_with_instantir_adaptive(
+            temp_frames_dir, restored_frames_dir, smap_arr, block_size,
+            cfg=restorer_params.get('cfg', 7.0),
+            creative_start=restorer_params.get('creative_start', 1.0),
+            preview_start=restorer_params.get('preview_start', 0.0),
+            batch_size=restorer_params.get('batch_size', 4))
     else:
         raise ValueError(f"Unknown restorer: {restorer}")
         

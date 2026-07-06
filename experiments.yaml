@@ -854,3 +854,99 @@ experiments:
       ref_stride: 30
       neighbor_length: 3
       subvideo_length: 80
+
+  # --- High-resolution SVT-AV1 ROI test (does 64x64 granularity stop mattering at 720p?) ---
+
+  # hash: e126b35024fa3406
+  - component: baselines
+    video: bear
+    width: 1280
+    height: 720
+    codec: svtav1
+    target_bitrate: 1843200
+    codec_params:
+      preset: 8
+
+  # hash: 3e62a0705f73e025
+  - component: baselines
+    video: bear
+    width: 1280
+    height: 720
+    codec: kvazaar
+    target_bitrate: 1843200
+    codec_params:
+      preset: medium
+
+  # hash: 547eaaed44847d59
+  - component: roi
+    video: bear
+    width: 1280
+    height: 720
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 1843200
+    codec_params:
+      qp_range: 15
+      preset: 8
+
+  # hash: 23fcb2ff25ad31de
+  - component: roi
+    video: bear
+    width: 1280
+    height: 720
+    block_size: 64
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 1843200
+    codec_params:
+      qp_range: 15
+      preset: 8
+
+  # hash: dfa21110e744b915
+  - component: roi
+    video: bear
+    width: 1280
+    height: 720
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 1843200
+    codec_params:
+      qp_range: 15
+
+  # hash: 1a853a7f2189fdf9
+  - component: roi
+    video: bear
+    width: 1280
+    height: 720
+    block_size: 64
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 1843200
+    codec_params:
+      qp_range: 15
+
+  # --- Low-VRAM InstantIR (batch_size 1) to run alongside other GPU jobs ---
+  # hash: 56675c2650855aa7
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: blur
+    restorer: instantir
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      cfg: 7.0
+      creative_start: 1.0
+      batch_size: 1
