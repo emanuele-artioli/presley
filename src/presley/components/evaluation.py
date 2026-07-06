@@ -109,20 +109,29 @@ def calculate_fvmd(ref_dir: str, dec_video: str) -> float:
     except ImportError:
         return 0.0
 
-def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str) -> None:
+def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
+    """Compute metrics for one experiment.
+
+    fast=True computes only the cheap frame-level metrics (foreground/background/
+    overall PSNR/SSIM/MSE) and skips the slow ones (LPIPS, DISTS, VMAF, FVMD and
+    the per-block loop). Fast-only results are tagged with metrics["fast_only"]
+    so a later full evaluation upgrades them in place.
+    """
     exp_results_dir = os.path.join(results_dir, experiment_hash)
     result_path = os.path.join(exp_results_dir, "result.json")
-    
+
     if not os.path.exists(result_path):
         print(f"Result JSON not found for {experiment_hash}")
         return
-        
+
     with open(result_path, 'r') as f:
         data = json.load(f)
-        
+
     if "metrics" in data:
-        print(f"Metrics already computed for {experiment_hash}")
-        return
+        if fast or not data["metrics"].get("fast_only"):
+            print(f"Metrics already computed for {experiment_hash}")
+            return
+        print(f"Upgrading fast-only metrics to full for {experiment_hash}")
         
     video_name = data['config']['video']
     width = data['config']['width']
@@ -146,52 +155,56 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     bg_psnr, bg_ssim, bg_mse = [], [], []
     ov_psnr, ov_ssim, ov_mse = [], [], []
     
-    # Block level metrics
+    # Block level metrics (slow: full per-block loop; skipped in fast mode)
     num_blocks_y = height // block_size
     num_blocks_x = width // block_size
-    block_psnr = np.zeros((num_frames, num_blocks_y, num_blocks_x), dtype=np.float32)
-    block_ssim = np.zeros((num_frames, num_blocks_y, num_blocks_x), dtype=np.float32)
-    block_mse  = np.zeros((num_frames, num_blocks_y, num_blocks_x), dtype=np.float32)
-    
-    from presley.degradation import split_image_into_blocks
-    
+    if not fast:
+        block_psnr = np.zeros((num_frames, num_blocks_y, num_blocks_x), dtype=np.float32)
+        block_ssim = np.zeros((num_frames, num_blocks_y, num_blocks_x), dtype=np.float32)
+        block_mse  = np.zeros((num_frames, num_blocks_y, num_blocks_x), dtype=np.float32)
+        from presley.degradation import split_image_into_blocks
+
     for i in range(num_frames):
         r = refs[i]
         d = decs[i]
         m = ufo_masks[i] > 127
-        
+
         # Frame level
         fg_psnr.append(_masked_psnr(r, d, m))
         fg_ssim.append(_masked_ssim(r, d, m))
         fg_mse.append(_masked_mse(r, d, m))
-        
+
         bg_psnr.append(_masked_psnr(r, d, ~m))
         bg_ssim.append(_masked_ssim(r, d, ~m))
         bg_mse.append(_masked_mse(r, d, ~m))
-        
+
         ov_psnr.append(_masked_psnr(r, d))
         ov_ssim.append(_masked_ssim(r, d))
         ov_mse.append(_masked_mse(r, d))
-        
+
+        if fast:
+            continue
+
         # Block level
         r_b = split_image_into_blocks(r, block_size)
         d_b = split_image_into_blocks(d, block_size)
-        
+
         for by in range(num_blocks_y):
             for bx in range(num_blocks_x):
                 block_psnr[i, by, bx] = _masked_psnr(r_b[by, bx], d_b[by, bx])
                 block_ssim[i, by, bx] = _masked_ssim(r_b[by, bx], d_b[by, bx])
                 block_mse[i, by, bx]  = _masked_mse(r_b[by, bx], d_b[by, bx])
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    lpips_vals = calculate_lpips(refs[:num_frames], decs[:num_frames], device)
-    dists_vals = calculate_dists(refs[:num_frames], decs[:num_frames], device)
-    vmaf_data = calculate_vmaf(raw_yuv_path, output_video, width, height, framerate)
-    
-    np.savez_compressed(os.path.join(exp_results_dir, "block_psnr.npz"), block_psnr)
-    np.savez_compressed(os.path.join(exp_results_dir, "block_ssim.npz"), block_ssim)
-    np.savez_compressed(os.path.join(exp_results_dir, "block_mse.npz"), block_mse)
-    
+    if not fast:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        lpips_vals = calculate_lpips(refs[:num_frames], decs[:num_frames], device)
+        dists_vals = calculate_dists(refs[:num_frames], decs[:num_frames], device)
+        vmaf_data = calculate_vmaf(raw_yuv_path, output_video, width, height, framerate)
+
+        np.savez_compressed(os.path.join(exp_results_dir, "block_psnr.npz"), block_psnr)
+        np.savez_compressed(os.path.join(exp_results_dir, "block_ssim.npz"), block_ssim)
+        np.savez_compressed(os.path.join(exp_results_dir, "block_mse.npz"), block_mse)
+
     metrics = {
         "foreground": {
             "psnr_mean": float(np.mean(fg_psnr)), "psnr_std": float(np.std(fg_psnr)),
@@ -206,30 +219,36 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         "overall": {
             "psnr_mean": float(np.mean(ov_psnr)), "psnr_std": float(np.std(ov_psnr)),
             "ssim_mean": float(np.mean(ov_ssim)), "ssim_std": float(np.std(ov_ssim)),
-            "mse_mean": float(np.mean(ov_mse)), "mse_std": float(np.std(ov_mse)),
+            "mse_mean": float(np.mean(ov_mse)), "mse_std": float(np.std(ov_mse))
+        }
+    }
+
+    if fast:
+        metrics["fast_only"] = True
+    else:
+        metrics["overall"].update({
             "lpips_mean": float(np.mean(lpips_vals)), "lpips_std": float(np.std(lpips_vals)),
             "dists_mean": float(np.mean(dists_vals)), "dists_std": float(np.std(dists_vals)),
             "vmaf_mean": vmaf_data["mean"], "vmaf_std": vmaf_data["std"],
             "fvmd": calculate_fvmd(ref_frames_dir, output_video)
-        },
-        "block_level": {
+        })
+        metrics["block_level"] = {
             "psnr": {"shape": list(block_psnr.shape), "path": "block_psnr.npz"},
             "ssim": {"shape": list(block_ssim.shape), "path": "block_ssim.npz"},
             "mse":  {"shape": list(block_mse.shape), "path": "block_mse.npz"}
         }
-    }
-    
+
     data["metrics"] = metrics
     with open(result_path, 'w') as f:
         json.dump(data, f, indent=2)
         
     print(f"Evaluated metrics for {experiment_hash}")
 
-def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str) -> None:
+def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     for entry in os.listdir(results_dir):
         exp_dir = os.path.join(results_dir, entry)
         if os.path.isdir(exp_dir):
-            run_evaluation(entry, results_dir, cache_dir, dataset_dir)
+            run_evaluation(entry, results_dir, cache_dir, dataset_dir, fast=fast)
 
 def main():
     import argparse
@@ -237,8 +256,10 @@ def main():
     parser.add_argument('results_dir', type=str, default='results')
     parser.add_argument('--dataset-dir', type=str, default='dataset')
     parser.add_argument('--cache-dir', type=str, default='cache')
+    parser.add_argument('--fast-metrics', action='store_true',
+                        help='Only compute fast metrics (FG/BG/overall PSNR/SSIM/MSE); skip LPIPS/DISTS/VMAF/FVMD and block-level maps')
     args = parser.parse_args()
-    evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir)
+    evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
 
 if __name__ == "__main__":
     main()

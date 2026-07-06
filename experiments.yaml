@@ -5,6 +5,7 @@
 
 experiments:
   # --- Component 1: Baselines ---
+  # hash: dc12f16fa7589902
   - component: baselines
     video: bear
     width: 640
@@ -14,6 +15,7 @@ experiments:
     codec_params:
       preset: medium
 
+  # hash: 0e49827015f889ca
   - component: baselines
     video: bear
     width: 640
@@ -23,6 +25,7 @@ experiments:
     codec_params:
       preset: medium
 
+  # hash: 13cb90c2d2c2e844
   - component: baselines
     video: bear
     width: 640
@@ -32,6 +35,7 @@ experiments:
     codec_params:
       preset: medium
 
+  # hash: aa9f9a9c4a5ccc96
   - component: baselines
     video: bear
     width: 640
@@ -42,6 +46,7 @@ experiments:
       preset: 8
 
   # --- Component 2: ROI ---
+  # hash: 69fcfa31f7cf54e0
   - component: roi
     video: bear
     width: 640
@@ -54,6 +59,7 @@ experiments:
     codec_params:
       qp_range: 15
 
+  # hash: e0a789748f59acdc
   - component: roi
     video: bear
     width: 640
@@ -67,6 +73,48 @@ experiments:
       aq_mode: 1
       aq_strength: 1.0
 
+  # hash: 2fd1ea1b92fc6dbe
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+      preset: 8
+
+  # hash: f84b35028fb87790
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 30
+      preset: 8
+
+  # hash: 7064c8a9202bb7bb
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 30
+
+  # hash: d5be141117dc962e
   - component: roi
     video: bear
     width: 640
@@ -79,6 +127,7 @@ experiments:
     codec_params:
       qp_range: 15
 
+  # hash: e9565699da71ff8e
   - component: roi
     video: bear
     width: 640
@@ -91,6 +140,7 @@ experiments:
     codec_params:
       qp_range: 8
 
+  # hash: 9a1c4184ebf78eb5
   - component: roi
     video: bear
     width: 640
@@ -106,6 +156,7 @@ experiments:
     degradation_params:
       downsample_scale: 0.5
 
+  # hash: e8d598964a7e067c
   - component: roi
     video: bear
     width: 640
@@ -121,6 +172,7 @@ experiments:
     degradation_params:
       downsample_scale: 0.25
 
+  # hash: 40934f19558eea34
   - component: roi
     video: bear
     width: 640
@@ -136,6 +188,7 @@ experiments:
     degradation_params:
       noise_variance: 50
 
+  # hash: 7f32095b14b98cbc
   - component: roi
     video: bear
     width: 640
@@ -152,6 +205,7 @@ experiments:
       noise_variance: 10
 
   # --- Component 3: ELVIS ---
+  # hash: 4dc9fcf6be47917e
   - component: elvis
     video: bear
     width: 640
@@ -166,6 +220,7 @@ experiments:
     codec_params:
       preset: medium
 
+  # hash: 5d45c24dd3199362
   - component: elvis
     video: bear
     width: 640
@@ -181,6 +236,7 @@ experiments:
       preset: medium
 
   # --- Component 4: PRESLEY AI ---
+  # hash: 774f24eca108a51d
   - component: presley_ai
     video: bear
     width: 640
@@ -198,6 +254,7 @@ experiments:
       denoise_strength: 1.0
       tile: 0
 
+  # hash: 287d46b17dd07d54
   - component: presley_ai
     video: bear
     width: 640
@@ -214,3 +271,400 @@ experiments:
     restorer_params:
       cfg: 7.0
       creative_start: 1.0
+
+  # --- ROI regime probe: camera-motion videos (expensive backgrounds) ---
+  # hash: 4f8b7760b9b02561
+  - component: baselines
+    video: bmx-trees
+    width: 640
+    height: 360
+    codec: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  # hash: 5eb6ac2713e06a5a
+  - component: baselines
+    video: bmx-trees
+    width: 640
+    height: 360
+    codec: svtav1
+    target_bitrate: 460800
+    codec_params:
+      preset: 8
+
+  # hash: 826ba0ae37cdc630
+  - component: roi
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 836f938269451b26
+  - component: roi
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+      preset: 8
+
+  # hash: 68ea186829e0f456
+  - component: baselines
+    video: drift-chicane
+    width: 640
+    height: 360
+    codec: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  # hash: 8056d4bdbec940f6
+  - component: baselines
+    video: drift-chicane
+    width: 640
+    height: 360
+    codec: svtav1
+    target_bitrate: 460800
+    codec_params:
+      preset: 8
+
+  # hash: c9b6ba54c906ab2a
+  - component: roi
+    video: drift-chicane
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 3bb20e37f3668285
+  - component: roi
+    video: drift-chicane
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+      preset: 8
+
+  # --- Bitrate sweep for BD-rate curves (bear, fast methods) ---
+
+  # hash: 34b1ab21b9815d78
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 150000
+    codec_params:
+      preset: medium
+
+  # hash: 27bf5c72fccb7780
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: svtav1
+    target_bitrate: 150000
+    codec_params:
+      preset: 8
+
+  # hash: 31a312412bca7f4d
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: kvazaar
+    target_bitrate: 150000
+    codec_params:
+      preset: medium
+
+  # hash: 2600e041343b5d94
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 150000
+    codec_params:
+      qp_range: 15
+
+  # hash: 400e96a6be251724
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 150000
+    codec_params:
+      qp_range: 15
+      preset: 8
+
+  # hash: 3ef3b567e258681f
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: x265_aq
+    target_bitrate: 150000
+    codec_params:
+      aq_mode: 1
+      aq_strength: 1.0
+
+  # hash: 7c93abe94e628616
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_qp
+    target_bitrate: 150000
+    codec_params:
+      qp_range: 15
+
+  # hash: d8171406843e5373
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_downsample
+    target_bitrate: 150000
+    codec: x265
+    codec_params:
+      preset: medium
+    degradation_params:
+      downsample_scale: 0.5
+
+  # hash: 1d4122e51e428823
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 250000
+    codec_params:
+      preset: medium
+
+  # hash: 3befe4fc5efd0714
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: svtav1
+    target_bitrate: 250000
+    codec_params:
+      preset: 8
+
+  # hash: 9ccca6c400f9db9e
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: kvazaar
+    target_bitrate: 250000
+    codec_params:
+      preset: medium
+
+  # hash: 150fb27a2e055dee
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 250000
+    codec_params:
+      qp_range: 15
+
+  # hash: 9225a02b9525333a
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 250000
+    codec_params:
+      qp_range: 15
+      preset: 8
+
+  # hash: 651f69352abc9563
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: x265_aq
+    target_bitrate: 250000
+    codec_params:
+      aq_mode: 1
+      aq_strength: 1.0
+
+  # hash: 1208828447365fba
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_qp
+    target_bitrate: 250000
+    codec_params:
+      qp_range: 15
+
+  # hash: da2464b4866e3ac7
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_downsample
+    target_bitrate: 250000
+    codec: x265
+    codec_params:
+      preset: medium
+    degradation_params:
+      downsample_scale: 0.5
+
+  # hash: 4a76bb78d86eb22f
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 800000
+    codec_params:
+      preset: medium
+
+  # hash: f0eedd9e31c2120c
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: svtav1
+    target_bitrate: 800000
+    codec_params:
+      preset: 8
+
+  # hash: f1bc515583eb25d3
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: kvazaar
+    target_bitrate: 800000
+    codec_params:
+      preset: medium
+
+  # hash: dc0b0e2047ad9008
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 800000
+    codec_params:
+      qp_range: 15
+
+  # hash: 4d9e98b6ed735266
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: svtav1
+    target_bitrate: 800000
+    codec_params:
+      qp_range: 15
+      preset: 8
+
+  # hash: 45a2f7095a4738bd
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: x265_aq
+    target_bitrate: 800000
+    codec_params:
+      aq_mode: 1
+      aq_strength: 1.0
+
+  # hash: de9f854bb920e02a
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_qp
+    target_bitrate: 800000
+    codec_params:
+      qp_range: 15
+
+  # hash: c427f6a24b76fe8b
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: presley_downsample
+    target_bitrate: 800000
+    codec: x265
+    codec_params:
+      preset: medium
+    degradation_params:
+      downsample_scale: 0.5
