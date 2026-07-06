@@ -950,3 +950,116 @@ experiments:
       cfg: 7.0
       creative_start: 1.0
       batch_size: 1
+
+  # ============================================================================
+  # STARVED-REGIME generative runs (100k / 150k) — THE decisive experiment.
+  # Generative restoration is theorized to pay off only where the codec is
+  # bit-starved; every generative point so far is at a comfortable ~460k, where
+  # the chain is broken on BOTH FG-PSNR and (bitrate-matched) FG-LPIPS. These
+  # add the ≤150k points to test the "PRESLEY wins when starved" claim against
+  # the existing x265 baseline sweep (compare bitrate-matched FG-LPIPS, not raw).
+  # Low-VRAM configs (InstantIR batch_size=1) so they co-run with other GPU jobs.
+  # ============================================================================
+  # hash: 5a0ec4eb3c738eab
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 150000
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # hash: e6979ec432222e66
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 100000
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # hash: 5318e01ac00f4460
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: downsample
+    restorer: realesrgan
+    target_bitrate: 150000
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      denoise_strength: 1.0
+      tile: 0
+
+  # hash: b58ff6864c41bc3f
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: downsample
+    restorer: realesrgan
+    target_bitrate: 100000
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      denoise_strength: 1.0
+      tile: 0
+
+  # hash: 8d2eb91d0797f341
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: blur
+    restorer: instantir
+    target_bitrate: 150000
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      cfg: 7.0
+      creative_start: 1.0
+      batch_size: 1
+
+  # hash: 4c501accbd5f7a0f
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: blur
+    restorer: instantir
+    target_bitrate: 100000
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      cfg: 7.0
+      creative_start: 1.0
+      batch_size: 1
