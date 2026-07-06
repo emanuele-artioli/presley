@@ -81,6 +81,17 @@ metrics (~7% of time) — it's loading reference frames/masks from NFS, so
 `evaluate_all` memoizes them across experiments in one pass (load once, not
 per-experiment).
 
+**FG-perceptual backfill:** the paper argues *foreground* perceptual quality,
+but the base metrics are PSNR/SSIM. `presley-evaluate results/ --backfill-lpips`
+appends region-restricted **LPIPS** (`foreground`/`background`/`overall`
+`lpips_mean`) to every existing `result.json` *in place* — a metric-only pass
+that re-reads the on-disk output videos and needs **no re-encoding** and no
+rerun of experiments. It works on `fast_only` results too and is re-entrant
+(skips ones that already have FG-LPIPS; use `--force` to recompute). LPIPS is
+computed in spatial mode (per-pixel map averaged over the UFO mask), so FG/BG
+are true region metrics, not bbox crops. LPIPS-alex is the fastest perceptual
+metric (~0.76 s / 82 frames); DISTS/VMAF stay in the full pass.
+
 **Starved-bitrate rule:** generative methods (elvis, presley_ai) only pay off
 where the codec is bit-starved — hallucinating detail is only cheaper than
 coding it when the codec can't afford the detail. Run their experiments at

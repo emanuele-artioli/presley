@@ -79,6 +79,31 @@ def calculate_lpips(refs: List[np.ndarray], decs: List[np.ndarray], device: str)
             scores.append(model(r_t, d_t).item())
     return scores
 
+def calculate_lpips_masked(refs: List[np.ndarray], decs: List[np.ndarray],
+                           masks: List[np.ndarray], device: str) -> Dict[str, List[float]]:
+    """Per-frame FG/BG/overall LPIPS using spatial-mode LPIPS.
+
+    lpips(spatial=True) returns a per-pixel distance map at input resolution; we
+    average it over the UFO mask (FG), its complement (BG), and the whole frame
+    (overall). This is a true region-restricted perceptual metric — no bbox
+    cropping or pixel-zeroing artifacts — and it's the FG number the paper argues.
+    masks[i] is a >127 boolean foreground mask.
+    """
+    import lpips
+    model = lpips.LPIPS(net='alex', spatial=True).to(device)
+    fg, bg, ov = [], [], []
+    with torch.no_grad():
+        for r, d, m in zip(refs, decs, masks):
+            r_t = torch.from_numpy(cv2.cvtColor(r, cv2.COLOR_BGR2RGB)).permute(2,0,1).unsqueeze(0).float().to(device) / 127.5 - 1.0
+            d_t = torch.from_numpy(cv2.cvtColor(d, cv2.COLOR_BGR2RGB)).permute(2,0,1).unsqueeze(0).float().to(device) / 127.5 - 1.0
+            smap = model(r_t, d_t).squeeze().cpu().numpy()  # [H, W]
+            if smap.shape != m.shape:
+                smap = cv2.resize(smap, (m.shape[1], m.shape[0]), interpolation=cv2.INTER_LINEAR)
+            ov.append(float(smap.mean()))
+            fg.append(float(smap[m].mean()) if np.any(m) else 0.0)
+            bg.append(float(smap[~m].mean()) if np.any(~m) else 0.0)
+    return {"foreground": fg, "background": bg, "overall": ov}
+
 def calculate_dists(refs: List[np.ndarray], decs: List[np.ndarray], device: str) -> List[float]:
     from DISTS_pytorch import DISTS
     model = DISTS().to(device)
@@ -256,16 +281,73 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         }
 
     data["metrics"] = metrics
-    with open(result_path, 'w') as f:
+    # Atomic write: a crash mid-rewrite would otherwise truncate result.json and
+    # force a full re-run of a potentially hours-long experiment.
+    tmp_path = result_path + ".tmp"
+    with open(tmp_path, 'w') as f:
         json.dump(data, f, indent=2)
-        
+    os.replace(tmp_path, result_path)
+
     print(f"Evaluated metrics for {experiment_hash}")
+
+def backfill_lpips(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str,
+                   force: bool = False) -> str:
+    """Append FG/BG/overall masked LPIPS to an existing result.json in place.
+
+    Metric-only pass: reads the on-disk output video and the (memoized) refs/masks,
+    computes region-restricted LPIPS, and writes it into metrics[<region>]["lpips_mean"].
+    Does NOT re-encode or recompute any other metric, and works on fast_only results
+    too. Skips experiments that already carry a foreground LPIPS unless force=True.
+    Returns a one-line status string.
+    """
+    exp_results_dir = os.path.join(results_dir, experiment_hash)
+    result_path = os.path.join(exp_results_dir, "result.json")
+    if not os.path.exists(result_path):
+        return f"{experiment_hash}: no result.json"
+    with open(result_path, 'r') as f:
+        data = json.load(f)
+    if "metrics" not in data:
+        return f"{experiment_hash}: no metrics yet (run eval first)"
+    if not force and "lpips_mean" in data["metrics"].get("foreground", {}):
+        return f"{experiment_hash}: FG-LPIPS already present"
+
+    cfg = data['config']
+    video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+    block_size = cfg.get('block_size', 8)
+    output_video = data.get('output_video')
+    if not output_video or not os.path.exists(output_video):
+        return f"{experiment_hash}: output video missing"
+
+    _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+    ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    decs = load_frames_from_video(output_video)
+
+    n = min(len(refs), len(decs), len(ufo_masks))
+    masks = [ufo_masks[i] > 127 for i in range(n)]
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    lp = calculate_lpips_masked(refs[:n], decs[:n], masks, device)
+    for region in ("foreground", "background", "overall"):
+        data["metrics"].setdefault(region, {})
+        data["metrics"][region]["lpips_mean"] = float(np.mean(lp[region]))
+        data["metrics"][region]["lpips_std"] = float(np.std(lp[region]))
+
+    tmp = result_path + ".tmp"
+    with open(tmp, 'w') as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp, result_path)
+    return f"{experiment_hash}: FG-LPIPS={np.mean(lp['foreground']):.4f} BG={np.mean(lp['background']):.4f} OV={np.mean(lp['overall']):.4f}"
 
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     for entry in os.listdir(results_dir):
         exp_dir = os.path.join(results_dir, entry)
         if os.path.isdir(exp_dir):
             run_evaluation(entry, results_dir, cache_dir, dataset_dir, fast=fast)
+
+def backfill_lpips_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
+    for entry in sorted(os.listdir(results_dir)):
+        if os.path.isdir(os.path.join(results_dir, entry)):
+            print(backfill_lpips(entry, results_dir, cache_dir, dataset_dir, force=force))
 
 def main():
     import argparse
@@ -275,8 +357,15 @@ def main():
     parser.add_argument('--cache-dir', type=str, default='cache')
     parser.add_argument('--fast-metrics', action='store_true',
                         help='Only compute fast metrics (FG/BG/overall PSNR/SSIM/MSE); skip LPIPS/DISTS/VMAF/FVMD and block-level maps')
+    parser.add_argument('--backfill-lpips', action='store_true',
+                        help='Append FG/BG/overall masked LPIPS to existing result.json files without re-encoding or recomputing other metrics')
+    parser.add_argument('--force', action='store_true',
+                        help='With --backfill-lpips, recompute even if FG-LPIPS already present')
     args = parser.parse_args()
-    evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
+    if args.backfill_lpips:
+        backfill_lpips_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
+    else:
+        evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
 
 if __name__ == "__main__":
     main()

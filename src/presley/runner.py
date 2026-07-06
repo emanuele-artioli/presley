@@ -103,7 +103,13 @@ def run_single_experiment(experiment: Dict[str, Any], dataset_dir: str, results_
         return
 
     os.makedirs(exp_results_dir, exist_ok=True)
-    
+
+    # Preflight GPU resources for GPU components BEFORE the lazy component import
+    # (which initializes torch/CUDA). Pins the least-loaded GPU via
+    # CUDA_VISIBLE_DEVICES and fills in a VRAM-safe InstantIR batch_size.
+    from presley.gpu_utils import preflight_gpu
+    preflight_gpu(component_name, experiment)
+
     # Dispatch
     # We lazily import the components to avoid heavy dependencies if not needed
     try:
