@@ -668,3 +668,189 @@ experiments:
       preset: medium
     degradation_params:
       downsample_scale: 0.5
+
+  # --- Parameter search: block_size / alpha / beta / resolution OFAT (bear, kvazaar ROI) ---
+
+  # hash: 82e3ca44c0119654
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 16
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 441879715471f2c7
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 32
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 5ed32955d702cef6
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.0
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 5f85fcf737d5eef8
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.25
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: a232ad31a0b94c1d
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.75
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 3a6e0071875d2527
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 1.0
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 3c0babd222940fba
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.0
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: fc203a9980dad7d3
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.25
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 9bb6a2f51041bfa7
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.75
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: 01b9184a59f45595
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 1.0
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # hash: f20c2d2fcba3905d
+  - component: baselines
+    video: bear
+    width: 960
+    height: 540
+    codec: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  # hash: 06300443033d5a4e
+  - component: baselines
+    video: bear
+    width: 960
+    height: 540
+    codec: x265
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  # hash: c1380ccc8926e258
+  - component: roi
+    video: bear
+    width: 960
+    height: 540
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 460800
+    codec_params:
+      qp_range: 15
+
+  # --- ELVIS in-painter speed benchmark (faster ProPainter knobs) ---
+  # hash: b7ece4ecb22e1f48
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+    inpainter_params:
+      raft_iter: 8
+      ref_stride: 30
+      neighbor_length: 3
+      subvideo_length: 80
