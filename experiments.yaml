@@ -1063,3 +1063,257 @@ experiments:
       cfg: 7.0
       creative_start: 1.0
       batch_size: 1
+
+  # ============================================================================
+  # REGIME CAMPAIGN (2026-07-06): find where the generative chain holds.
+  # Rationale (see TECHNICAL_REPORTS.md): bear is a bad showcase (cheap BG, slow
+  # motion) and starved bitrates made presley_ai WORSE (fixed side channel +
+  # garbage restorer input). Two directions the data points to instead:
+  #  (a) expensive-BG / small-FG videos (bmx-trees FG 4.8%, drift-chicane FG
+  #      2.0%, both camera-motion, cache already built) — degrading/removing an
+  #      expensive BG frees more bits for the FG;
+  #  (b) HIGH bitrate for elvis — its bitrate-matched FG-LPIPS deficit shrinks
+  #      monotonically and is ~parity at 485k; probe 800k/1.8M for a crossover.
+  # x265 baseline curves per video are required for bitrate-matched comparison.
+  # ============================================================================
+  # --- x265 baseline curves: bmx-trees ---
+  # hash: 8d695ddb0f614eb5
+  - component: baselines
+    video: bmx-trees
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 250000
+    codec_params:
+      preset: medium
+
+  # hash: bfa7ea827b9ac8f5
+  - component: baselines
+    video: bmx-trees
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  # hash: d17f871f4c5990ca
+  - component: baselines
+    video: bmx-trees
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 800000
+    codec_params:
+      preset: medium
+
+  # hash: 1580bb76cb33d41b
+  - component: baselines
+    video: bmx-trees
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 1200000
+    codec_params:
+      preset: medium
+
+  # --- x265 baseline curves: drift-chicane ---
+  # hash: c6100863ba091114
+  - component: baselines
+    video: drift-chicane
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 250000
+    codec_params:
+      preset: medium
+
+  # hash: cae811af2f35d005
+  - component: baselines
+    video: drift-chicane
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 460800
+    codec_params:
+      preset: medium
+
+  # hash: 505da4b2814f41d6
+  - component: baselines
+    video: drift-chicane
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 800000
+    codec_params:
+      preset: medium
+
+  # hash: 92e9db688b9ffead
+  - component: baselines
+    video: drift-chicane
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 1200000
+    codec_params:
+      preset: medium
+
+  # --- extend bear x265 baseline curve upward (high-bitrate probe matching) ---
+  # hash: c30bac1f605efe3b
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 1200000
+    codec_params:
+      preset: medium
+
+  # hash: 4fca2a9ee26e14ce
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 1843200
+    codec_params:
+      preset: medium
+
+  # hash: bd80810ea23f0644
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 2400000
+    codec_params:
+      preset: medium
+
+  # --- elvis on expensive-BG videos ---
+  # hash: 64166477b1e25b9f
+  - component: elvis
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # hash: ba7b50a5d4a54320
+  - component: elvis
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 800000
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # hash: f1e04fdeb7f327cf
+  - component: elvis
+    video: drift-chicane
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # hash: 3fd5a0e6a67d31d8
+  - component: elvis
+    video: drift-chicane
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 800000
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # --- elvis high-bitrate probe on bear (LPIPS crossover hypothesis) ---
+  # hash: a27dea25b7d2371c
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 800000
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # hash: 700b22c9daf949c0
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 1843200
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # --- presley_ai/realesrgan on expensive-BG videos ---
+  # hash: 21bf9b39f84b70ca
+  - component: presley_ai
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: downsample
+    restorer: realesrgan
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      denoise_strength: 1.0
+      tile: 0
+
+  # hash: 9d24245a8ff40cb7
+  - component: presley_ai
+    video: drift-chicane
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: downsample
+    restorer: realesrgan
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
+    restorer_params:
+      denoise_strength: 1.0
+      tile: 0
