@@ -74,11 +74,16 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     temp_shrunk_vid = os.path.join(results_dir, "temp_shrunk_lossless.mkv")
     save_frames_as_video(shrunk_frames_list, temp_shrunk_vid, framerate, lossless=True, codec="libx265")
     
-    # 3. Encode shrunk video
+    # 3. Encode transmitted video
     encoded_shrunk = os.path.join(results_dir, "encoded_shrunk.mp4")
-    # For now, we reuse x265 encoding from baselines for the shrunk video
     if codec == 'x265':
-        encode_video_x265(temp_shrunk_vid, encoded_shrunk, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
+        if 'qp' in codec_params:
+            # Fixed-QP mode: where the blackout/freeze transports actually win
+            # (+0.55-0.59 dB FG at matched bitrate; VBR partially absorbs it).
+            from presley.encode_utils import encode_video_x265_qp
+            encode_video_x265_qp(temp_shrunk_vid, encoded_shrunk, framerate, int(codec_params['qp']), preset=codec_params.get('preset', 'medium'))
+        else:
+            encode_video_x265(temp_shrunk_vid, encoded_shrunk, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
     else:
         raise ValueError(f"Elvis currently requires x265 for encoding, got {codec}")
         

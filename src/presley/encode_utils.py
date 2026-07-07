@@ -79,6 +79,19 @@ def calculate_target_bitrate(width: int, height: int, framerate: float, quality_
     bits_per_pixel = 0.01 * quality_factor
     return int(pixels_per_second * bits_per_pixel)
 
+def encode_video_x265_qp(input_video_or_pattern: str, output_video: str, framerate: float, qp: int, preset: str = "medium") -> None:
+    """Encode with libx265 at a fixed QP (rate control off, single pass).
+
+    Fixed-QP is the operating mode where FG-protecting transports actually win
+    (VBR rate control partially absorbs their savings — measured repeatedly:
+    kvazaar ROI, and the elvis blackout/freeze transports). target_bitrate is
+    irrelevant here; compare results on actual_bitrate_bps.
+    """
+    input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
+                    '-c:v', 'libx265', '-preset', preset, '-x265-params', f'qp={qp}',
+                    '-pix_fmt', 'yuv420p', output_video], check=True)
+
 def encode_video_x265(input_video_or_pattern: str, output_video: str, framerate: float, target_bitrate: int, preset: str = "medium", passlog_file: str = "x265_passlog", x265_params: str = None) -> None:
     """Encode video using x265 2-pass."""
     input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]

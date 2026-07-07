@@ -1421,3 +1421,101 @@ experiments:
     codec: x265
     codec_params:
       preset: medium
+
+  # ============================================================================
+  # CHAIN RE-TEST on the winning transport (freeze/blackout, FIXED QP).
+  # Transport-isolated test (2026-07-07) confirmed +0.55-0.59 dB FG-PSNR at
+  # matched bitrate under qp32. These run the full pipeline (transport +
+  # in-painting) so the complete metric suite (incl. VMAF) is valid, against
+  # fixed-QP x265 baselines at the same QPs. target_bitrate is unused in QP
+  # mode (compare on actual_bitrate_bps).
+  # ============================================================================
+  # hash: 9fee58313582e1f8
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: e977c7693c421040
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: eec2b9847d0508c3
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: freeze
+    inpainter: telea
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 040ab75eff76ecc1
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: freeze
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 2096a3125912c29c
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: freeze
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: eab6c55413c2e5fe
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
