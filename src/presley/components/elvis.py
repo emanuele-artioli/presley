@@ -17,7 +17,17 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     beta = experiment['beta']
     shrink_amount = experiment['shrink_amount']
     inpainter = experiment['inpainter'].lower()
-    
+    # How removed blocks are represented in the transmitted video:
+    #   shrink   - remove blocks and pack rows (original ELVIS; breaks temporal
+    #              prediction: +193% bitrate overshoot at low targets)
+    #   blackout - keep native resolution, set removed blocks to black (flat DC,
+    #              motion vectors of surviving blocks stay valid)
+    #   freeze   - keep native resolution; removed blocks copy the co-located
+    #              region of the previous degraded frame (inter skip ~ 0 bits;
+    #              frame 0 keeps the original content so the I-frame carries a
+    #              real-texture prior for the in-painter)
+    removal_mode = experiment.get('removal_mode', 'shrink').lower()
+
     codec = experiment['codec'].lower()
     target_bitrate = experiment['target_bitrate']
     codec_params = experiment.get('codec_params', {})
@@ -30,19 +40,37 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     
     start_time = time.time()
     
-    # 2. Shrink
+    # 2. Remove blocks (mode-dependent representation)
+    import cv2
     shrunk_frames_list = []
     masks_list = []
     frames_arr = np.array(frames)
-    
+
+    prev_degraded = None
     for i in range(len(frames)):
         frame = frames_arr[i]
         score = removability_scores[i]
+        # Block selection is identical across modes (same clustered mask);
+        # only the transmitted representation differs.
         shrunk, binary_mask, _ = apply_selective_removal(frame, score, block_size, shrink_amount, cluster_blocks=True)
-        shrunk_frames_list.append(shrunk)
         masks_list.append(binary_mask)
-        
-    # Save uncompressed shrunk frames temporarily for encoding
+        if removal_mode == 'shrink':
+            shrunk_frames_list.append(shrunk)
+        elif removal_mode in ('blackout', 'freeze'):
+            pix_mask = cv2.resize(binary_mask.astype(np.uint8), (width, height),
+                                  interpolation=cv2.INTER_NEAREST).astype(bool)
+            degraded = frame.copy()
+            if removal_mode == 'blackout':
+                degraded[pix_mask] = 0
+            else:  # freeze: hold previous degraded content; frame 0 keeps original
+                if prev_degraded is not None:
+                    degraded[pix_mask] = prev_degraded[pix_mask]
+            prev_degraded = degraded
+            shrunk_frames_list.append(degraded)
+        else:
+            raise ValueError(f"Unknown removal_mode: {removal_mode}")
+
+    # Save uncompressed degraded frames temporarily for encoding
     temp_shrunk_vid = os.path.join(results_dir, "temp_shrunk_lossless.mkv")
     save_frames_as_video(shrunk_frames_list, temp_shrunk_vid, framerate, lossless=True, codec="libx265")
     
@@ -61,22 +89,25 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     masks_path = os.path.join(results_dir, "removal_masks.npz")
     np.savez_compressed(masks_path, masks=np.array(masks_list))
     
-    # 4. Decode shrunk video
+    # 4. Decode transmitted video
     decoded_shrunk = load_frames_from_video(encoded_shrunk)
-    
-    # 5. Stretch
+
+    # 5. Restore native geometry. shrink mode needs unpacking (stretch);
+    # blackout/freeze are already native-resolution — decode is the input.
     stretched_frames_list = []
-    for i in range(len(decoded_shrunk)):
-        stretched = stretch_frame(decoded_shrunk[i], masks_list[i], block_size)
-        stretched_frames_list.append(stretched)
-        
-    # Save stretched to disk as PNGs because propainter/e2fgvi expect directories of PNGs
+    if removal_mode == 'shrink':
+        for i in range(len(decoded_shrunk)):
+            stretched = stretch_frame(decoded_shrunk[i], masks_list[i], block_size)
+            stretched_frames_list.append(stretched)
+    else:
+        stretched_frames_list = decoded_shrunk
+
+    # Save frames to disk as PNGs because propainter/e2fgvi expect directories of PNGs
     stretched_dir = os.path.join(results_dir, "stretched_frames")
     masks_dir = os.path.join(results_dir, "masks")
     os.makedirs(stretched_dir, exist_ok=True)
     os.makedirs(masks_dir, exist_ok=True)
-    
-    import cv2
+
     for i in range(len(stretched_frames_list)):
         cv2.imwrite(os.path.join(stretched_dir, f"{i:05d}.png"), stretched_frames_list[i])
         # Inpainting models usually expect mask where 255 is the region to inpaint
@@ -99,6 +130,17 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         e2_keys = ('ref_stride', 'neighbor_stride', 'num_ref')
         e2_kwargs = {k: inpainter_params[k] for k in e2_keys if k in inpainter_params}
         inpaint_with_e2fgvi(stretched_dir, masks_dir, output_frames_dir, width, height, framerate, **e2_kwargs)
+    elif inpainter == 'telea':
+        # Classical per-frame in-painting (cv2, CPU) — the NOSSDAV paper's
+        # "ELVIS CV2 benchmark": the published "2-3 VMAF avg" claim is
+        # ProPainter/E2FGVI *over this*, so this branch is the replication
+        # anchor. Also useful as a GPU-free end-to-end smoke path.
+        os.makedirs(output_frames_dir, exist_ok=True)
+        radius = int(inpainter_params.get('inpaint_radius', 3))
+        for i in range(len(stretched_frames_list)):
+            m = cv2.imread(os.path.join(masks_dir, f"{i:05d}.png"), 0)
+            inp = cv2.inpaint(stretched_frames_list[i], (m > 127).astype(np.uint8), radius, cv2.INPAINT_TELEA)
+            cv2.imwrite(os.path.join(output_frames_dir, f"{i:05d}.png"), inp)
     else:
         raise ValueError(f"Unknown inpainter: {inpainter}")
         

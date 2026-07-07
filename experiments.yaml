@@ -1400,3 +1400,24 @@ experiments:
     codec: x265
     codec_params:
       preset: medium
+
+  # ============================================================================
+  # PUBLISHED-CLAIM REPLICATION: the NOSSDAV "2-3 VMAF avg" claim is
+  # ProPainter/E2FGVI over the "ELVIS CV2 benchmark" (same transport, Telea
+  # in-painting). This entry produces that benchmark on the current pipeline;
+  # compare against the existing shrink+propainter@460.8k results.
+  # ============================================================================
+  # hash: a772d20ae3ea7983
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: telea
+    target_bitrate: 460800
+    codec: x265
+    codec_params:
+      preset: medium
