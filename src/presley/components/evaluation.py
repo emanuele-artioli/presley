@@ -338,6 +338,134 @@ def backfill_lpips(experiment_hash: str, results_dir: str, cache_dir: str, datas
     os.replace(tmp, result_path)
     return f"{experiment_hash}: FG-LPIPS={np.mean(lp['foreground']):.4f} BG={np.mean(lp['background']):.4f} OV={np.mean(lp['overall']):.4f}"
 
+def _write_yuv420(frames: List[np.ndarray], path: str) -> None:
+    """Write BGR frames as a raw yuv420p file via an ffmpeg pipe."""
+    h, w = frames[0].shape[:2]
+    proc = subprocess.Popen(
+        ['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y',
+         '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', f'{w}x{h}', '-i', '-',
+         '-pix_fmt', 'yuv420p', '-f', 'rawvideo', path],
+        stdin=subprocess.PIPE)
+    for f in frames:
+        proc.stdin.write(f.tobytes())
+    proc.stdin.close()
+    proc.wait()
+
+def _vmaf_on_frames(refs: List[np.ndarray], decs: List[np.ndarray], neg: bool = False) -> Dict[str, float]:
+    """Run the vmaf CLI on two equal-length BGR frame lists. neg=True uses the
+    enhancement-robust vmaf_v0.6.1neg model (returns zeros if unavailable)."""
+    h, w = refs[0].shape[:2]
+    with tempfile.TemporaryDirectory() as td:
+        ref_yuv, dec_yuv = os.path.join(td, "ref.yuv"), os.path.join(td, "dec.yuv")
+        out_json = os.path.join(td, "vmaf.json")
+        _write_yuv420(refs, ref_yuv)
+        _write_yuv420(decs, dec_yuv)
+        cmd = ['vmaf', '-r', ref_yuv, '-d', dec_yuv, '-w', str(w), '-h', str(h),
+               '-p', '420', '-b', '8', '--json', '-o', out_json]
+        if neg:
+            cmd += ['--model', 'version=vmaf_v0.6.1neg']
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        if r.returncode != 0 or not os.path.exists(out_json):
+            return {"mean": 0.0, "std": 0.0}
+        with open(out_json) as f:
+            data = json.load(f)
+        pooled = data.get('pooled_metrics', {})
+        # pooled key is 'vmaf' for the default model; the neg model logs under
+        # its own name — take whichever vmaf* key is present
+        for k in pooled:
+            if k.startswith('vmaf'):
+                return {"mean": pooled[k].get("mean", 0.0), "std": pooled[k].get("stddev", 0.0)}
+        return {"mean": 0.0, "std": 0.0}
+
+def _fg_union_bbox(masks: List[np.ndarray], w: int, h: int, pad: int = 8):
+    """Union FG bounding box across frames, padded and even-aligned for yuv420."""
+    ys, xs = [], []
+    for m in masks:
+        yy, xx = np.where(m)
+        if len(yy):
+            ys += [yy.min(), yy.max()]; xs += [xx.min(), xx.max()]
+    if not ys:
+        return None
+    y1, y2 = max(0, min(ys) - pad), min(h, max(ys) + 1 + pad)
+    x1, x2 = max(0, min(xs) - pad), min(w, max(xs) + 1 + pad)
+    # even-align (yuv420 requires even dimensions)
+    y1, x1 = y1 - (y1 % 2), x1 - (x1 % 2)
+    if (y2 - y1) % 2: y2 = min(h, y2 + 1) if y2 < h else y2 - 1
+    if (x2 - x1) % 2: x2 = min(w, x2 + 1) if x2 < w else x2 - 1
+    return y1, y2, x1, x2
+
+def backfill_vmaf(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str,
+                  force: bool = False) -> str:
+    """Append overall + FG-crop VMAF (default and NEG models) to an existing
+    result.json in place.
+
+    Metric-only pass over on-disk artifacts, like backfill_lpips: no re-encode.
+    FG-VMAF is computed on the per-video union FG bounding-box crop (VMAF needs
+    constant-resolution natural frames; a mask cannot be applied directly), so
+    it includes some BG context within the box — comparisons are within-video
+    at matched bitrate, where the box is identical across methods. The NEG
+    model discounts enhancement/sharpening gains; reporting both makes the
+    sharpening-vs-fidelity split explicit.
+    """
+    exp_results_dir = os.path.join(results_dir, experiment_hash)
+    result_path = os.path.join(exp_results_dir, "result.json")
+    if not os.path.exists(result_path):
+        return f"{experiment_hash}: no result.json"
+    with open(result_path, 'r') as f:
+        data = json.load(f)
+    if "metrics" not in data:
+        return f"{experiment_hash}: no metrics yet (run eval first)"
+    if not force and "vmaf_mean" in data["metrics"].get("foreground", {}):
+        return f"{experiment_hash}: FG-VMAF already present"
+
+    cfg = data['config']
+    video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+    block_size = cfg.get('block_size', 8)
+    output_video = data.get('output_video')
+    if not output_video or not os.path.exists(output_video):
+        return f"{experiment_hash}: output video missing"
+
+    _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+    ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    decs = load_frames_from_video(output_video)
+
+    n = min(len(refs), len(decs), len(ufo_masks))
+    if n == 0:
+        return f"{experiment_hash}: no decodable frames"
+    masks = [ufo_masks[i] > 127 for i in range(n)]
+
+    ov = _vmaf_on_frames(refs[:n], decs[:n])
+    ov_neg = _vmaf_on_frames(refs[:n], decs[:n], neg=True)
+    bb = _fg_union_bbox(masks, width, height)
+    fg = fg_neg = {"mean": 0.0, "std": 0.0}
+    if bb:
+        y1, y2, x1, x2 = bb
+        ref_c = [refs[i][y1:y2, x1:x2] for i in range(n)]
+        dec_c = [decs[i][y1:y2, x1:x2] for i in range(n)]
+        fg = _vmaf_on_frames(ref_c, dec_c)
+        fg_neg = _vmaf_on_frames(ref_c, dec_c, neg=True)
+
+    m = data["metrics"]
+    m.setdefault("overall", {})["vmaf_mean"] = ov["mean"]
+    m["overall"]["vmaf_std"] = ov["std"]
+    m["overall"]["vmaf_neg_mean"] = ov_neg["mean"]
+    m.setdefault("foreground", {})["vmaf_mean"] = fg["mean"]
+    m["foreground"]["vmaf_std"] = fg["std"]
+    m["foreground"]["vmaf_neg_mean"] = fg_neg["mean"]
+
+    tmp = result_path + ".tmp"
+    with open(tmp, 'w') as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp, result_path)
+    return (f"{experiment_hash}: OV-VMAF={ov['mean']:.2f} (neg {ov_neg['mean']:.2f}) "
+            f"FG-VMAF={fg['mean']:.2f} (neg {fg_neg['mean']:.2f})")
+
+def backfill_vmaf_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
+    for entry in sorted(os.listdir(results_dir)):
+        if os.path.isdir(os.path.join(results_dir, entry)):
+            print(backfill_vmaf(entry, results_dir, cache_dir, dataset_dir, force=force))
+
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     for entry in os.listdir(results_dir):
         exp_dir = os.path.join(results_dir, entry)
@@ -359,11 +487,15 @@ def main():
                         help='Only compute fast metrics (FG/BG/overall PSNR/SSIM/MSE); skip LPIPS/DISTS/VMAF/FVMD and block-level maps')
     parser.add_argument('--backfill-lpips', action='store_true',
                         help='Append FG/BG/overall masked LPIPS to existing result.json files without re-encoding or recomputing other metrics')
+    parser.add_argument('--backfill-vmaf', action='store_true',
+                        help='Append overall + FG-crop VMAF (default and NEG models) to existing result.json files without re-encoding')
     parser.add_argument('--force', action='store_true',
-                        help='With --backfill-lpips, recompute even if FG-LPIPS already present')
+                        help='With a --backfill-* flag, recompute even if the metric is already present')
     args = parser.parse_args()
     if args.backfill_lpips:
         backfill_lpips_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
+    elif args.backfill_vmaf:
+        backfill_vmaf_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     else:
         evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
 
