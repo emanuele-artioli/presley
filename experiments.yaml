@@ -1317,3 +1317,86 @@ experiments:
     restorer_params:
       denoise_strength: 1.0
       tile: 0
+
+  # ============================================================================
+  # ULTRA-STARVED PROBE (30/50/80 kbps): the published ELVIS (NOSSDAV'25) claim
+  # is explicitly scoped to "low quality (VMAF up to 20)" — a regime never
+  # reached by the regime campaign (most starved baseline point: FG-VMAF 59).
+  # Testing the claim where it lives: does in-painting beat a *collapsing*
+  # H.265 baseline (heavy blocking) on VMAF/perceptual metrics? Baselines
+  # extend the bear x265 curve down; elvis runs pair with them.
+  # ============================================================================
+  # hash: 9da47db123186516
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 30000
+    codec_params:
+      preset: medium
+
+  # hash: 02e93253ec86d743
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 50000
+    codec_params:
+      preset: medium
+
+  # hash: 586426146e74b202
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 80000
+    codec_params:
+      preset: medium
+
+  # hash: d76955770b720d40
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 30000
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # hash: b208cadfe544d392
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 50000
+    codec: x265
+    codec_params:
+      preset: medium
+
+  # hash: 65ce8788748cd0cf
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    inpainter: propainter
+    target_bitrate: 80000
+    codec: x265
+    codec_params:
+      preset: medium
