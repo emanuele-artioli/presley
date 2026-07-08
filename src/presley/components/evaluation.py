@@ -229,9 +229,12 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         bg_ssim.append(_masked_ssim(r, d, ~m))
         ov_ssim.append(_masked_ssim(r, d))
 
-        # Block level
-        r_b = split_image_into_blocks(r, block_size)
-        d_b = split_image_into_blocks(d, block_size)
+        # Block level. Crop to a whole number of blocks first: resolutions whose
+        # H/W aren't a multiple of block_size (e.g. 540 % 8 != 0) otherwise make
+        # split_image_into_blocks' reshape raise and abort the whole eval pass.
+        hb, wb = num_blocks_y * block_size, num_blocks_x * block_size
+        r_b = split_image_into_blocks(r[:hb, :wb], block_size)
+        d_b = split_image_into_blocks(d[:hb, :wb], block_size)
 
         for by in range(num_blocks_y):
             for bx in range(num_blocks_x):
@@ -468,9 +471,17 @@ def backfill_vmaf_all(results_dir: str, cache_dir: str, dataset_dir: str, force:
 
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     for entry in os.listdir(results_dir):
+        # Skip bookkeeping dirs (e.g. _superseded) — not experiment hashes.
+        if entry.startswith('_'):
+            continue
         exp_dir = os.path.join(results_dir, entry)
         if os.path.isdir(exp_dir):
-            run_evaluation(entry, results_dir, cache_dir, dataset_dir, fast=fast)
+            # Isolate failures: one un-evaluatable result must not abort the pass
+            # for every other experiment (they share one expensive NFS load).
+            try:
+                run_evaluation(entry, results_dir, cache_dir, dataset_dir, fast=fast)
+            except Exception as e:
+                print(f"WARNING: evaluation failed for {entry}: {type(e).__name__}: {e}")
 
 def backfill_lpips_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
     for entry in sorted(os.listdir(results_dir)):
