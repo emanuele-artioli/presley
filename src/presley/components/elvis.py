@@ -33,6 +33,13 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # quality is reproduced bit-exact instead of re-encoded through the
     # in-painter. Set composite_output: false to get the raw in-painter frames.
     composite_output = experiment.get('composite_output', True)
+    # Hard foreground protection (blackout/freeze only): never remove a block
+    # the UFO mask marks as foreground. The removability score protects FG only
+    # softly (BG x10), which fails on high-motion foregrounds (bmx-trees: FG
+    # outscored boosted BG and 12.8% of FG blocks were removed -> -3 dB FG).
+    # Off by default so pre-existing results stay reproducible; new entries
+    # should set fg_protect: true explicitly.
+    fg_protect = experiment.get('fg_protect', False)
 
     codec = experiment['codec'].lower()
     target_bitrate = experiment['target_bitrate']
@@ -45,12 +52,27 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir)
     
     start_time = time.time()
-    
+
     # 2. Remove blocks (mode-dependent representation)
     import cv2
     shrunk_frames_list = []
     masks_list = []
     frames_arr = np.array(frames)
+
+    # Block-level foreground masks for hard FG protection (cached UFO masks,
+    # max-pooled to the block grid: a block is FG if it contains any FG pixel).
+    fg_block_masks = None
+    if fg_protect and removal_mode in ('blackout', 'freeze'):
+        from presley.preprocessing import get_ufo_masks
+        ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+        ufo = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+        nby, nbx = height // block_size, width // block_size
+        fg_block_masks = []
+        for m in ufo:
+            if m.shape != (height, width):
+                m = cv2.resize(m, (width, height), interpolation=cv2.INTER_NEAREST)
+            fg_block_masks.append(m[:nby * block_size, :nbx * block_size]
+                                  .reshape(nby, block_size, nbx, block_size).max(axis=(1, 3)) > 127)
 
     prev_degraded = None
     for i in range(len(frames)):
@@ -65,7 +87,8 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         elif removal_mode in ('blackout', 'freeze'):
             # Native geometry removes the packing constraint: pick the globally
             # top-k most-removable blocks instead of an equal count per row.
-            binary_mask = select_removal_mask_global(score, shrink_amount, cluster_blocks=True)
+            excl = fg_block_masks[i] if fg_block_masks is not None and i < len(fg_block_masks) else None
+            binary_mask = select_removal_mask_global(score, shrink_amount, cluster_blocks=True, exclude=excl)
             masks_list.append(binary_mask)
             pix_mask = cv2.resize(binary_mask.astype(np.uint8), (width, height),
                                   interpolation=cv2.INTER_NEAREST).astype(bool)

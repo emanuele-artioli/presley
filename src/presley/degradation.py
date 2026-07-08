@@ -246,7 +246,7 @@ def apply_selective_removal(image: np.ndarray, frame_scores: np.ndarray, block_s
         new_image = new_image[:, :-pad_x, :]
         removal_mask = removal_mask[:, :-1]
     return (new_image, removal_mask, block_coords_to_remove)
-def select_removal_mask_global(frame_scores: np.ndarray, amount: float, cluster_blocks: bool = True) -> np.ndarray:
+def select_removal_mask_global(frame_scores: np.ndarray, amount: float, cluster_blocks: bool = True, exclude: Optional[np.ndarray] = None) -> np.ndarray:
     """Select the globally top-k most-removable blocks (no per-row constraint).
 
     ELVIS's shrink transport needs an equal number of removed blocks per row so
@@ -257,16 +257,28 @@ def select_removal_mask_global(frame_scores: np.ndarray, amount: float, cluster_
     removal budget on the actually-most-removable blocks. Budget is matched to
     the per-row default (int(amount*num_blocks_x) per row) so a global run is
     directly comparable to the per-row run at the same `amount`.
+
+    ``exclude`` (bool, same shape as frame_scores): blocks that must NEVER be
+    selected. The removability model only *softly* protects foreground (BG
+    scores x10), which fails on high-motion foregrounds -- measured on
+    bmx-trees: FG mean score 0.127 > BG 0.113, so top-k removed 12.8% of FG
+    blocks and FG-PSNR collapsed by 3 dB. Passing the UFO foreground blocks
+    here makes the protection hard. The budget is capped at the number of
+    non-excluded blocks.
     """
     num_blocks_y, num_blocks_x = frame_scores.shape
     per_row = int(amount * num_blocks_x) if amount < 1.0 else int(amount)
     k = min(per_row * num_blocks_y, num_blocks_y * num_blocks_x)
     mask = np.zeros((num_blocks_y, num_blocks_x), dtype=np.int8)
-    if k <= 0:
-        return mask
     selection_scores = frame_scores.astype(np.float32)
     if cluster_blocks:
         selection_scores = cv2.GaussianBlur(selection_scores, (5, 5), 0)
+    if exclude is not None:
+        # Exclude AFTER the cluster blur so smeared FG scores can't re-enter.
+        selection_scores = np.where(exclude, -np.inf, selection_scores)
+        k = min(k, int((~exclude).sum()))
+    if k <= 0:
+        return mask
     idx = np.argpartition(-selection_scores.ravel(), k - 1)[:k]
     mask.ravel()[idx] = 1
     return mask

@@ -1645,3 +1645,87 @@ experiments:
     codec_params:
       preset: medium
       qp: 34
+
+  # =====================================================================
+  # FG-PROTECTION FIX (hard UFO-mask exclusion in block selection)
+  # bmx-trees failed -3 dB because the soft x10 BG boost mis-ranks a
+  # high-motion FG (rider 0.127 > BG 0.113) -> 12.8% of FG blocks removed.
+  # fg_protect: true makes the UFO mask a hard exclusion. Re-run bmx-trees;
+  # bear blackout re-run as a sanity check (win should hold or improve).
+  # =====================================================================
+
+  # hash: 6e035ed22b668bc5
+  - component: elvis
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: telea
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 96012299323c49fb
+  - component: elvis
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 363c9ef339377177
+  - component: elvis
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: freeze
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 3cc22f1888baafbe
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
