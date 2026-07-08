@@ -4,8 +4,14 @@ import numpy as np
 from typing import Dict, Any
 
 from presley.preprocessing import get_reference_frames, get_removability_scores
-from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265
-from presley.degradation import filter_frame_downsample, filter_frame_gaussian
+from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_x265_qp
+from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
+                                 filter_frame_mean_fill, filter_frame_freeze)
+from presley.sidechannel import save_binary_masks, composite_passthrough
+
+# Degradations that punch holes to be filled by an in-painter (the ELVIS<->PRESLEY
+# bridge), rather than blur/downsample restored by a super-resolver.
+INPAINT_DEGRADATIONS = ('mean_fill', 'freeze')
 
 def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cache_dir: str) -> Dict[str, Any]:
     video_name = experiment['video']
@@ -22,6 +28,11 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     target_bitrate = experiment['target_bitrate']
     codec_params = experiment.get('codec_params', {})
     restorer_params = experiment.get('restorer_params', {})
+    # Passthrough compositing (default on): emit the decoded transmitted pixels
+    # everywhere and restored pixels only inside the degraded region, so the
+    # untouched foreground is reproduced bit-exact instead of re-encoded through
+    # the restorer. Set composite_output: false for the raw restorer frames.
+    composite_output = experiment.get('composite_output', True)
     
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
@@ -34,17 +45,23 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     strength_maps_list = []
     frames_arr = np.array(frames)
     
+    prev_degraded = None
     for i in range(len(frames)):
         frame = frames_arr[i]
         score = removability_scores[i]
-        
+
         if degradation == 'downsample':
             degraded, smap = filter_frame_downsample(frame, score, block_size)
         elif degradation == 'blur':
             degraded, smap = filter_frame_gaussian(frame, score, block_size)
+        elif degradation == 'mean_fill':
+            degraded, smap = filter_frame_mean_fill(frame, score, block_size)
+        elif degradation == 'freeze':
+            degraded, smap = filter_frame_freeze(frame, score, block_size, prev_degraded)
         else:
             raise ValueError(f"Unknown degradation: {degradation}")
-            
+
+        prev_degraded = degraded
         degraded_frames_list.append(degraded)
         strength_maps_list.append(smap)
         
@@ -54,16 +71,25 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # 3. Encode degraded frames
     transmitted_video = os.path.join(results_dir, "encoded_degraded.mp4")
     if codec == 'x265':
-        encode_video_x265(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
+        if 'qp' in codec_params:
+            # Fixed-QP: where FG-protecting transports actually bank their saving
+            # (VBR rate control redistributes it with no FG awareness).
+            encode_video_x265_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', 'medium'))
+        else:
+            encode_video_x265(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
     else:
         raise ValueError(f"Presley AI currently requires x265 for encoding, got {codec}")
-        
+
     encoding_time = time.time() - start_time
     restoration_start = time.time()
-    
-    # Save strength maps (transmitted side information)
+
+    # Save strength maps (transmitted side information). Binary hole maps
+    # (mean_fill/freeze) are bit-packed; multi-level maps stay savez'd.
     strength_maps_path = os.path.join(results_dir, "strength_maps.npz")
-    np.savez_compressed(strength_maps_path, strength_maps=np.array(strength_maps_list))
+    if degradation in INPAINT_DEGRADATIONS:
+        save_binary_masks(strength_maps_list, strength_maps_path)
+    else:
+        np.savez_compressed(strength_maps_path, strength_maps=np.array(strength_maps_list))
     
     # 4. Decode degraded frames
     decoded_degraded = load_frames_from_video(transmitted_video)
@@ -105,16 +131,48 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             creative_start=restorer_params.get('creative_start', 1.0),
             preview_start=restorer_params.get('preview_start', 0.0),
             batch_size=restorer_params.get('batch_size', 4))
+    elif restorer in ('propainter', 'telea'):
+        # In-painting restorers for the hole-punching degradations (mean_fill /
+        # freeze): fill the degraded region rather than super-resolve it.
+        if degradation not in INPAINT_DEGRADATIONS:
+            raise ValueError(f"{restorer} restorer expects a hole degradation {INPAINT_DEGRADATIONS}, got '{degradation}'")
+        masks_dir = os.path.join(results_dir, "temp_masks")
+        os.makedirs(masks_dir, exist_ok=True)
+        for i in range(len(strength_maps_list)):
+            m_full = cv2.resize((strength_maps_list[i] > 0).astype(np.uint8) * 255,
+                                (width, height), interpolation=cv2.INTER_NEAREST)
+            cv2.imwrite(os.path.join(masks_dir, f"{i:05d}.png"), m_full)
+        if restorer == 'propainter':
+            from presley.restoration import inpaint_with_propainter
+            pp_keys = ('ref_stride', 'neighbor_length', 'subvideo_length', 'raft_iter', 'fp16', 'resize_ratio')
+            pp_kwargs = {k: restorer_params[k] for k in pp_keys if k in restorer_params}
+            inpaint_with_propainter(temp_frames_dir, masks_dir, restored_frames_dir, width, height, framerate, mask_dilation=0, **pp_kwargs)
+        else:  # telea (classical CPU in-painting)
+            radius = int(restorer_params.get('inpaint_radius', 3))
+            for i in range(len(decoded_degraded)):
+                m = cv2.imread(os.path.join(masks_dir, f"{i:05d}.png"), 0)
+                inp = cv2.inpaint(decoded_degraded[i], (m > 127).astype(np.uint8), radius, cv2.INPAINT_TELEA)
+                cv2.imwrite(os.path.join(restored_frames_dir, f"{i:05d}.png"), inp)
+        import shutil as _shutil
+        _shutil.rmtree(masks_dir, ignore_errors=True)
     else:
         raise ValueError(f"Unknown restorer: {restorer}")
-        
+
     # Read restored frames
     import glob
     restored_frames = []
     restored_paths = sorted(glob.glob(os.path.join(restored_frames_dir, "*.png")))
     for f in restored_paths:
         restored_frames.append(cv2.imread(f))
-        
+
+    # Passthrough compositing: keep the decoded transmitted pixels (bit-exact FG)
+    # and take restored pixels only where the frame was degraded (strength > 0).
+    if composite_output:
+        pix_masks = [cv2.resize((strength_maps_list[i] > 0).astype(np.uint8), (width, height),
+                                interpolation=cv2.INTER_NEAREST).astype(bool)
+                     for i in range(len(restored_frames))]
+        restored_frames = composite_passthrough(decoded_degraded, restored_frames, pix_masks)
+
     final_output = os.path.join(results_dir, "restored_lossless.mp4")
     save_frames_as_video(restored_frames, final_output, framerate, lossless=True, codec="libx265")
     

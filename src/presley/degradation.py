@@ -246,6 +246,83 @@ def apply_selective_removal(image: np.ndarray, frame_scores: np.ndarray, block_s
         new_image = new_image[:, :-pad_x, :]
         removal_mask = removal_mask[:, :-1]
     return (new_image, removal_mask, block_coords_to_remove)
+def select_removal_mask_global(frame_scores: np.ndarray, amount: float, cluster_blocks: bool = True) -> np.ndarray:
+    """Select the globally top-k most-removable blocks (no per-row constraint).
+
+    ELVIS's shrink transport needs an equal number of removed blocks per row so
+    surviving blocks repack into a rectangle; blackout/freeze keep native
+    geometry, so that per-row constraint is pure loss -- it forces removing a
+    low-removability block in a foreground-heavy row while sparing a
+    high-removability one elsewhere. Selecting the global top-k spends the same
+    removal budget on the actually-most-removable blocks. Budget is matched to
+    the per-row default (int(amount*num_blocks_x) per row) so a global run is
+    directly comparable to the per-row run at the same `amount`.
+    """
+    num_blocks_y, num_blocks_x = frame_scores.shape
+    per_row = int(amount * num_blocks_x) if amount < 1.0 else int(amount)
+    k = min(per_row * num_blocks_y, num_blocks_y * num_blocks_x)
+    mask = np.zeros((num_blocks_y, num_blocks_x), dtype=np.int8)
+    if k <= 0:
+        return mask
+    selection_scores = frame_scores.astype(np.float32)
+    if cluster_blocks:
+        selection_scores = cv2.GaussianBlur(selection_scores, (5, 5), 0)
+    idx = np.argpartition(-selection_scores.ravel(), k - 1)[:k]
+    mask.ravel()[idx] = 1
+    return mask
+
+
+def _selected_blocks(frame_scores: np.ndarray) -> np.ndarray:
+    """Binary per-block selection used by the mean_fill/freeze degradations.
+
+    Matches the existing presley_ai filters (downsample/blur), which degrade any
+    block with round(score) > 0 (i.e. removability >= 0.5).
+    """
+    return (np.round(frame_scores).astype(np.int32) > 0)
+
+
+def filter_frame_mean_fill(image: np.ndarray, frame_scores: np.ndarray, block_size: int) -> Tuple[np.ndarray, np.ndarray]:
+    """Replace selected blocks with their mean color (flat DC ~ near-free to code).
+
+    A flat block costs the encoder almost nothing (one DC coefficient, strong
+    inter/intra prediction), so this pushes bits away from removable/background
+    regions the same way blackout does -- but leaves a smooth prior instead of
+    black, which the in-painter restores. Returns (image, binary strength map).
+    """
+    h, w, c = image.shape
+    num_blocks_y, num_blocks_x = frame_scores.shape
+    sel = _selected_blocks(frame_scores)
+    out = image.copy()
+    for by in range(num_blocks_y):
+        for bx in range(num_blocks_x):
+            if sel[by, bx]:
+                y0, y1 = by * block_size, min((by + 1) * block_size, h)
+                x0, x1 = bx * block_size, min((bx + 1) * block_size, w)
+                blk = out[y0:y1, x0:x1]
+                out[y0:y1, x0:x1] = blk.reshape(-1, c).mean(0).astype(np.uint8)
+    return out, sel.astype(np.int8)
+
+
+def filter_frame_freeze(image: np.ndarray, frame_scores: np.ndarray, block_size: int, prev_image: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+    """Copy selected blocks from the previous degraded frame (inter-skip ~ 0 bits).
+
+    Frame 0 keeps original content (no previous frame), giving the I-frame a
+    real-texture prior. Returns (image, binary strength map).
+    """
+    h, w, c = image.shape
+    num_blocks_y, num_blocks_x = frame_scores.shape
+    sel = _selected_blocks(frame_scores)
+    out = image.copy()
+    if prev_image is not None:
+        for by in range(num_blocks_y):
+            for bx in range(num_blocks_x):
+                if sel[by, bx]:
+                    y0, y1 = by * block_size, min((by + 1) * block_size, h)
+                    x0, x1 = bx * block_size, min((bx + 1) * block_size, w)
+                    out[y0:y1, x0:x1] = prev_image[y0:y1, x0:x1]
+    return out, sel.astype(np.int8)
+
+
 def combine_blocks_into_image(blocks: np.ndarray) -> np.ndarray:
     """Combine 5D array of blocks back into single image. Inverse of split_image_into_blocks."""
     (num_blocks_y, num_blocks_x, block_size, _, c) = blocks.shape

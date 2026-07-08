@@ -5,8 +5,9 @@ from typing import Dict, Any
 
 from presley.preprocessing import get_reference_frames, get_removability_scores
 from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265
-from presley.degradation import apply_selective_removal
+from presley.degradation import apply_selective_removal, select_removal_mask_global
 from presley.restoration import stretch_frame
+from presley.sidechannel import save_binary_masks, composite_passthrough
 
 def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cache_dir: str) -> Dict[str, Any]:
     video_name = experiment['video']
@@ -27,6 +28,11 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     #              frame 0 keeps the original content so the I-frame carries a
     #              real-texture prior for the in-painter)
     removal_mode = experiment.get('removal_mode', 'shrink').lower()
+    # Passthrough compositing (default on): emit decoded transmitted pixels
+    # everywhere and in-painted pixels only inside the holes, so foreground
+    # quality is reproduced bit-exact instead of re-encoded through the
+    # in-painter. Set composite_output: false to get the raw in-painter frames.
+    composite_output = experiment.get('composite_output', True)
 
     codec = experiment['codec'].lower()
     target_bitrate = experiment['target_bitrate']
@@ -50,13 +56,17 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     for i in range(len(frames)):
         frame = frames_arr[i]
         score = removability_scores[i]
-        # Block selection is identical across modes (same clustered mask);
-        # only the transmitted representation differs.
-        shrunk, binary_mask, _ = apply_selective_removal(frame, score, block_size, shrink_amount, cluster_blocks=True)
-        masks_list.append(binary_mask)
         if removal_mode == 'shrink':
+            # shrink packs surviving blocks into a rectangle, which requires an
+            # equal removed-count per row -> per-row selection.
+            shrunk, binary_mask, _ = apply_selective_removal(frame, score, block_size, shrink_amount, cluster_blocks=True)
+            masks_list.append(binary_mask)
             shrunk_frames_list.append(shrunk)
         elif removal_mode in ('blackout', 'freeze'):
+            # Native geometry removes the packing constraint: pick the globally
+            # top-k most-removable blocks instead of an equal count per row.
+            binary_mask = select_removal_mask_global(score, shrink_amount, cluster_blocks=True)
+            masks_list.append(binary_mask)
             pix_mask = cv2.resize(binary_mask.astype(np.uint8), (width, height),
                                   interpolation=cv2.INTER_NEAREST).astype(bool)
             degraded = frame.copy()
@@ -90,9 +100,10 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     encoding_time = time.time() - start_time
     restoration_start = time.time()
     
-    # Save masks (transmitted side information)
+    # Save masks (transmitted side information), bit-packed to minimise the
+    # fixed side-channel cost that dominates the starved-bitrate budget.
     masks_path = os.path.join(results_dir, "removal_masks.npz")
-    np.savez_compressed(masks_path, masks=np.array(masks_list))
+    save_binary_masks(masks_list, masks_path)
     
     # 4. Decode transmitted video
     decoded_shrunk = load_frames_from_video(encoded_shrunk)
@@ -159,7 +170,17 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     out_files = sorted(glob.glob(os.path.join(output_frames_dir, "*.png")))
     for f in out_files:
         inpainted_frames.append(cv2.imread(f))
-        
+
+    # Passthrough compositing: keep the decoded transmitted pixels (bit-exact FG)
+    # and take in-painted pixels only inside the holes. `stretched_frames_list`
+    # is the native-resolution transmitted frame (decode for blackout/freeze,
+    # stretched decode for shrink); holes there are black/frozen/zero-filled.
+    if composite_output:
+        pix_masks = [cv2.resize(m.astype(np.uint8), (width, height),
+                                interpolation=cv2.INTER_NEAREST).astype(bool)
+                     for m in masks_list]
+        inpainted_frames = composite_passthrough(stretched_frames_list, inpainted_frames, pix_masks)
+
     final_output = os.path.join(results_dir, "restored_lossless.mp4")
     save_frames_as_video(inpainted_frames, final_output, framerate, lossless=True, codec="libx265")
     
