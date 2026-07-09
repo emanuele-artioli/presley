@@ -6,7 +6,8 @@ from typing import Dict, Any
 from presley.preprocessing import get_reference_frames, get_removability_scores
 from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_x265_qp
 from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
-                                 filter_frame_mean_fill, filter_frame_freeze)
+                                 filter_frame_mean_fill, filter_frame_freeze,
+                                 select_removal_mask_global)
 from presley.sidechannel import save_binary_masks, composite_passthrough
 
 # Degradations that punch holes to be filled by an in-painter (the ELVIS<->PRESLEY
@@ -33,6 +34,14 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # untouched foreground is reproduced bit-exact instead of re-encoded through
     # the restorer. Set composite_output: false for the raw restorer frames.
     composite_output = experiment.get('composite_output', True)
+    # Budgeted selection for the bridge degradations (mean_fill/freeze): when
+    # shrink_amount is set, select blocks with elvis's global top-k (same
+    # removal budget -> same starved operating point) instead of the
+    # round(score)>0 threshold, which degrades too few blocks (9.4% on bear ->
+    # 844 kbps, the comfortable regime where nothing can win). fg_protect adds
+    # the hard UFO-mask exclusion, same as elvis.
+    select_amount = experiment.get('shrink_amount')
+    fg_protect = experiment.get('fg_protect', False)
     
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
@@ -45,19 +54,39 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     strength_maps_list = []
     frames_arr = np.array(frames)
     
+    # Block-level FG masks for hard protection (same recipe as elvis).
+    fg_block_masks = None
+    if fg_protect and degradation in INPAINT_DEGRADATIONS:
+        import cv2 as _cv2
+        from presley.preprocessing import get_ufo_masks
+        ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+        ufo = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+        nby, nbx = height // block_size, width // block_size
+        fg_block_masks = []
+        for m in ufo:
+            if m.shape != (height, width):
+                m = _cv2.resize(m, (width, height), interpolation=_cv2.INTER_NEAREST)
+            fg_block_masks.append(m[:nby * block_size, :nbx * block_size]
+                                  .reshape(nby, block_size, nbx, block_size).max(axis=(1, 3)) > 127)
+
     prev_degraded = None
     for i in range(len(frames)):
         frame = frames_arr[i]
         score = removability_scores[i]
+
+        sel = None
+        if select_amount is not None and degradation in INPAINT_DEGRADATIONS:
+            excl = fg_block_masks[i] if fg_block_masks is not None and i < len(fg_block_masks) else None
+            sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
 
         if degradation == 'downsample':
             degraded, smap = filter_frame_downsample(frame, score, block_size)
         elif degradation == 'blur':
             degraded, smap = filter_frame_gaussian(frame, score, block_size)
         elif degradation == 'mean_fill':
-            degraded, smap = filter_frame_mean_fill(frame, score, block_size)
+            degraded, smap = filter_frame_mean_fill(frame, score, block_size, sel=sel)
         elif degradation == 'freeze':
-            degraded, smap = filter_frame_freeze(frame, score, block_size, prev_degraded)
+            degraded, smap = filter_frame_freeze(frame, score, block_size, prev_degraded, sel=sel)
         else:
             raise ValueError(f"Unknown degradation: {degradation}")
 

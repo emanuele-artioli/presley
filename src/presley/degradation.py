@@ -293,17 +293,22 @@ def _selected_blocks(frame_scores: np.ndarray) -> np.ndarray:
     return (np.round(frame_scores).astype(np.int32) > 0)
 
 
-def filter_frame_mean_fill(image: np.ndarray, frame_scores: np.ndarray, block_size: int) -> Tuple[np.ndarray, np.ndarray]:
+def filter_frame_mean_fill(image: np.ndarray, frame_scores: np.ndarray, block_size: int, sel: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Replace selected blocks with their mean color (flat DC ~ near-free to code).
 
     A flat block costs the encoder almost nothing (one DC coefficient, strong
     inter/intra prediction), so this pushes bits away from removable/background
     regions the same way blackout does -- but leaves a smooth prior instead of
     black, which the in-painter restores. Returns (image, binary strength map).
+
+    ``sel`` overrides the default threshold selection (round(score)>0) with an
+    explicit boolean block mask -- used for budgeted top-k selection so the
+    bridge degradations operate at the same removal rate as elvis.
     """
     h, w, c = image.shape
     num_blocks_y, num_blocks_x = frame_scores.shape
-    sel = _selected_blocks(frame_scores)
+    if sel is None:
+        sel = _selected_blocks(frame_scores)
     out = image.copy()
     for by in range(num_blocks_y):
         for bx in range(num_blocks_x):
@@ -315,15 +320,18 @@ def filter_frame_mean_fill(image: np.ndarray, frame_scores: np.ndarray, block_si
     return out, sel.astype(np.int8)
 
 
-def filter_frame_freeze(image: np.ndarray, frame_scores: np.ndarray, block_size: int, prev_image: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+def filter_frame_freeze(image: np.ndarray, frame_scores: np.ndarray, block_size: int, prev_image: Optional[np.ndarray] = None, sel: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Copy selected blocks from the previous degraded frame (inter-skip ~ 0 bits).
 
     Frame 0 keeps original content (no previous frame), giving the I-frame a
     real-texture prior. Returns (image, binary strength map).
+
+    ``sel`` overrides the default threshold selection (see filter_frame_mean_fill).
     """
     h, w, c = image.shape
     num_blocks_y, num_blocks_x = frame_scores.shape
-    sel = _selected_blocks(frame_scores)
+    if sel is None:
+        sel = _selected_blocks(frame_scores)
     out = image.copy()
     if prev_image is not None:
         for by in range(num_blocks_y):
