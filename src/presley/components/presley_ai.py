@@ -202,8 +202,11 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                      for i in range(len(restored_frames))]
         restored_frames = composite_passthrough(decoded_degraded, restored_frames, pix_masks)
 
-    final_output = os.path.join(results_dir, "restored_lossless.mp4")
-    save_frames_as_video(restored_frames, final_output, framerate, lossless=True, codec="libx265")
+    # ffv1/bgr0 (verified bit-exact, unlike libx265's yuv420p "lossless" which
+    # still chroma-subsamples): matters here because composited pixels are
+    # compared directly against reference frames for the FG-quality claim.
+    final_output = os.path.join(results_dir, "restored_lossless.mkv")
+    save_frames_as_video(restored_frames, final_output, framerate, lossless=True, codec="ffv1")
     
     restoration_time = time.time() - restoration_start
     

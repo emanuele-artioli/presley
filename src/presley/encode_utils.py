@@ -20,9 +20,18 @@ def save_frames_as_video(frames: List[np.ndarray], output_path: str, framerate: 
     ]
     
     if lossless and codec == "libx265":
+        # NOTE: "lossless" here is lossless only relative to a yuv420p-quantized
+        # copy of the input -- chroma subsampling still discards information, so
+        # a BGR frame does NOT round-trip bit-exact (verified: ~2.3 mean abs
+        # diff/pixel). Fine for intermediates that get lossily re-encoded right
+        # after anyway; NOT fine for outputs whose pixels are compared directly
+        # (e.g. passthrough-composited results) -- use codec="ffv1" for those.
         cmd.extend(['-c:v', 'libx265', '-preset', 'medium', '-x265-params', 'lossless=1', '-pix_fmt', 'yuv420p'])
     elif lossless and codec == "ffv1":
-        cmd.extend(['-c:v', 'ffv1', '-level', '3', '-pix_fmt', 'yuv420p'])
+        # bgr0 = native RGB, no YUV color-matrix conversion or chroma
+        # subsampling -> verified bit-exact round-trip (0.0 diff). Requires an
+        # .mkv/.avi-style container; ffv1 will not mux into .mp4.
+        cmd.extend(['-c:v', 'ffv1', '-level', '3', '-pix_fmt', 'bgr0'])
     else:
         cmd.extend(['-c:v', codec])
         
