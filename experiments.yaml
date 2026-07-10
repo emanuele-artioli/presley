@@ -2231,3 +2231,127 @@ experiments:
       qp: 32
     inpainter_params:
       subvideo_length: 45
+
+  # =====================================================================
+  # FILL-VARIANT ABLATION EXTENSION (2026-07-10)
+  # Table C2 (FG-flatness: elvis blackout vs presley_ai freeze/mean_fill,
+  # same budgeted top-k + fg_protect + passthrough recipe) currently only
+  # covers bear. Extend to camel/dog/pigs at their existing qp32 elvis
+  # matched point (Table C) to test whether FG-flatness holds across FG-size
+  # regimes, not just bear. bmx-trees excluded (separate hole-churn boundary
+  # case, not a fill-variant question).
+  # =====================================================================
+
+  # hash: 44989abd6513bf5b
+  - component: presley_ai
+    video: camel
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: mean_fill
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: c3bae217cfc54472
+  - component: presley_ai
+    video: camel
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: freeze
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 918f6f2c26bec4fc
+  - component: presley_ai
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: mean_fill
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 26ce0d691af16a2d
+  - component: presley_ai
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: freeze
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: a7ff6cb21ba2538a
+  - component: presley_ai
+    video: pigs
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: mean_fill
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 5959172e7e1a2fb2
+  - component: presley_ai
+    video: pigs
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: freeze
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
