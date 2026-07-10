@@ -1729,3 +1729,505 @@ experiments:
     codec_params:
       preset: medium
       qp: 32
+
+  # =====================================================================
+  # CHAIN-LINK TESTS (2026-07-09)
+  # (a) elvis > roi head-to-head: kvazaar fixed-QP ROI at target 555k, the
+  #     actual bitrate of the winning elvis blackout+fg_protect bear run
+  #     (555 kbps, FG +0.57 dB) — compare both against the same baseline
+  #     curve at the same actual bitrate.
+  # (b) presley_ai > elvis: the bridge degradations (mean_fill / freeze) with
+  #     passthrough compositing at the same fixed QP32 as the elvis win.
+  #     mean_fill holes are cheap (flat DC, low-contrast boundaries) and hand
+  #     the in-painter a color prior — the design the RD analysis called for.
+  # =====================================================================
+
+  # hash: 5e375f7bd72f94b9
+  - component: roi
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 555000
+    codec_params:
+      qp_range: 15
+
+  # hash: e175fbef3c54a548
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: mean_fill
+    restorer: propainter
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: acd162585b27eea8
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: freeze
+    restorer: propainter
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 818854e3a914c0a6
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: mean_fill
+    restorer: telea
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # =====================================================================
+  # BD-RATE GENERALIZATION + BUDGET-MATCHED PRESLEY BRIDGE (2026-07-09)
+  # (a) presley_ai mean_fill/freeze with elvis's budgeted global top-k
+  #     selection (shrink_amount 0.25) + fg_protect + passthrough at qp32 --
+  #     the fair presley_ai > elvis test at the same starved operating point.
+  #     If FG lands ~= elvis blackout (27.62 @ ~555k), FG-flatness is
+  #     confirmed and the paper reframes black/mean/freeze as fill variants
+  #     of one bridge method (user-approved plan).
+  # (b) camel/pigs/dog: baseline fixed-QP curves (qp30/32/34/37) + elvis
+  #     blackout+FGprot at qp32/37 + kvazaar ROI at 300k/600k -> a BD-rate
+  #     segment for baseline < roi < elvis beyond bear.
+  # =====================================================================
+
+  # hash: b085781801f4a9bf
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: mean_fill
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 76bfb3a463e21301
+  - component: presley_ai
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: freeze
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 335158d453df5e31
+  - component: baselines
+    video: camel
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: ef2637de3a459c03
+  - component: baselines
+    video: camel
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: f1fc7918fe8f05fa
+  - component: baselines
+    video: camel
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 4a56e9a9a855aaaf
+  - component: baselines
+    video: camel
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: fcfbb87d5704dcf9
+  - component: elvis
+    video: camel
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 596a7176ddce4933
+  - component: elvis
+    video: camel
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: fb5b66a9102570dd
+  - component: roi
+    video: camel
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 300000
+    codec_params:
+      qp_range: 15
+
+  # hash: 2359080e919572f7
+  - component: roi
+    video: camel
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 600000
+    codec_params:
+      qp_range: 15
+
+  # hash: 723ee637d29167df
+  - component: baselines
+    video: pigs
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: facb3fb6771d16d6
+  - component: baselines
+    video: pigs
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: bbe10cd8ef986d6b
+  - component: baselines
+    video: pigs
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: b6d5b3c15409284f
+  - component: baselines
+    video: pigs
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: 1e07f10ef631b4e0
+  - component: elvis
+    video: pigs
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 7fef4c1738bb7fbd
+  - component: elvis
+    video: pigs
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: 6d4ef019dd1ddb86
+  - component: roi
+    video: pigs
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 300000
+    codec_params:
+      qp_range: 15
+
+  # hash: c67608eb01c0d7cb
+  - component: roi
+    video: pigs
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 600000
+    codec_params:
+      qp_range: 15
+
+  # hash: 7e04556454dcca22
+  - component: baselines
+    video: dog
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: bf87e515f266e78f
+  - component: baselines
+    video: dog
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 2e58923ff19b5888
+  - component: baselines
+    video: dog
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: a2f60bb3f050a780
+  - component: baselines
+    video: dog
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: 7eb4b3c9993abb8d
+  - component: elvis
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 206cf650ff3c103f
+  - component: elvis
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: e78dae2e3cbf69b8
+  - component: roi
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 300000
+    codec_params:
+      qp_range: 15
+
+  # hash: c593bc9f9bd9b118
+  - component: roi
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 600000
+    codec_params:
+      qp_range: 15
+
+  # =====================================================================
+  # DIAGNOSTIC: is the camel/pigs/dog FG loss a real generalization result
+  # or a bug in ProPainter's parallel-chunk pipeline? bear(82f)/camel(90f)
+  # use 3 chunks (subvideo_length=40 default) and WIN; pigs(79f)/dog(60f)
+  # use 2 chunks and LOSE BADLY even though FG-clip is 0% (verified) and
+  # composite_passthrough is verified correct in isolation. Causal test:
+  # swap the chunk count independent of video content.
+  # =====================================================================
+
+  # hash: 8e7395014ef425cc
+  - component: elvis
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+    inpainter_params:
+      subvideo_length: 20
+
+  # hash: 5eb42ce79b272f31
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+    inpainter_params:
+      subvideo_length: 45
