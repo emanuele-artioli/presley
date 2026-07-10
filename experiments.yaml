@@ -2355,3 +2355,126 @@ experiments:
     codec_params:
       preset: medium
       qp: 32
+
+  # =====================================================================
+  # BD-RATE CURVE COMPLETION (2026-07-10)
+  # camel/dog/pigs elvis (bridge, blackout+fg_protect+passthrough) only had
+  # 2 QP points (32, 37) vs baseline's 4-point qp30/32/34/37 curve. Add the
+  # missing qp30/qp34 points so Table C has a matched 4-point curve per
+  # video for a paper-grade BD-rate (Bjontegaard) fit instead of a 2-point
+  # delta. Same recipe as the existing qp32/37 entries for each video.
+  # =====================================================================
+
+  # hash: af57e560cc07bcb4
+  - component: elvis
+    video: camel
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: 40e78d87ec91f13d
+  - component: elvis
+    video: camel
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 552a1a6989a9e4d5
+  - component: elvis
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: bbcddae9c2e8cc2a
+  - component: elvis
+    video: dog
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 4103efc06c1baaf9
+  - component: elvis
+    video: pigs
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: 4a110defb4801533
+  - component: elvis
+    video: pigs
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
