@@ -2818,3 +2818,32 @@ experiments:
       preset: medium
       qp: 37
 
+  # =====================================================================
+  # VERIFY: temporal_pool_masks (union-over-GOP hole stabilization) was
+  # implemented (commit 463e391) to fix the bmx-trees camera-motion
+  # boundary case, but never actually run -- the report claiming "fixed"
+  # was evidence-free. Test at the exact same recipe/QP as the existing
+  # matched-bitrate boundary-case point (blackout+fg_protect+propainter,
+  # qp34) so the two are directly comparable.
+  # =====================================================================
+
+  # hash: 8e2bfd9f0635dbe9
+  - component: elvis
+    video: bmx-trees
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    temporal_pool_masks: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
