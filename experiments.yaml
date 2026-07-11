@@ -2557,3 +2557,264 @@ experiments:
     codec_params:
       preset: medium
       qp: 37
+
+  # =====================================================================
+  # BREADTH: 2 new DAVIS videos chosen to fill under-studied attribute gaps
+  # (2026-07-11). Quantitative audit of the 5 existing videos (FG%, blob
+  # fragmentation, background motion) plus visual inspection of candidates
+  # found: all 5 are animal-or-vehicle subjects (no human FG), and only
+  # bmx-trees tests any camera motion (a tracking-pan, blurred background).
+  # - india: true multi-instance human crowd (occlusion, several disjoint
+  #   FG people, some handheld/rack-focus camera motion) -- fills "human
+  #   subject" and "true crowd" (pigs is multi-instance but same-species
+  #   clustered animals, not independently-moving occluding people).
+  # - tennis: single human subject, fast articulated limb motion, STATIC
+  #   camera, unusually high-spatial-frequency background (text banner,
+  #   chain-link fence) -- fills "fast single-subject motion under a static
+  #   camera" and "high-frequency background", both untested so far (current
+  #   static-camera videos have soft/natural backgrounds: grass, fur, dirt).
+  # Same recipe as camel/dog/pigs: fixed-QP baseline (qp30/32/34/37) +
+  # elvis bridge (blackout+fg_protect+passthrough+propainter, same 4 QPs)
+  # for a matched BD-rate curve from the first run, no follow-up needed.
+  # =====================================================================
+
+  # hash: 87b25339f57d7857
+  - component: baselines
+    video: india
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: dfe269034b284e87
+  - component: baselines
+    video: india
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 3dc45daff426e900
+  - component: baselines
+    video: india
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 0e04dd48d0274ef4
+  - component: baselines
+    video: india
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: 9d90c886d7395e74
+  - component: elvis
+    video: india
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: bde0bc12bff243cd
+  - component: elvis
+    video: india
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: c729ed15905ec836
+  - component: elvis
+    video: india
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 1550dfb903571b96
+  - component: elvis
+    video: india
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: 14467419f7326bb2
+  - component: baselines
+    video: tennis
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: 4f7edfc57e9c07c9
+  - component: baselines
+    video: tennis
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 532aaf45b2d818ed
+  - component: baselines
+    video: tennis
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: c09ff75d95fc46de
+  - component: baselines
+    video: tennis
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 37
+
+  # hash: f741ff7fd2b12023
+  - component: elvis
+    video: tennis
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: 5c0e7020a23e7db1
+  - component: elvis
+    video: tennis
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: c5c7223df94195c2
+  - component: elvis
+    video: tennis
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 0bba758fb0111588
+  - component: elvis
+    video: tennis
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 37
+
