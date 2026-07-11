@@ -40,6 +40,7 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # Off by default so pre-existing results stay reproducible; new entries
     # should set fg_protect: true explicitly.
     fg_protect = experiment.get('fg_protect', False)
+    temporal_pool_masks = experiment.get('temporal_pool_masks', False)
 
     codec = experiment['codec'].lower()
     target_bitrate = experiment['target_bitrate']
@@ -65,7 +66,7 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     if fg_protect and removal_mode in ('blackout', 'freeze'):
         from presley.preprocessing import get_ufo_masks
         ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-        ufo = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+        ufo = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool_masks)
         nby, nbx = height // block_size, width // block_size
         fg_block_masks = []
         for m in ufo:

@@ -25,10 +25,10 @@ def _get_refs_cached(video_name, width, height, dataset_dir, cache_dir):
         _REF_CACHE[key] = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
     return _REF_CACHE[key]
 
-def _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir):
-    key = (video_name, width, height, block_size)
+def _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=False):
+    key = (video_name, width, height, block_size, temporal_pool)
     if key not in _MASK_CACHE:
-        _MASK_CACHE[key] = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+        _MASK_CACHE[key] = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool)
     return _MASK_CACHE[key]
 
 def _masked_psnr(ref: np.ndarray, dec: np.ndarray, mask: np.ndarray = None) -> float:
@@ -184,7 +184,8 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     
     raw_yuv_path, refs, framerate = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    temporal_pool_masks = data['config'].get('temporal_pool_masks', False)
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool_masks)
     
     output_video = data.get('output_video')
     if not output_video or not os.path.exists(output_video):
@@ -198,6 +199,15 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     fg_psnr, fg_ssim, fg_mse = [], [], []
     bg_psnr, bg_ssim, bg_mse = [], [], []
     ov_psnr, ov_ssim, ov_mse = [], [], []
+    
+    transmitted_video = data.get('transmitted_video')
+    has_transmitted = transmitted_video and os.path.exists(transmitted_video)
+    if has_transmitted:
+        trans_decs = load_frames_from_video(transmitted_video)
+        num_frames = min(num_frames, len(trans_decs))
+        t_fg_psnr, t_fg_ssim, t_fg_mse = [], [], []
+        t_bg_psnr, t_bg_ssim, t_bg_mse = [], [], []
+        t_ov_psnr, t_ov_ssim, t_ov_mse = [], [], []
     
     # Block level metrics (slow: full per-block loop; skipped in fast mode)
     num_blocks_y = height // block_size
@@ -223,11 +233,32 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         ov_mse.append(_masked_mse(r, d))
 
         if fast:
+            if has_transmitted:
+                td = trans_decs[i]
+                t_fg_psnr.append(_masked_psnr(r, td, m))
+                t_fg_mse.append(_masked_mse(r, td, m))
+                t_bg_psnr.append(_masked_psnr(r, td, ~m))
+                t_bg_mse.append(_masked_mse(r, td, ~m))
+                t_ov_psnr.append(_masked_psnr(r, td))
+                t_ov_mse.append(_masked_mse(r, td))
             continue
 
         fg_ssim.append(_masked_ssim(r, d, m))
         bg_ssim.append(_masked_ssim(r, d, ~m))
         ov_ssim.append(_masked_ssim(r, d))
+
+        if has_transmitted:
+            td = trans_decs[i]
+            t_fg_psnr.append(_masked_psnr(r, td, m))
+            t_fg_mse.append(_masked_mse(r, td, m))
+            t_bg_psnr.append(_masked_psnr(r, td, ~m))
+            t_bg_mse.append(_masked_mse(r, td, ~m))
+            t_ov_psnr.append(_masked_psnr(r, td))
+            t_ov_mse.append(_masked_mse(r, td))
+            
+            t_fg_ssim.append(_masked_ssim(r, td, m))
+            t_bg_ssim.append(_masked_ssim(r, td, ~m))
+            t_ov_ssim.append(_masked_ssim(r, td))
 
         # Block level. Crop to a whole number of blocks first: resolutions whose
         # H/W aren't a multiple of block_size (e.g. 540 % 8 != 0) otherwise make
@@ -267,6 +298,13 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         "background": _block(bg_psnr, bg_ssim, bg_mse),
         "overall": _block(ov_psnr, ov_ssim, ov_mse),
     }
+    
+    if has_transmitted:
+        metrics["transmitted"] = {
+            "foreground": _block(t_fg_psnr, t_fg_ssim, t_fg_mse),
+            "background": _block(t_bg_psnr, t_bg_ssim, t_bg_mse),
+            "overall": _block(t_ov_psnr, t_ov_ssim, t_ov_mse),
+        }
 
     if fast:
         metrics["fast_only"] = True
@@ -323,7 +361,8 @@ def backfill_lpips(experiment_hash: str, results_dir: str, cache_dir: str, datas
 
     _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    temporal_pool_masks = cfg.get('temporal_pool_masks', False)
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool_masks)
     decs = load_frames_from_video(output_video)
 
     n = min(len(refs), len(decs), len(ufo_masks))

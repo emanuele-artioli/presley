@@ -42,6 +42,7 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # the hard UFO-mask exclusion, same as elvis.
     select_amount = experiment.get('shrink_amount')
     fg_protect = experiment.get('fg_protect', False)
+    temporal_pool_masks = experiment.get('temporal_pool_masks', False)
     
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
@@ -60,7 +61,7 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         import cv2 as _cv2
         from presley.preprocessing import get_ufo_masks
         ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-        ufo = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+        ufo = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool_masks)
         nby, nbx = height // block_size, width // block_size
         fg_block_masks = []
         for m in ufo:
