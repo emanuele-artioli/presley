@@ -2847,3 +2847,87 @@ experiments:
       preset: medium
       qp: 34
 
+  # =====================================================================
+  # FILL-VARIANT ABLATION EXTENSION: india + tennis (2026-07-11)
+  # Table C2 (FG-flatness: elvis blackout vs presley_ai freeze/mean_fill,
+  # same budgeted top-k + fg_protect + passthrough recipe) covers
+  # bear/camel/dog/pigs. Extend to the 2 new breadth videos at their
+  # existing qp32 elvis matched point (Table C), same recipe as before.
+  # =====================================================================
+
+  # hash: 9e093ad8cdcb1597
+  - component: presley_ai
+    video: india
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: mean_fill
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 82609b4df948269e
+  - component: presley_ai
+    video: india
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: freeze
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 9f6d0c4b3619cb73
+  - component: presley_ai
+    video: tennis
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: mean_fill
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
+  # hash: 6d53d72e30e31227
+  - component: presley_ai
+    video: tennis
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    degradation: freeze
+    restorer: propainter
+    shrink_amount: 0.25
+    fg_protect: true
+    composite_output: true
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 32
+
