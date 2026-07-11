@@ -2478,3 +2478,82 @@ experiments:
     codec_params:
       preset: medium
       qp: 34
+
+  # =====================================================================
+  # BEAR BD-RATE CURVE COMPLETION (2026-07-11)
+  # Correction: bear's canonical bridge recipe (blackout+fg_protect+
+  # passthrough+propainter) only ever had ONE QP point (32) -- the existing
+  # qp37 elvis/bear entry uses a DIFFERENT recipe (removal_mode=freeze, no
+  # fg_protect), so it's not a valid 2nd curve point for this comparison.
+  # Add qp30/34/37 in the exact qp32 recipe, plus the missing baseline qp30
+  # (bear baseline was 32/33/34/37; standardizing on the 30/32/34/37 ladder
+  # used by camel/dog/pigs so all 4 BD-rate videos are directly comparable).
+  # =====================================================================
+
+  # hash: 1b63442a67927c7b
+  - component: baselines
+    video: bear
+    width: 640
+    height: 360
+    codec: x265
+    target_bitrate: 0
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: bc292116525d0fbf
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 30
+
+  # hash: 1dca3441ab00cfbd
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 34
+
+  # hash: 594bd8edbc486862
+  - component: elvis
+    video: bear
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    shrink_amount: 0.25
+    removal_mode: blackout
+    composite_output: true
+    fg_protect: true
+    inpainter: propainter
+    target_bitrate: 0
+    codec: x265
+    codec_params:
+      preset: medium
+      qp: 37
