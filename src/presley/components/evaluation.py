@@ -184,9 +184,14 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     
     raw_yuv_path, refs, framerate = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-    temporal_pool_masks = data['config'].get('temporal_pool_masks', False)
-    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool_masks)
-    
+    # Evaluation always measures against the TRUE per-frame FG mask, regardless
+    # of temporal_pool_masks (an encoding-time selection knob). Coupling them
+    # inflated bmx-trees's measured FG region from ~5% to 46% of the frame and
+    # fabricated a +2dB "win" that vanished under the true mask (see
+    # PIPELINE_INFRA report, 2026-07-11 entry) -- ground-truth FG/BG regions
+    # must stay a fixed definition independent of any method's own mask usage.
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+
     output_video = data.get('output_video')
     if not output_video or not os.path.exists(output_video):
         print(f"Output video missing for {experiment_hash}")
@@ -361,8 +366,8 @@ def backfill_lpips(experiment_hash: str, results_dir: str, cache_dir: str, datas
 
     _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-    temporal_pool_masks = cfg.get('temporal_pool_masks', False)
-    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool_masks)
+    # Always the true per-frame FG mask -- see the matching note in run_evaluation.
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
     decs = load_frames_from_video(output_video)
 
     n = min(len(refs), len(decs), len(ufo_masks))
