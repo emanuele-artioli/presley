@@ -2931,3 +2931,61 @@ experiments:
       preset: medium
       qp: 32
 
+  # =====================================================================
+  # TABLE A PARITY: roi (kvazaar) entries for india/tennis, matching the
+  # camel/dog/pigs pattern (2 target-bitrate points bracketing the baseline
+  # curve's range).
+  # =====================================================================
+
+  # hash: eda55212941d11a8
+  - component: roi
+    video: india
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 300000
+    codec_params:
+      qp_range: 15
+
+  # hash: c2d4ccd9bc73edad
+  - component: roi
+    video: india
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 600000
+    codec_params:
+      qp_range: 15
+
+  # hash: e2b0fe61888bddd2
+  - component: roi
+    video: tennis
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 300000
+    codec_params:
+      qp_range: 15
+
+  # hash: 2d75403a87d164a9
+  - component: roi
+    video: tennis
+    width: 640
+    height: 360
+    block_size: 8
+    alpha: 0.5
+    beta: 0.5
+    roi_method: kvazaar
+    target_bitrate: 600000
+    codec_params:
+      qp_range: 15
+
