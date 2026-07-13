@@ -43,7 +43,8 @@ dependencies = [
   "gradio",
   "fvmd",
   "pyyaml",
-  "DISTS_pytorch"
+  "DISTS_pytorch",
+  "torchmetrics[image]==1.4.0"
 ]
 
 [project.scripts]

@@ -104,6 +104,21 @@ def calculate_lpips_masked(refs: List[np.ndarray], decs: List[np.ndarray],
             bg.append(float(smap[~m].mean()) if np.any(~m) else 0.0)
     return {"foreground": fg, "background": bg, "overall": ov}
 
+
+def calculate_fid(refs, decs, device):
+    from torchmetrics.image.fid import FrechetInceptionDistance
+    import torch
+    fid = FrechetInceptionDistance(feature=2048).to(device)
+    batch_size = 16
+    for i in range(0, len(refs), batch_size):
+        r_batch = refs[i:i+batch_size]
+        d_batch = decs[i:i+batch_size]
+        r_t = torch.from_numpy(np.array([cv2.cvtColor(r, cv2.COLOR_BGR2RGB) for r in r_batch])).permute(0, 3, 1, 2).byte().to(device)
+        d_t = torch.from_numpy(np.array([cv2.cvtColor(d, cv2.COLOR_BGR2RGB) for d in d_batch])).permute(0, 3, 1, 2).byte().to(device)
+        fid.update(r_t, real=True)
+        fid.update(d_t, real=False)
+    return float(fid.compute().item())
+
 def calculate_dists(refs: List[np.ndarray], decs: List[np.ndarray], device: str) -> List[float]:
     from DISTS_pytorch import DISTS
     model = DISTS().to(device)
@@ -513,6 +528,102 @@ def backfill_vmaf_all(results_dir: str, cache_dir: str, dataset_dir: str, force:
         if os.path.isdir(os.path.join(results_dir, entry)):
             print(backfill_vmaf(entry, results_dir, cache_dir, dataset_dir, force=force))
 
+
+def backfill_dists(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> str:
+    exp_results_dir = os.path.join(results_dir, experiment_hash)
+    result_path = os.path.join(exp_results_dir, "result.json")
+    if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
+    with open(result_path, 'r') as f: data = json.load(f)
+    if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
+    if not force and "dists_mean" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: FG-DISTS already present"
+    
+    cfg = data['config']
+    video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+    block_size = cfg.get('block_size', 8)
+    output_video = data.get('output_video')
+    if not output_video or not os.path.exists(output_video): return f"{experiment_hash}: output video missing"
+
+    _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+    ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    decs = load_frames_from_video(output_video)
+
+    n = min(len(refs), len(decs), len(ufo_masks))
+    if n == 0: return f"{experiment_hash}: no decodable frames"
+    masks = [ufo_masks[i] > 127 for i in range(n)]
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    
+    ov_dists = float(np.mean(calculate_dists(refs[:n], decs[:n], device)))
+    bb = _fg_union_bbox(masks, width, height)
+    fg_dists = 0.0
+    if bb:
+        y1, y2, x1, x2 = bb
+        ref_c = [refs[i][y1:y2, x1:x2] for i in range(n)]
+        dec_c = [decs[i][y1:y2, x1:x2] for i in range(n)]
+        fg_dists = float(np.mean(calculate_dists(ref_c, dec_c, device)))
+        
+    m = data["metrics"]
+    m.setdefault("overall", {})["dists_mean"] = ov_dists
+    m.setdefault("foreground", {})["dists_mean"] = fg_dists
+
+    tmp = result_path + ".tmp"
+    with open(tmp, 'w') as f: json.dump(data, f, indent=2)
+    os.replace(tmp, result_path)
+    return f"{experiment_hash}: OV-DISTS={ov_dists:.4f} FG-DISTS={fg_dists:.4f}"
+
+def backfill_dists_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
+    for entry in sorted(os.listdir(results_dir)):
+        if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
+            print(backfill_dists(entry, results_dir, cache_dir, dataset_dir, force=force))
+
+
+def backfill_fid(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> str:
+    exp_results_dir = os.path.join(results_dir, experiment_hash)
+    result_path = os.path.join(exp_results_dir, "result.json")
+    if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
+    with open(result_path, 'r') as f: data = json.load(f)
+    if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
+    if not force and "fid" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: FG-FID already present"
+    
+    cfg = data['config']
+    video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+    block_size = cfg.get('block_size', 8)
+    output_video = data.get('output_video')
+    if not output_video or not os.path.exists(output_video): return f"{experiment_hash}: output video missing"
+
+    _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+    ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    decs = load_frames_from_video(output_video)
+
+    n = min(len(refs), len(decs), len(ufo_masks))
+    if n == 0: return f"{experiment_hash}: no decodable frames"
+    masks = [ufo_masks[i] > 127 for i in range(n)]
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    
+    ov_fid = calculate_fid(refs[:n], decs[:n], device)
+    bb = _fg_union_bbox(masks, width, height)
+    fg_fid = 0.0
+    if bb:
+        y1, y2, x1, x2 = bb
+        ref_c = [refs[i][y1:y2, x1:x2] for i in range(n)]
+        dec_c = [decs[i][y1:y2, x1:x2] for i in range(n)]
+        fg_fid = calculate_fid(ref_c, dec_c, device)
+        
+    m = data["metrics"]
+    m.setdefault("overall", {})["fid"] = float(ov_fid)
+    m.setdefault("foreground", {})["fid"] = float(fg_fid)
+
+    tmp = result_path + ".tmp"
+    with open(tmp, 'w') as f: json.dump(data, f, indent=2)
+    os.replace(tmp, result_path)
+    return f"{experiment_hash}: OV-FID={ov_fid:.2f} FG-FID={fg_fid:.2f}"
+
+def backfill_fid_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
+    for entry in sorted(os.listdir(results_dir)):
+        if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
+            print(backfill_fid(entry, results_dir, cache_dir, dataset_dir, force=force))
+
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     for entry in os.listdir(results_dir):
         # Skip bookkeeping dirs (e.g. _superseded) — not experiment hashes.
@@ -544,6 +655,11 @@ def main():
                         help='Append FG/BG/overall masked LPIPS to existing result.json files without re-encoding or recomputing other metrics')
     parser.add_argument('--backfill-vmaf', action='store_true',
                         help='Append overall + FG-crop VMAF (default and NEG models) to existing result.json files without re-encoding')
+    parser.add_argument('--backfill-dists', action='store_true',
+                        help='Append overall + FG-crop DISTS to existing result.json files')
+    parser.add_argument('--backfill-fid', action='store_true',
+                        help='Append overall + FG-crop FID to existing result.json files')
+
     parser.add_argument('--force', action='store_true',
                         help='With a --backfill-* flag, recompute even if the metric is already present')
     args = parser.parse_args()
@@ -551,6 +667,10 @@ def main():
         backfill_lpips_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     elif args.backfill_vmaf:
         backfill_vmaf_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
+    elif args.backfill_dists:
+        backfill_dists_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
+    elif args.backfill_fid:
+        backfill_fid_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     else:
         evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
 
