@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, Any
 
 from presley.preprocessing import get_reference_frames, get_removability_scores
-from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_x265_qp
+from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_x265_qp, encode_video_svtav1_qp, encode_video_svtav1
 from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
                                  filter_frame_mean_fill, filter_frame_freeze,
                                  select_removal_mask_global)
@@ -102,13 +102,16 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     transmitted_video = os.path.join(results_dir, "encoded_degraded.mp4")
     if codec == 'x265':
         if 'qp' in codec_params:
-            # Fixed-QP: where FG-protecting transports actually bank their saving
-            # (VBR rate control redistributes it with no FG awareness).
             encode_video_x265_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', 'medium'))
         else:
             encode_video_x265(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
+    elif codec == 'svtav1':
+        if 'qp' in codec_params:
+            encode_video_svtav1_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', '8'))
+        else:
+            encode_video_svtav1(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', '8'))
     else:
-        raise ValueError(f"Presley AI currently requires x265 for encoding, got {codec}")
+        raise ValueError(f"Presley AI currently requires x265 or svtav1 for encoding, got {codec}")
 
     encoding_time = time.time() - start_time
     restoration_start = time.time()

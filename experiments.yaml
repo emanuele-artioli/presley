@@ -1,2991 +1,3884 @@
-# experiments.yaml
-# Each entry defines a single experiment.
-# The runner (runner.py) iterates over this list, skipping experiments
-# whose result.json already exists in results/ with a matching config hash.
-
 experiments:
-  # --- Component 1: Baselines ---
-  # hash: dc12f16fa7589902
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: 0e49827015f889ca
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x264
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: 13cb90c2d2c2e844
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: aa9f9a9c4a5ccc96
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: svtav1
-    target_bitrate: 460800
-    codec_params:
-      preset: 8
-
-  # --- Component 2: ROI ---
-  # hash: 69fcfa31f7cf54e0
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: e0a789748f59acdc
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: x265_aq
-    target_bitrate: 460800
-    codec_params:
-      aq_mode: 1
-      aq_strength: 1.0
-
-  # hash: 2fd1ea1b92fc6dbe
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-      preset: 8
-
-  # hash: f84b35028fb87790
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 30
-      preset: 8
-
-  # hash: 7064c8a9202bb7bb
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 30
-
-  # hash: d5be141117dc962e
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_qp
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: e9565699da71ff8e
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_qp
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 8
-
-  # hash: 9a1c4184ebf78eb5
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_downsample
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    degradation_params:
-      downsample_scale: 0.5
-
-  # hash: e8d598964a7e067c
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_downsample
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    degradation_params:
-      downsample_scale: 0.25
-
-  # hash: 40934f19558eea34
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_noise
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    degradation_params:
-      noise_variance: 50
-
-  # hash: 7f32095b14b98cbc
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_noise
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    degradation_params:
-      noise_variance: 10
-
-  # --- Component 3: ELVIS ---
-  # hash: 4dc9fcf6be47917e
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: 5d45c24dd3199362
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: e2fgvi
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # --- Component 4: PRESLEY AI ---
-  # hash: 774f24eca108a51d
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: downsample
-    restorer: realesrgan
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      denoise_strength: 1.0
-      tile: 0
-
-  # hash: 287d46b17dd07d54
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: blur
-    restorer: instantir
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      cfg: 7.0
-      creative_start: 1.0
-
-  # --- ROI regime probe: camera-motion videos (expensive backgrounds) ---
-  # hash: 4f8b7760b9b02561
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: 5eb6ac2713e06a5a
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: svtav1
-    target_bitrate: 460800
-    codec_params:
-      preset: 8
-
-  # hash: 826ba0ae37cdc630
-  - component: roi
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 836f938269451b26
-  - component: roi
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-      preset: 8
-
-  # hash: 68ea186829e0f456
-  - component: baselines
-    video: drift-chicane
-    width: 640
-    height: 360
-    codec: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: 8056d4bdbec940f6
-  - component: baselines
-    video: drift-chicane
-    width: 640
-    height: 360
-    codec: svtav1
-    target_bitrate: 460800
-    codec_params:
-      preset: 8
-
-  # hash: c9b6ba54c906ab2a
-  - component: roi
-    video: drift-chicane
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 3bb20e37f3668285
-  - component: roi
-    video: drift-chicane
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-      preset: 8
-
-  # --- Bitrate sweep for BD-rate curves (bear, fast methods) ---
-
-  # hash: 34b1ab21b9815d78
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 150000
-    codec_params:
-      preset: medium
-
-  # hash: 27bf5c72fccb7780
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: svtav1
-    target_bitrate: 150000
-    codec_params:
-      preset: 8
-
-  # hash: 31a312412bca7f4d
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: kvazaar
-    target_bitrate: 150000
-    codec_params:
-      preset: medium
-
-  # hash: 2600e041343b5d94
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 150000
-    codec_params:
-      qp_range: 15
-
-  # hash: 400e96a6be251724
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 150000
-    codec_params:
-      qp_range: 15
-      preset: 8
-
-  # hash: 3ef3b567e258681f
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: x265_aq
-    target_bitrate: 150000
-    codec_params:
-      aq_mode: 1
-      aq_strength: 1.0
-
-  # hash: 7c93abe94e628616
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_qp
-    target_bitrate: 150000
-    codec_params:
-      qp_range: 15
-
-  # hash: d8171406843e5373
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_downsample
-    target_bitrate: 150000
-    codec: x265
-    codec_params:
-      preset: medium
-    degradation_params:
-      downsample_scale: 0.5
-
-  # hash: 1d4122e51e428823
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 250000
-    codec_params:
-      preset: medium
-
-  # hash: 3befe4fc5efd0714
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: svtav1
-    target_bitrate: 250000
-    codec_params:
-      preset: 8
-
-  # hash: 9ccca6c400f9db9e
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: kvazaar
-    target_bitrate: 250000
-    codec_params:
-      preset: medium
-
-  # hash: 150fb27a2e055dee
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 250000
-    codec_params:
-      qp_range: 15
-
-  # hash: 9225a02b9525333a
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 250000
-    codec_params:
-      qp_range: 15
-      preset: 8
-
-  # hash: 651f69352abc9563
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: x265_aq
-    target_bitrate: 250000
-    codec_params:
-      aq_mode: 1
-      aq_strength: 1.0
-
-  # hash: 1208828447365fba
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_qp
-    target_bitrate: 250000
-    codec_params:
-      qp_range: 15
-
-  # hash: da2464b4866e3ac7
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_downsample
-    target_bitrate: 250000
-    codec: x265
-    codec_params:
-      preset: medium
-    degradation_params:
-      downsample_scale: 0.5
-
-  # hash: 4a76bb78d86eb22f
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 800000
-    codec_params:
-      preset: medium
-
-  # hash: f0eedd9e31c2120c
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: svtav1
-    target_bitrate: 800000
-    codec_params:
-      preset: 8
-
-  # hash: f1bc515583eb25d3
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: kvazaar
-    target_bitrate: 800000
-    codec_params:
-      preset: medium
-
-  # hash: dc0b0e2047ad9008
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 800000
-    codec_params:
-      qp_range: 15
-
-  # hash: 4d9e98b6ed735266
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 800000
-    codec_params:
-      qp_range: 15
-      preset: 8
-
-  # hash: 45a2f7095a4738bd
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: x265_aq
-    target_bitrate: 800000
-    codec_params:
-      aq_mode: 1
-      aq_strength: 1.0
-
-  # hash: de9f854bb920e02a
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_qp
-    target_bitrate: 800000
-    codec_params:
-      qp_range: 15
-
-  # hash: c427f6a24b76fe8b
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: presley_downsample
-    target_bitrate: 800000
-    codec: x265
-    codec_params:
-      preset: medium
-    degradation_params:
-      downsample_scale: 0.5
-
-  # --- Parameter search: block_size / alpha / beta / resolution OFAT (bear, kvazaar ROI) ---
-
-  # hash: 82e3ca44c0119654
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 16
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 441879715471f2c7
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 32
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 5ed32955d702cef6
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.0
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 5f85fcf737d5eef8
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.25
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: a232ad31a0b94c1d
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.75
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 3a6e0071875d2527
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 1.0
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 3c0babd222940fba
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.0
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: fc203a9980dad7d3
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.25
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 9bb6a2f51041bfa7
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.75
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: 01b9184a59f45595
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 1.0
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # hash: f20c2d2fcba3905d
-  - component: baselines
-    video: bear
-    width: 960
-    height: 540
-    codec: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: 06300443033d5a4e
-  - component: baselines
-    video: bear
-    width: 960
-    height: 540
-    codec: x265
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: c1380ccc8926e258
-  - component: roi
-    video: bear
-    width: 960
-    height: 540
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 460800
-    codec_params:
-      qp_range: 15
-
-  # --- ELVIS in-painter speed benchmark (faster ProPainter knobs) ---
-  # hash: b7ece4ecb22e1f48
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    inpainter_params:
-      raft_iter: 8
-      ref_stride: 30
-      neighbor_length: 3
-      subvideo_length: 80
-
-  # --- High-resolution SVT-AV1 ROI test (does 64x64 granularity stop mattering at 720p?) ---
-
-  # hash: e126b35024fa3406
-  - component: baselines
-    video: bear
-    width: 1280
-    height: 720
-    codec: svtav1
-    target_bitrate: 1843200
-    codec_params:
-      preset: 8
-
-  # hash: 3e62a0705f73e025
-  - component: baselines
-    video: bear
-    width: 1280
-    height: 720
-    codec: kvazaar
-    target_bitrate: 1843200
-    codec_params:
-      preset: medium
-
-  # hash: 547eaaed44847d59
-  - component: roi
-    video: bear
-    width: 1280
-    height: 720
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 1843200
-    codec_params:
-      qp_range: 15
-      preset: 8
-
-  # hash: 23fcb2ff25ad31de
-  - component: roi
-    video: bear
-    width: 1280
-    height: 720
-    block_size: 64
-    alpha: 0.5
-    beta: 0.5
-    roi_method: svtav1
-    target_bitrate: 1843200
-    codec_params:
-      qp_range: 15
-      preset: 8
-
-  # hash: dfa21110e744b915
-  - component: roi
-    video: bear
-    width: 1280
-    height: 720
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 1843200
-    codec_params:
-      qp_range: 15
-
-  # hash: 1a853a7f2189fdf9
-  - component: roi
-    video: bear
-    width: 1280
-    height: 720
-    block_size: 64
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 1843200
-    codec_params:
-      qp_range: 15
-
-  # --- Low-VRAM InstantIR (batch_size 1) to run alongside other GPU jobs ---
-  # hash: 56675c2650855aa7
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: blur
-    restorer: instantir
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      cfg: 7.0
-      creative_start: 1.0
-      batch_size: 1
-
-  # ============================================================================
-  # STARVED-REGIME generative runs (100k / 150k) — THE decisive experiment.
-  # Generative restoration is theorized to pay off only where the codec is
-  # bit-starved; every generative point so far is at a comfortable ~460k, where
-  # the chain is broken on BOTH FG-PSNR and (bitrate-matched) FG-LPIPS. These
-  # add the ≤150k points to test the "PRESLEY wins when starved" claim against
-  # the existing x265 baseline sweep (compare bitrate-matched FG-LPIPS, not raw).
-  # Low-VRAM configs (InstantIR batch_size=1) so they co-run with other GPU jobs.
-  # ============================================================================
-  # hash: 5a0ec4eb3c738eab
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 150000
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: e6979ec432222e66
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 100000
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: 5318e01ac00f4460
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: downsample
-    restorer: realesrgan
-    target_bitrate: 150000
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      denoise_strength: 1.0
-      tile: 0
-
-  # hash: b58ff6864c41bc3f
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: downsample
-    restorer: realesrgan
-    target_bitrate: 100000
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      denoise_strength: 1.0
-      tile: 0
-
-  # hash: 8d2eb91d0797f341
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: blur
-    restorer: instantir
-    target_bitrate: 150000
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      cfg: 7.0
-      creative_start: 1.0
-      batch_size: 1
-
-  # hash: 4c501accbd5f7a0f
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: blur
-    restorer: instantir
-    target_bitrate: 100000
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      cfg: 7.0
-      creative_start: 1.0
-      batch_size: 1
-
-  # ============================================================================
-  # REGIME CAMPAIGN (2026-07-06): find where the generative chain holds.
-  # Rationale (see TECHNICAL_REPORTS.md): bear is a bad showcase (cheap BG, slow
-  # motion) and starved bitrates made presley_ai WORSE (fixed side channel +
-  # garbage restorer input). Two directions the data points to instead:
-  #  (a) expensive-BG / small-FG videos (bmx-trees FG 4.8%, drift-chicane FG
-  #      2.0%, both camera-motion, cache already built) — degrading/removing an
-  #      expensive BG frees more bits for the FG;
-  #  (b) HIGH bitrate for elvis — its bitrate-matched FG-LPIPS deficit shrinks
-  #      monotonically and is ~parity at 485k; probe 800k/1.8M for a crossover.
-  # x265 baseline curves per video are required for bitrate-matched comparison.
-  # ============================================================================
-  # --- x265 baseline curves: bmx-trees ---
-  # hash: 8d695ddb0f614eb5
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 250000
-    codec_params:
-      preset: medium
-
-  # hash: bfa7ea827b9ac8f5
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: d17f871f4c5990ca
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 800000
-    codec_params:
-      preset: medium
-
-  # hash: 1580bb76cb33d41b
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 1200000
-    codec_params:
-      preset: medium
-
-  # --- x265 baseline curves: drift-chicane ---
-  # hash: c6100863ba091114
-  - component: baselines
-    video: drift-chicane
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 250000
-    codec_params:
-      preset: medium
-
-  # hash: cae811af2f35d005
-  - component: baselines
-    video: drift-chicane
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 460800
-    codec_params:
-      preset: medium
-
-  # hash: 505da4b2814f41d6
-  - component: baselines
-    video: drift-chicane
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 800000
-    codec_params:
-      preset: medium
-
-  # hash: 92e9db688b9ffead
-  - component: baselines
-    video: drift-chicane
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 1200000
-    codec_params:
-      preset: medium
-
-  # --- extend bear x265 baseline curve upward (high-bitrate probe matching) ---
-  # hash: c30bac1f605efe3b
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 1200000
-    codec_params:
-      preset: medium
-
-  # hash: 4fca2a9ee26e14ce
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 1843200
-    codec_params:
-      preset: medium
-
-  # hash: bd80810ea23f0644
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 2400000
-    codec_params:
-      preset: medium
-
-  # --- elvis on expensive-BG videos ---
-  # hash: 64166477b1e25b9f
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: ba7b50a5d4a54320
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 800000
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: f1e04fdeb7f327cf
-  - component: elvis
-    video: drift-chicane
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: 3fd5a0e6a67d31d8
-  - component: elvis
-    video: drift-chicane
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 800000
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # --- elvis high-bitrate probe on bear (LPIPS crossover hypothesis) ---
-  # hash: a27dea25b7d2371c
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 800000
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: 700b22c9daf949c0
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 1843200
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # --- presley_ai/realesrgan on expensive-BG videos ---
-  # hash: 21bf9b39f84b70ca
-  - component: presley_ai
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: downsample
-    restorer: realesrgan
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      denoise_strength: 1.0
-      tile: 0
-
-  # hash: 9d24245a8ff40cb7
-  - component: presley_ai
-    video: drift-chicane
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: downsample
-    restorer: realesrgan
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-    restorer_params:
-      denoise_strength: 1.0
-      tile: 0
-
-  # ============================================================================
-  # ULTRA-STARVED PROBE (30/50/80 kbps): the published ELVIS (NOSSDAV'25) claim
-  # is explicitly scoped to "low quality (VMAF up to 20)" — a regime never
-  # reached by the regime campaign (most starved baseline point: FG-VMAF 59).
-  # Testing the claim where it lives: does in-painting beat a *collapsing*
-  # H.265 baseline (heavy blocking) on VMAF/perceptual metrics? Baselines
-  # extend the bear x265 curve down; elvis runs pair with them.
-  # ============================================================================
-  # hash: 9da47db123186516
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 30000
-    codec_params:
-      preset: medium
-
-  # hash: 02e93253ec86d743
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 50000
-    codec_params:
-      preset: medium
-
-  # hash: 586426146e74b202
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 80000
-    codec_params:
-      preset: medium
-
-  # hash: d76955770b720d40
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 30000
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: b208cadfe544d392
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 50000
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # hash: 65ce8788748cd0cf
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: propainter
-    target_bitrate: 80000
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # ============================================================================
-  # PUBLISHED-CLAIM REPLICATION: the NOSSDAV "2-3 VMAF avg" claim is
-  # ProPainter/E2FGVI over the "ELVIS CV2 benchmark" (same transport, Telea
-  # in-painting). This entry produces that benchmark on the current pipeline;
-  # compare against the existing shrink+propainter@460.8k results.
-  # ============================================================================
-  # hash: a772d20ae3ea7983
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    inpainter: telea
-    target_bitrate: 460800
-    codec: x265
-    codec_params:
-      preset: medium
-
-  # ============================================================================
-  # CHAIN RE-TEST on the winning transport (freeze/blackout, FIXED QP).
-  # Transport-isolated test (2026-07-07) confirmed +0.55-0.59 dB FG-PSNR at
-  # matched bitrate under qp32. These run the full pipeline (transport +
-  # in-painting) so the complete metric suite (incl. VMAF) is valid, against
-  # fixed-QP x265 baselines at the same QPs. target_bitrate is unused in QP
-  # mode (compare on actual_bitrate_bps).
-  # ============================================================================
-  # hash: 9fee58313582e1f8
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: e977c7693c421040
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: 8e61901a52e9cb21
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: freeze
-    composite_output: true
-    inpainter: telea
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 30071c67919d1afa
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: freeze
-    composite_output: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 06e08a82002bddde
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: freeze
-    composite_output: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: 4979f29a2827de20
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: efc61192cdf794c0
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 33
-
-  # hash: ef236f5c48d34161
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # =====================================================================
-  # BRIDGE PRODUCTIZATION — bmx-trees (camera motion / expensive BG)
-  # Tests the corrected scope: with passthrough compositing the FG win is
-  # decoupled from the (bad) BG in-painting, and camera motion FREES more
-  # bits (expensive BG blacked out) so the FG win should GROW, not vanish.
-  # Fixed-QP baseline curve to interpolate the baseline at the elvis actual
-  # bitrate; blackout+passthrough elvis (global top-k select + passthrough).
-  # =====================================================================
-
-  # --- bmx-trees fixed-QP baseline curve ---
-  # hash: 912099b11fa53fc8
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: 8d38a5e13a886895
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: a633dca8d148e3b6
-  - component: baselines
-    video: bmx-trees
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 38
-
-  # --- bmx-trees blackout + passthrough (telea = fast CPU read) ---
-  # hash: 9aba827a1935559f
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    inpainter: telea
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # --- bmx-trees blackout + passthrough (propainter = the real generator) ---
-  # hash: 653837fed38a8adb
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # --- bmx-trees freeze + passthrough (propainter) ---
-  # hash: 0b0e72b91a7ccc55
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: freeze
-    composite_output: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # =====================================================================
-  # FG-PROTECTION FIX (hard UFO-mask exclusion in block selection)
-  # bmx-trees failed -3 dB because the soft x10 BG boost mis-ranks a
-  # high-motion FG (rider 0.127 > BG 0.113) -> 12.8% of FG blocks removed.
-  # fg_protect: true makes the UFO mask a hard exclusion. Re-run bmx-trees;
-  # bear blackout re-run as a sanity check (win should hold or improve).
-  # =====================================================================
-
-  # hash: 6e035ed22b668bc5
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: telea
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 96012299323c49fb
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 363c9ef339377177
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: freeze
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 3cc22f1888baafbe
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # =====================================================================
-  # CHAIN-LINK TESTS (2026-07-09)
-  # (a) elvis > roi head-to-head: kvazaar fixed-QP ROI at target 555k, the
-  #     actual bitrate of the winning elvis blackout+fg_protect bear run
-  #     (555 kbps, FG +0.57 dB) — compare both against the same baseline
-  #     curve at the same actual bitrate.
-  # (b) presley_ai > elvis: the bridge degradations (mean_fill / freeze) with
-  #     passthrough compositing at the same fixed QP32 as the elvis win.
-  #     mean_fill holes are cheap (flat DC, low-contrast boundaries) and hand
-  #     the in-painter a color prior — the design the RD analysis called for.
-  # =====================================================================
-
-  # hash: 5e375f7bd72f94b9
-  - component: roi
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 555000
-    codec_params:
-      qp_range: 15
-
-  # hash: e175fbef3c54a548
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: mean_fill
-    restorer: propainter
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: acd162585b27eea8
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: freeze
-    restorer: propainter
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 818854e3a914c0a6
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: mean_fill
-    restorer: telea
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # =====================================================================
-  # BD-RATE GENERALIZATION + BUDGET-MATCHED PRESLEY BRIDGE (2026-07-09)
-  # (a) presley_ai mean_fill/freeze with elvis's budgeted global top-k
-  #     selection (shrink_amount 0.25) + fg_protect + passthrough at qp32 --
-  #     the fair presley_ai > elvis test at the same starved operating point.
-  #     If FG lands ~= elvis blackout (27.62 @ ~555k), FG-flatness is
-  #     confirmed and the paper reframes black/mean/freeze as fill variants
-  #     of one bridge method (user-approved plan).
-  # (b) camel/pigs/dog: baseline fixed-QP curves (qp30/32/34/37) + elvis
-  #     blackout+FGprot at qp32/37 + kvazaar ROI at 300k/600k -> a BD-rate
-  #     segment for baseline < roi < elvis beyond bear.
-  # =====================================================================
-
-  # hash: b085781801f4a9bf
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: mean_fill
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 76bfb3a463e21301
-  - component: presley_ai
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: freeze
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 335158d453df5e31
-  - component: baselines
-    video: camel
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: ef2637de3a459c03
-  - component: baselines
-    video: camel
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: f1fc7918fe8f05fa
-  - component: baselines
-    video: camel
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 4a56e9a9a855aaaf
-  - component: baselines
-    video: camel
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: fcfbb87d5704dcf9
-  - component: elvis
-    video: camel
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 596a7176ddce4933
-  - component: elvis
-    video: camel
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: fb5b66a9102570dd
-  - component: roi
-    video: camel
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 300000
-    codec_params:
-      qp_range: 15
-
-  # hash: 2359080e919572f7
-  - component: roi
-    video: camel
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 600000
-    codec_params:
-      qp_range: 15
-
-  # hash: 723ee637d29167df
-  - component: baselines
-    video: pigs
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: facb3fb6771d16d6
-  - component: baselines
-    video: pigs
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: bbe10cd8ef986d6b
-  - component: baselines
-    video: pigs
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: b6d5b3c15409284f
-  - component: baselines
-    video: pigs
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: 1e07f10ef631b4e0
-  - component: elvis
-    video: pigs
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 7fef4c1738bb7fbd
-  - component: elvis
-    video: pigs
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: 6d4ef019dd1ddb86
-  - component: roi
-    video: pigs
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 300000
-    codec_params:
-      qp_range: 15
-
-  # hash: c67608eb01c0d7cb
-  - component: roi
-    video: pigs
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 600000
-    codec_params:
-      qp_range: 15
-
-  # hash: 7e04556454dcca22
-  - component: baselines
-    video: dog
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: bf87e515f266e78f
-  - component: baselines
-    video: dog
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 2e58923ff19b5888
-  - component: baselines
-    video: dog
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: a2f60bb3f050a780
-  - component: baselines
-    video: dog
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: 7eb4b3c9993abb8d
-  - component: elvis
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 206cf650ff3c103f
-  - component: elvis
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: e78dae2e3cbf69b8
-  - component: roi
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 300000
-    codec_params:
-      qp_range: 15
-
-  # hash: c593bc9f9bd9b118
-  - component: roi
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 600000
-    codec_params:
-      qp_range: 15
-
-  # =====================================================================
-  # DIAGNOSTIC: is the camel/pigs/dog FG loss a real generalization result
-  # or a bug in ProPainter's parallel-chunk pipeline? bear(82f)/camel(90f)
-  # use 3 chunks (subvideo_length=40 default) and WIN; pigs(79f)/dog(60f)
-  # use 2 chunks and LOSE BADLY even though FG-clip is 0% (verified) and
-  # composite_passthrough is verified correct in isolation. Causal test:
-  # swap the chunk count independent of video content.
-  # =====================================================================
-
-  # hash: 8e7395014ef425cc
-  - component: elvis
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-    inpainter_params:
-      subvideo_length: 20
-
-  # hash: 5eb42ce79b272f31
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-    inpainter_params:
-      subvideo_length: 45
-
-  # =====================================================================
-  # FILL-VARIANT ABLATION EXTENSION (2026-07-10)
-  # Table C2 (FG-flatness: elvis blackout vs presley_ai freeze/mean_fill,
-  # same budgeted top-k + fg_protect + passthrough recipe) currently only
-  # covers bear. Extend to camel/dog/pigs at their existing qp32 elvis
-  # matched point (Table C) to test whether FG-flatness holds across FG-size
-  # regimes, not just bear. bmx-trees excluded (separate hole-churn boundary
-  # case, not a fill-variant question).
-  # =====================================================================
-
-  # hash: 44989abd6513bf5b
-  - component: presley_ai
-    video: camel
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: mean_fill
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: c3bae217cfc54472
-  - component: presley_ai
-    video: camel
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: freeze
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 918f6f2c26bec4fc
-  - component: presley_ai
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: mean_fill
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 26ce0d691af16a2d
-  - component: presley_ai
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: freeze
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: a7ff6cb21ba2538a
-  - component: presley_ai
-    video: pigs
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: mean_fill
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 5959172e7e1a2fb2
-  - component: presley_ai
-    video: pigs
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: freeze
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # =====================================================================
-  # BD-RATE CURVE COMPLETION (2026-07-10)
-  # camel/dog/pigs elvis (bridge, blackout+fg_protect+passthrough) only had
-  # 2 QP points (32, 37) vs baseline's 4-point qp30/32/34/37 curve. Add the
-  # missing qp30/qp34 points so Table C has a matched 4-point curve per
-  # video for a paper-grade BD-rate (Bjontegaard) fit instead of a 2-point
-  # delta. Same recipe as the existing qp32/37 entries for each video.
-  # =====================================================================
-
-  # hash: af57e560cc07bcb4
-  - component: elvis
-    video: camel
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: 40e78d87ec91f13d
-  - component: elvis
-    video: camel
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 552a1a6989a9e4d5
-  - component: elvis
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: bbcddae9c2e8cc2a
-  - component: elvis
-    video: dog
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 4103efc06c1baaf9
-  - component: elvis
-    video: pigs
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: 4a110defb4801533
-  - component: elvis
-    video: pigs
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # =====================================================================
-  # BEAR BD-RATE CURVE COMPLETION (2026-07-11)
-  # Correction: bear's canonical bridge recipe (blackout+fg_protect+
-  # passthrough+propainter) only ever had ONE QP point (32) -- the existing
-  # qp37 elvis/bear entry uses a DIFFERENT recipe (removal_mode=freeze, no
-  # fg_protect), so it's not a valid 2nd curve point for this comparison.
-  # Add qp30/34/37 in the exact qp32 recipe, plus the missing baseline qp30
-  # (bear baseline was 32/33/34/37; standardizing on the 30/32/34/37 ladder
-  # used by camel/dog/pigs so all 4 BD-rate videos are directly comparable).
-  # =====================================================================
-
-  # hash: 1b63442a67927c7b
-  - component: baselines
-    video: bear
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: bc292116525d0fbf
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: 1dca3441ab00cfbd
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 594bd8edbc486862
-  - component: elvis
-    video: bear
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # =====================================================================
-  # BREADTH: 2 new DAVIS videos chosen to fill under-studied attribute gaps
-  # (2026-07-11). Quantitative audit of the 5 existing videos (FG%, blob
-  # fragmentation, background motion) plus visual inspection of candidates
-  # found: all 5 are animal-or-vehicle subjects (no human FG), and only
-  # bmx-trees tests any camera motion (a tracking-pan, blurred background).
-  # - india: true multi-instance human crowd (occlusion, several disjoint
-  #   FG people, some handheld/rack-focus camera motion) -- fills "human
-  #   subject" and "true crowd" (pigs is multi-instance but same-species
-  #   clustered animals, not independently-moving occluding people).
-  # - tennis: single human subject, fast articulated limb motion, STATIC
-  #   camera, unusually high-spatial-frequency background (text banner,
-  #   chain-link fence) -- fills "fast single-subject motion under a static
-  #   camera" and "high-frequency background", both untested so far (current
-  #   static-camera videos have soft/natural backgrounds: grass, fur, dirt).
-  # Same recipe as camel/dog/pigs: fixed-QP baseline (qp30/32/34/37) +
-  # elvis bridge (blackout+fg_protect+passthrough+propainter, same 4 QPs)
-  # for a matched BD-rate curve from the first run, no follow-up needed.
-  # =====================================================================
-
-  # hash: 87b25339f57d7857
-  - component: baselines
-    video: india
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: dfe269034b284e87
-  - component: baselines
-    video: india
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 3dc45daff426e900
-  - component: baselines
-    video: india
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 0e04dd48d0274ef4
-  - component: baselines
-    video: india
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: 9d90c886d7395e74
-  - component: elvis
-    video: india
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: bde0bc12bff243cd
-  - component: elvis
-    video: india
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: c729ed15905ec836
-  - component: elvis
-    video: india
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 1550dfb903571b96
-  - component: elvis
-    video: india
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: 14467419f7326bb2
-  - component: baselines
-    video: tennis
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: 4f7edfc57e9c07c9
-  - component: baselines
-    video: tennis
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 532aaf45b2d818ed
-  - component: baselines
-    video: tennis
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: c09ff75d95fc46de
-  - component: baselines
-    video: tennis
-    width: 640
-    height: 360
-    codec: x265
-    target_bitrate: 0
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # hash: f741ff7fd2b12023
-  - component: elvis
-    video: tennis
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 30
-
-  # hash: 5c0e7020a23e7db1
-  - component: elvis
-    video: tennis
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: c5c7223df94195c2
-  - component: elvis
-    video: tennis
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # hash: 0bba758fb0111588
-  - component: elvis
-    video: tennis
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 37
-
-  # =====================================================================
-  # VERIFY: temporal_pool_masks (union-over-GOP hole stabilization) was
-  # implemented (commit 463e391) to fix the bmx-trees camera-motion
-  # boundary case, but never actually run -- the report claiming "fixed"
-  # was evidence-free. Test at the exact same recipe/QP as the existing
-  # matched-bitrate boundary-case point (blackout+fg_protect+propainter,
-  # qp34) so the two are directly comparable.
-  # =====================================================================
-
-  # hash: 8e2bfd9f0635dbe9
-  - component: elvis
-    video: bmx-trees
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    shrink_amount: 0.25
-    removal_mode: blackout
-    composite_output: true
-    fg_protect: true
-    temporal_pool_masks: true
-    inpainter: propainter
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 34
-
-  # =====================================================================
-  # FILL-VARIANT ABLATION EXTENSION: india + tennis (2026-07-11)
-  # Table C2 (FG-flatness: elvis blackout vs presley_ai freeze/mean_fill,
-  # same budgeted top-k + fg_protect + passthrough recipe) covers
-  # bear/camel/dog/pigs. Extend to the 2 new breadth videos at their
-  # existing qp32 elvis matched point (Table C), same recipe as before.
-  # =====================================================================
-
-  # hash: 9e093ad8cdcb1597
-  - component: presley_ai
-    video: india
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: mean_fill
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 82609b4df948269e
-  - component: presley_ai
-    video: india
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: freeze
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 9f6d0c4b3619cb73
-  - component: presley_ai
-    video: tennis
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: mean_fill
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # hash: 6d53d72e30e31227
-  - component: presley_ai
-    video: tennis
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    degradation: freeze
-    restorer: propainter
-    shrink_amount: 0.25
-    fg_protect: true
-    composite_output: true
-    target_bitrate: 0
-    codec: x265
-    codec_params:
-      preset: medium
-      qp: 32
-
-  # =====================================================================
-  # TABLE A PARITY: roi (kvazaar) entries for india/tennis, matching the
-  # camel/dog/pigs pattern (2 target-bitrate points bracketing the baseline
-  # curve's range).
-  # =====================================================================
-
-  # hash: eda55212941d11a8
-  - component: roi
-    video: india
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 300000
-    codec_params:
-      qp_range: 15
-
-  # hash: c2d4ccd9bc73edad
-  - component: roi
-    video: india
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 600000
-    codec_params:
-      qp_range: 15
-
-  # hash: e2b0fe61888bddd2
-  - component: roi
-    video: tennis
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 300000
-    codec_params:
-      qp_range: 15
-
-  # hash: 2d75403a87d164a9
-  - component: roi
-    video: tennis
-    width: 640
-    height: 360
-    block_size: 8
-    alpha: 0.5
-    beta: 0.5
-    roi_method: kvazaar
-    target_bitrate: 600000
-    codec_params:
-      qp_range: 15
-
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 5
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x264
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 460800
+  codec_params:
+    preset: 8
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: x265_aq
+  target_bitrate: 460800
+  codec_params:
+    aq_mode: 1
+    aq_strength: 1.0
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+    preset: 8
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 30
+    preset: 8
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 30
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_qp
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_qp
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 8
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_downsample
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  degradation_params:
+    downsample_scale: 0.5
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_downsample
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  degradation_params:
+    downsample_scale: 0.25
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_noise
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  degradation_params:
+    noise_variance: 50
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_noise
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  degradation_params:
+    noise_variance: 10
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: e2fgvi
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: instantir
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    cfg: 7.0
+    creative_start: 1.0
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 460800
+  codec_params:
+    preset: 8
+- component: roi
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+    preset: 8
+- component: baselines
+  video: drift-chicane
+  width: 640
+  height: 360
+  codec: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: baselines
+  video: drift-chicane
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 460800
+  codec_params:
+    preset: 8
+- component: roi
+  video: drift-chicane
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: drift-chicane
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+    preset: 8
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 150000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 150000
+  codec_params:
+    preset: 8
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: kvazaar
+  target_bitrate: 150000
+  codec_params:
+    preset: medium
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 150000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 150000
+  codec_params:
+    qp_range: 15
+    preset: 8
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: x265_aq
+  target_bitrate: 150000
+  codec_params:
+    aq_mode: 1
+    aq_strength: 1.0
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_qp
+  target_bitrate: 150000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_downsample
+  target_bitrate: 150000
+  codec: x265
+  codec_params:
+    preset: medium
+  degradation_params:
+    downsample_scale: 0.5
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 250000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 250000
+  codec_params:
+    preset: 8
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: kvazaar
+  target_bitrate: 250000
+  codec_params:
+    preset: medium
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 250000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 250000
+  codec_params:
+    qp_range: 15
+    preset: 8
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: x265_aq
+  target_bitrate: 250000
+  codec_params:
+    aq_mode: 1
+    aq_strength: 1.0
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_qp
+  target_bitrate: 250000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_downsample
+  target_bitrate: 250000
+  codec: x265
+  codec_params:
+    preset: medium
+  degradation_params:
+    downsample_scale: 0.5
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 800000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 800000
+  codec_params:
+    preset: 8
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: kvazaar
+  target_bitrate: 800000
+  codec_params:
+    preset: medium
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 800000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 800000
+  codec_params:
+    qp_range: 15
+    preset: 8
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: x265_aq
+  target_bitrate: 800000
+  codec_params:
+    aq_mode: 1
+    aq_strength: 1.0
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_qp
+  target_bitrate: 800000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: presley_downsample
+  target_bitrate: 800000
+  codec: x265
+  codec_params:
+    preset: medium
+  degradation_params:
+    downsample_scale: 0.5
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 32
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.0
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.25
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.75
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 1.0
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.0
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.25
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.75
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 1.0
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: baselines
+  video: bear
+  width: 960
+  height: 540
+  codec: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 960
+  height: 540
+  codec: x265
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: roi
+  video: bear
+  width: 960
+  height: 540
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 460800
+  codec_params:
+    qp_range: 15
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  inpainter_params:
+    raft_iter: 8
+    ref_stride: 30
+    neighbor_length: 3
+    subvideo_length: 80
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 1843200
+  codec_params:
+    preset: 8
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: kvazaar
+  target_bitrate: 1843200
+  codec_params:
+    preset: medium
+- component: roi
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 1843200
+  codec_params:
+    qp_range: 15
+    preset: 8
+- component: roi
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  roi_method: svtav1
+  target_bitrate: 1843200
+  codec_params:
+    qp_range: 15
+    preset: 8
+- component: roi
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 1843200
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 1843200
+  codec_params:
+    qp_range: 15
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: instantir
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    cfg: 7.0
+    creative_start: 1.0
+    batch_size: 1
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 150000
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 100000
+  codec: x265
+  codec_params:
+    preset: medium
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  target_bitrate: 150000
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  target_bitrate: 100000
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: instantir
+  target_bitrate: 150000
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    cfg: 7.0
+    creative_start: 1.0
+    batch_size: 1
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: instantir
+  target_bitrate: 100000
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    cfg: 7.0
+    creative_start: 1.0
+    batch_size: 1
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 250000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 800000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 1200000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: drift-chicane
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 250000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: drift-chicane
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 460800
+  codec_params:
+    preset: medium
+- component: baselines
+  video: drift-chicane
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 800000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: drift-chicane
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 1200000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 1200000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 1843200
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 2400000
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 800000
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: drift-chicane
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: drift-chicane
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 800000
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 800000
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 1843200
+  codec: x265
+  codec_params:
+    preset: medium
+- component: presley_ai
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+- component: presley_ai
+  video: drift-chicane
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 30000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 50000
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 80000
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 30000
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 50000
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: propainter
+  target_bitrate: 80000
+  codec: x265
+  codec_params:
+    preset: medium
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  inpainter: telea
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 32
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 37
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: freeze
+  composite_output: true
+  inpainter: telea
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: freeze
+  composite_output: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: freeze
+  composite_output: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 33
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 34
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 30
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 34
+- component: baselines
+  video: bmx-trees
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 38
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  inpainter: telea
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: freeze
+  composite_output: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: telea
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: freeze
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: roi
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 555000
+  codec_params:
+    qp_range: 15
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: mean_fill
+  restorer: telea
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: mean_fill
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 30
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 32
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 34
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 37
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+- component: roi
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 300000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 600000
+  codec_params:
+    qp_range: 15
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 30
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 32
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 34
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 37
+- component: elvis
+  video: pigs
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: elvis
+  video: pigs
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+- component: roi
+  video: pigs
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 300000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: pigs
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 600000
+  codec_params:
+    qp_range: 15
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 30
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 32
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 34
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 37
+- component: elvis
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: elvis
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+- component: roi
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 300000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 600000
+  codec_params:
+    qp_range: 15
+- component: elvis
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+  inpainter_params:
+    subvideo_length: 20
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+  inpainter_params:
+    subvideo_length: 45
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: mean_fill
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: mean_fill
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: pigs
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: mean_fill
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: pigs
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 30
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 30
+- component: elvis
+  video: dog
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: pigs
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 30
+- component: elvis
+  video: pigs
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 30
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 30
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 30
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 32
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 34
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 37
+- component: elvis
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 30
+- component: elvis
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: elvis
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 30
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 32
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 34
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 37
+- component: elvis
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 30
+- component: elvis
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: elvis
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: elvis
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+- component: elvis
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  temporal_pool_masks: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+- component: presley_ai
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: mean_fill
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: mean_fill
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: roi
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 300000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 600000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 300000
+  codec_params:
+    qp_range: 15
+- component: roi
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  roi_method: kvazaar
+  target_bitrate: 600000
+  codec_params:
+    qp_range: 15
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: dog
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: pigs
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: india
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 150000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 16
+    strides: 5,4,2
+    channels: 32,16,8
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 250000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 32
+    strides: 5,4,2
+    channels: 64,32,16
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 460800
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 64
+    strides: 5,4,2
+    channels: 128,64,32
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: hnerv
+  target_bitrate: 800000
+  codec_params:
+    epochs: 4000
+    lr: 0.001
+    embed_height: 9
+    embed_width: 16
+    embed_channels: 128
+    strides: 5,4,2
+    channels: 256,128,64
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.0
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.25
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.75
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 1.0
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.0
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.25
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.75
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 1.0
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 32
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.05
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.15
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.5
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.75
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.0
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.25
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.75
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 1.0
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.0
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.25
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.75
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 1.0
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 32
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.05
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.15
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.5
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.75
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 32
+    preset: medium
+  restorer_params: {}
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 30
+    preset: '8'
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 30
+    preset: '8'
+  restorer_params: {}
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 32
+    preset: '8'
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 32
+    preset: '8'
+  restorer_params: {}
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 34
+    preset: '8'
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 34
+    preset: '8'
+  restorer_params: {}
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 37
+    preset: '8'
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 37
+    preset: '8'
+  restorer_params: {}
+- component: baselines
+  video: camel
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 30
+    preset: '8'
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 30
+    preset: '8'
+  restorer_params: {}
+- component: baselines
+  video: camel
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 32
+    preset: '8'
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 32
+    preset: '8'
+  restorer_params: {}
+- component: baselines
+  video: camel
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 34
+    preset: '8'
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 34
+    preset: '8'
+  restorer_params: {}
+- component: baselines
+  video: camel
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 37
+    preset: '8'
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 37
+    preset: '8'
+  restorer_params: {}

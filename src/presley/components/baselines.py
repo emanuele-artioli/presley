@@ -38,7 +38,10 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
     elif codec == 'svtav1':
         encode_video_svtav1(ref_frames_pattern, output_video, framerate, target_bitrate, preset=str(codec_params.get('preset', '8')))
     elif codec == 'hnerv':
-        raise NotImplementedError("HNeRV baseline not yet implemented")
+        from presley.hnerv_utils import encode_video_hnerv
+        checkpoint_path = os.path.join(results_dir, "hnerv_checkpoint.pt.gz")
+        # Returns train_seconds but we keep track of total encoding_time using start_time anyway
+        encode_video_hnerv(ref_frames_pattern, output_video, framerate, width, height, codec_params, checkpoint_path)
     elif codec == 'dcvc':
         raise NotImplementedError("DCVC baseline not yet implemented")
     else:
@@ -46,7 +49,11 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
         
     encoding_time = time.time() - start_time
     
-    file_size = os.path.getsize(output_video)
+    if codec == 'hnerv':
+        file_size = os.path.getsize(os.path.join(results_dir, "hnerv_checkpoint.pt.gz"))
+    else:
+        file_size = os.path.getsize(output_video)
+        
     duration = len(frames) / framerate
     actual_bitrate = (file_size * 8) / duration
     
