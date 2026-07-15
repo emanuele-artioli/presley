@@ -153,19 +153,37 @@ def calculate_vmaf(ref_yuv: str, dec_video: str, width: int, height: int, framer
         print(f"VMAF failed: {e}")
     return {"mean": 0.0, "std": 0.0}
 
-def calculate_fvmd(ref_dir: str, dec_video: str) -> float:
-    # Minimal FVMD implementation
+def _fvmd_on_frames(refs: List[np.ndarray], decs: List[np.ndarray]) -> float:
     try:
-        from fvmd.datasets.video_datasets import VideoDataset
+        from fvmd.datasets.video_datasets import VideoDatasetNP
         from fvmd.keypoint_tracking import track_keypoints
         from fvmd.extract_motion_features import calc_hist
         from fvmd.frechet_distance import calculate_fd_given_vectors
+        import tempfile
         
-        # We would decode dec_video to a temp dir and run FVMD between ref_dir and temp dir.
-        # But since FVMD is extremely slow and we might skip it or use a simplified stub.
-        # Leaving a placeholder for now to allow pipeline to run.
-        return 0.0
-    except ImportError:
+        # FVMD expects RGB or BGR? VideoDataset expects path to images or numpy arrays.
+        # We pass numpy arrays of shape [B, T, H, W, C]
+        refs_np = np.expand_dims(np.array(refs), axis=0)
+        decs_np = np.expand_dims(np.array(decs), axis=0)
+        
+        gt_dataset = VideoDatasetNP(refs_np)
+        gen_dataset = VideoDatasetNP(decs_np)
+        
+        with tempfile.TemporaryDirectory() as td:
+            velo_gen, velo_gt, acc_gen, acc_gt = track_keypoints(log_dir=td, gen_dataset=gen_dataset, gt_dataset=gt_dataset, v_stride=1)
+        
+        B = velo_gen.shape[0]
+        gt_v_hist = calc_hist(velo_gt).reshape(B, -1)
+        gen_v_hist = calc_hist(velo_gen).reshape(B, -1)
+        gt_a_hist = calc_hist(acc_gt).reshape(B, -1)
+        gen_a_hist = calc_hist(acc_gen).reshape(B, -1)
+        
+        gt_hist = np.concatenate((gt_v_hist, gt_a_hist), axis=1)
+        gen_hist = np.concatenate((gen_v_hist, gen_a_hist), axis=1)
+        
+        return float(calculate_fd_given_vectors(gt_hist, gen_hist))
+    except Exception as e:
+        print(f"FVMD failed: {e}")
         return 0.0
 
 def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
@@ -333,7 +351,7 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
             "lpips_mean": float(np.mean(lpips_vals)), "lpips_std": float(np.std(lpips_vals)),
             "dists_mean": float(np.mean(dists_vals)), "dists_std": float(np.std(dists_vals)),
             "vmaf_mean": vmaf_data["mean"], "vmaf_std": vmaf_data["std"],
-            "fvmd": calculate_fvmd(ref_frames_dir, output_video)
+            "fvmd": _fvmd_on_frames(refs[:num_frames], decs[:num_frames])
         })
         metrics["block_level"] = {
             "psnr": {"shape": list(block_psnr.shape), "path": "block_psnr.npz"},
@@ -624,6 +642,52 @@ def backfill_fid_all(results_dir: str, cache_dir: str, dataset_dir: str, force: 
         if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
             print(backfill_fid(entry, results_dir, cache_dir, dataset_dir, force=force))
 
+def backfill_fvmd(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> str:
+    exp_results_dir = os.path.join(results_dir, experiment_hash)
+    result_path = os.path.join(exp_results_dir, "result.json")
+    if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
+    with open(result_path, 'r') as f: data = json.load(f)
+    if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
+    if not force and "fvmd" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: FG-FVMD already present"
+    
+    cfg = data['config']
+    video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+    block_size = cfg.get('block_size', 8)
+    output_video = data.get('output_video')
+    if not output_video or not os.path.exists(output_video): return f"{experiment_hash}: output video missing"
+
+    _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+    ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    decs = load_frames_from_video(output_video)
+
+    n = min(len(refs), len(decs), len(ufo_masks))
+    if n == 0: return f"{experiment_hash}: no decodable frames"
+    masks = [ufo_masks[i] > 127 for i in range(n)]
+    
+    ov_fvmd = _fvmd_on_frames(refs[:n], decs[:n])
+    bb = _fg_union_bbox(masks, width, height)
+    fg_fvmd = 0.0
+    if bb:
+        y1, y2, x1, x2 = bb
+        ref_c = [refs[i][y1:y2, x1:x2] for i in range(n)]
+        dec_c = [decs[i][y1:y2, x1:x2] for i in range(n)]
+        fg_fvmd = _fvmd_on_frames(ref_c, dec_c)
+        
+    m = data["metrics"]
+    m.setdefault("overall", {})["fvmd"] = float(ov_fvmd)
+    m.setdefault("foreground", {})["fvmd"] = float(fg_fvmd)
+
+    tmp = result_path + ".tmp"
+    with open(tmp, 'w') as f: json.dump(data, f, indent=2)
+    os.replace(tmp, result_path)
+    return f"{experiment_hash}: OV-FVMD={ov_fvmd:.2f} FG-FVMD={fg_fvmd:.2f}"
+
+def backfill_fvmd_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
+    for entry in sorted(os.listdir(results_dir)):
+        if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
+            print(backfill_fvmd(entry, results_dir, cache_dir, dataset_dir, force=force))
+
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     for entry in os.listdir(results_dir):
         # Skip bookkeeping dirs (e.g. _superseded) — not experiment hashes.
@@ -659,6 +723,8 @@ def main():
                         help='Append overall + FG-crop DISTS to existing result.json files')
     parser.add_argument('--backfill-fid', action='store_true',
                         help='Append overall + FG-crop FID to existing result.json files')
+    parser.add_argument('--backfill-fvmd', action='store_true',
+                        help='Append overall + FG-crop FVMD to existing result.json files')
 
     parser.add_argument('--force', action='store_true',
                         help='With a --backfill-* flag, recompute even if the metric is already present')
@@ -671,6 +737,8 @@ def main():
         backfill_dists_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     elif args.backfill_fid:
         backfill_fid_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
+    elif args.backfill_fvmd:
+        backfill_fvmd_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     else:
         evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
 

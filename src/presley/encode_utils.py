@@ -365,7 +365,3 @@ def encode_video_svtav1_qp(input_video_or_pattern: str, output_video: str, frame
     subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
                     '-c:v', 'libsvtav1', '-preset', preset, '-svtav1-params', f'rc=0:q={qp}', output_video], check=True)
 
-def encode_video_svtav1(input_video_or_pattern: str, output_video: str, framerate: float, target_bitrate: int, preset: str = "8") -> None:
-    input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
-    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
-                    '-c:v', 'libsvtav1', '-preset', preset, '-b:v', str(target_bitrate), output_video], check=True)

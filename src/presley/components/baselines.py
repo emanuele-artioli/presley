@@ -36,7 +36,11 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
     elif codec == 'kvazaar':
         encode_video_kvazaar(ref_frames_pattern, output_video, framerate, target_bitrate, width, height)
     elif codec == 'svtav1':
-        encode_video_svtav1(ref_frames_pattern, output_video, framerate, target_bitrate, preset=str(codec_params.get('preset', '8')))
+        if 'qp' in codec_params:
+            from presley.encode_utils import encode_video_svtav1_qp
+            encode_video_svtav1_qp(ref_frames_pattern, output_video, framerate, int(codec_params['qp']), preset=str(codec_params.get('preset', '8')))
+        else:
+            encode_video_svtav1(ref_frames_pattern, output_video, framerate, target_bitrate, preset=str(codec_params.get('preset', '8')))
     elif codec == 'hnerv':
         from presley.hnerv_utils import encode_video_hnerv
         checkpoint_path = os.path.join(results_dir, "hnerv_checkpoint.pt.gz")
