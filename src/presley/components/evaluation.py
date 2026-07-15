@@ -153,38 +153,50 @@ def calculate_vmaf(ref_yuv: str, dec_video: str, width: int, height: int, framer
         print(f"VMAF failed: {e}")
     return {"mean": 0.0, "std": 0.0}
 
+def _fvmd_hist_rows(refs: List[np.ndarray], decs: List[np.ndarray]):
+    """Track a grid of keypoints across `refs` (ground truth) and `decs`
+    (generated) and return `(gt_rows, gen_rows)`, each shape `[n_clips, D]` —
+    the per-clip velocity+acceleration motion histograms that FVMD's Frechet
+    distance is computed over. FVMD splits each video into fixed-length clips
+    (the leading dim), so a single video already yields several feature rows.
+
+    `gt_rows` depends only on the reference frames, so it can be reused as the
+    reference distribution for any method's output on the same source video.
+    Raises on failure; callers decide how to handle it.
+    """
+    from fvmd.datasets.video_datasets import VideoDatasetNP
+    from fvmd.keypoint_tracking import track_keypoints
+    from fvmd.extract_motion_features import calc_hist
+    import tempfile
+
+    refs_np = np.expand_dims(np.array(refs), axis=0)
+    decs_np = np.expand_dims(np.array(decs), axis=0)
+    gt_dataset = VideoDatasetNP(refs_np)
+    gen_dataset = VideoDatasetNP(decs_np)
+    with tempfile.TemporaryDirectory() as td:
+        velo_gen, velo_gt, acc_gen, acc_gt = track_keypoints(
+            log_dir=td, gen_dataset=gen_dataset, gt_dataset=gt_dataset, v_stride=1)
+    B = velo_gen.shape[0]
+    gt_rows = np.concatenate((calc_hist(velo_gt).reshape(B, -1),
+                              calc_hist(acc_gt).reshape(B, -1)), axis=1)
+    gen_rows = np.concatenate((calc_hist(velo_gen).reshape(B, -1),
+                               calc_hist(acc_gen).reshape(B, -1)), axis=1)
+    return gt_rows, gen_rows
+
+
 def _fvmd_on_frames(refs: List[np.ndarray], decs: List[np.ndarray]) -> float:
+    """Per-video FVMD: Frechet distance over one video's own clip features.
+    NOTE: an intra-video adaptation — the leading dim is the clips of a single
+    sequence, so scores are not comparable across videos of different motion
+    content. Kept as an internal signal; the paper-grade metric is set-level
+    (see `fvmd_set_level`)."""
     try:
-        from fvmd.datasets.video_datasets import VideoDatasetNP
-        from fvmd.keypoint_tracking import track_keypoints
-        from fvmd.extract_motion_features import calc_hist
         from fvmd.frechet_distance import calculate_fd_given_vectors
-        import tempfile
-        
-        # FVMD expects RGB or BGR? VideoDataset expects path to images or numpy arrays.
-        # We pass numpy arrays of shape [B, T, H, W, C]
-        refs_np = np.expand_dims(np.array(refs), axis=0)
-        decs_np = np.expand_dims(np.array(decs), axis=0)
-        
-        gt_dataset = VideoDatasetNP(refs_np)
-        gen_dataset = VideoDatasetNP(decs_np)
-        
-        with tempfile.TemporaryDirectory() as td:
-            velo_gen, velo_gt, acc_gen, acc_gt = track_keypoints(log_dir=td, gen_dataset=gen_dataset, gt_dataset=gt_dataset, v_stride=1)
-        
-        B = velo_gen.shape[0]
-        gt_v_hist = calc_hist(velo_gt).reshape(B, -1)
-        gen_v_hist = calc_hist(velo_gen).reshape(B, -1)
-        gt_a_hist = calc_hist(acc_gt).reshape(B, -1)
-        gen_a_hist = calc_hist(acc_gen).reshape(B, -1)
-        
-        gt_hist = np.concatenate((gt_v_hist, gt_a_hist), axis=1)
-        gen_hist = np.concatenate((gen_v_hist, gen_a_hist), axis=1)
-        
-        return float(calculate_fd_given_vectors(gt_hist, gen_hist))
+        gt_rows, gen_rows = _fvmd_hist_rows(refs, decs)
+        return float(calculate_fd_given_vectors(gt_rows, gen_rows))
     except Exception as e:
         print(f"FVMD failed: {e}")
-        return 0.0
+        return float('nan')
 
 def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     """Compute metrics for one experiment.
@@ -351,7 +363,6 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
             "lpips_mean": float(np.mean(lpips_vals)), "lpips_std": float(np.std(lpips_vals)),
             "dists_mean": float(np.mean(dists_vals)), "dists_std": float(np.std(dists_vals)),
             "vmaf_mean": vmaf_data["mean"], "vmaf_std": vmaf_data["std"],
-            "fvmd": _fvmd_on_frames(refs[:num_frames], decs[:num_frames])
         })
         metrics["block_level"] = {
             "psnr": {"shape": list(block_psnr.shape), "path": "block_psnr.npz"},
@@ -667,26 +678,123 @@ def backfill_fvmd(experiment_hash: str, results_dir: str, cache_dir: str, datase
     
     ov_fvmd = _fvmd_on_frames(refs[:n], decs[:n])
     bb = _fg_union_bbox(masks, width, height)
-    fg_fvmd = 0.0
+    fg_fvmd = float('nan')
     if bb:
         y1, y2, x1, x2 = bb
         ref_c = [refs[i][y1:y2, x1:x2] for i in range(n)]
         dec_c = [decs[i][y1:y2, x1:x2] for i in range(n)]
         fg_fvmd = _fvmd_on_frames(ref_c, dec_c)
-        
+
+    # Store None (JSON null) rather than 0.0/NaN on failure or absent FG, so a
+    # genuine failure is distinguishable from a real value downstream.
+    def _clean(x):
+        return None if (x is None or np.isnan(x)) else float(x)
     m = data["metrics"]
-    m.setdefault("overall", {})["fvmd"] = float(ov_fvmd)
-    m.setdefault("foreground", {})["fvmd"] = float(fg_fvmd)
+    m.setdefault("overall", {})["fvmd"] = _clean(ov_fvmd)
+    m.setdefault("foreground", {})["fvmd"] = _clean(fg_fvmd)
 
     tmp = result_path + ".tmp"
     with open(tmp, 'w') as f: json.dump(data, f, indent=2)
     os.replace(tmp, result_path)
-    return f"{experiment_hash}: OV-FVMD={ov_fvmd:.2f} FG-FVMD={fg_fvmd:.2f}"
+    return f"{experiment_hash}: OV-FVMD={ov_fvmd} FG-FVMD={fg_fvmd}"
 
-def backfill_fvmd_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
-    for entry in sorted(os.listdir(results_dir)):
-        if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
-            print(backfill_fvmd(entry, results_dir, cache_dir, dataset_dir, force=force))
+def backfill_fvmd_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False, shard: str = None) -> None:
+    import concurrent.futures
+    entries = [entry for entry in sorted(os.listdir(results_dir)) 
+               if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_')]
+    if shard:
+        idx, total = map(int, shard.split('/'))
+        entries = [e for i, e in enumerate(entries) if i % total == idx]
+    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        futures = {executor.submit(backfill_fvmd, entry, results_dir, cache_dir, dataset_dir, force): entry for entry in entries}
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                res = future.result()
+                if res:
+                    print(res)
+            except Exception as e:
+                print(f"Error on {futures[future]}: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Set-level FVMD (paper-grade): one distribution per method/set, pooled over a
+# set of videos vs the matched clean references. Unlike per-video backfill_fvmd,
+# this is the statistically-intended usage of a Frechet distance and produces
+# ONE score per set — so it is written to a standalone table, never into the
+# per-experiment result.json.
+# ---------------------------------------------------------------------------
+
+def fvmd_set_level(hashes, results_dir, cache_dir, dataset_dir, ref_cache=None):
+    """Pool per-clip motion-histogram rows across a SET of experiments (which
+    together span several source videos) and return one FVMD for the set's
+    generated distribution vs the pooled clean-reference distribution.
+
+    Returns `(fvmd_value, used_hashes)`. `ref_cache` (a dict keyed by
+    `(video,width,height)`) is populated with each source video's reference rows
+    so the ground-truth distribution is tracked once and reused (and, crucially,
+    each video contributes to the reference set exactly once) across every set
+    that shares `ref_cache`.
+    """
+    from fvmd.frechet_distance import calculate_fd_given_vectors
+    if ref_cache is None:
+        ref_cache = {}
+    gt_all, gen_all, used = [], [], []
+    for h in hashes:
+        result_path = os.path.join(results_dir, h, "result.json")
+        if not os.path.exists(result_path):
+            print(f"  set-level FVMD skip {h}: no result.json"); continue
+        data = json.load(open(result_path))
+        cfg = data['config']
+        video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+        output_video = data.get('output_video')
+        if not output_video or not os.path.exists(output_video):
+            print(f"  set-level FVMD skip {h}: output video missing"); continue
+        _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+        decs = load_frames_from_video(output_video)
+        n = min(len(refs), len(decs))
+        if n == 0:
+            print(f"  set-level FVMD skip {h}: no decodable frames"); continue
+        try:
+            gt_rows, gen_rows = _fvmd_hist_rows(refs[:n], decs[:n])
+        except Exception as e:
+            print(f"  set-level FVMD skip {h}: {e}"); continue
+        key = (video_name, width, height)
+        ref_cache.setdefault(key, gt_rows)  # reference rows depend only on the clean video
+        gen_all.append(gen_rows)
+        used.append((h, key))
+    if not gen_all:
+        return float('nan'), []
+    # one reference row-block per unique source video in this set (dedup)
+    ref_keys = {k for _, k in used}
+    gt_hist = np.concatenate([ref_cache[k] for k in ref_keys], axis=0)
+    gen_hist = np.concatenate(gen_all, axis=0)
+    return float(calculate_fd_given_vectors(gt_hist, gen_hist)), [h for h, _ in used]
+
+
+def fvmd_setlevel_report(groups_path: str, results_dir: str, cache_dir: str,
+                         dataset_dir: str, out_path: str) -> None:
+    """Compute one set-level FVMD per group and write a standalone table.
+
+    `groups_path` is a JSON file mapping set-name -> list of experiment hashes,
+    e.g. {"baseline": ["ab..","cd..",...], "presley_ai": [...], ...}. All groups
+    share a `ref_cache`, so the clean-reference distribution for each source
+    video is computed once across the whole report.
+    """
+    with open(groups_path) as f:
+        groups = json.load(f)
+    ref_cache = {}
+    rows = []
+    for name, hashes in groups.items():
+        print(f"[set-level FVMD] {name}: {len(hashes)} experiments")
+        fd, used = fvmd_set_level(hashes, results_dir, cache_dir, dataset_dir, ref_cache=ref_cache)
+        print(f"  -> FVMD={fd}  (used {len(used)}/{len(hashes)})")
+        rows.append((name, fd, len(used), len(hashes)))
+    with open(out_path, 'w') as f:
+        f.write("set\tfvmd\tn_used\tn_total\n")
+        for name, fd, nu, nt in rows:
+            f.write(f"{name}\t{fd}\t{nu}\t{nt}\n")
+    print(f"[set-level FVMD] wrote {out_path}")
+
 
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     for entry in os.listdir(results_dir):
@@ -724,10 +832,16 @@ def main():
     parser.add_argument('--backfill-fid', action='store_true',
                         help='Append overall + FG-crop FID to existing result.json files')
     parser.add_argument('--backfill-fvmd', action='store_true',
-                        help='Append overall + FG-crop FVMD to existing result.json files')
+                        help='Append overall + FG-crop per-video FVMD to existing result.json files (internal signal; not the paper metric)')
+    parser.add_argument('--fvmd-setlevel', type=str, default=None, metavar='GROUPS_JSON',
+                        help='Compute paper-grade set-level FVMD: JSON file mapping set-name -> list of experiment hashes')
+    parser.add_argument('--fvmd-out', type=str, default='fvmd_setlevel.tsv',
+                        help='Output table path for --fvmd-setlevel')
 
     parser.add_argument('--force', action='store_true',
                         help='With a --backfill-* flag, recompute even if the metric is already present')
+    parser.add_argument('--shard', type=str, default=None,
+                        help='Shard the evaluation (e.g. 0/2)')
     args = parser.parse_args()
     if args.backfill_lpips:
         backfill_lpips_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
@@ -738,7 +852,9 @@ def main():
     elif args.backfill_fid:
         backfill_fid_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     elif args.backfill_fvmd:
-        backfill_fvmd_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
+        backfill_fvmd_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force, shard=args.shard)
+    elif args.fvmd_setlevel:
+        fvmd_setlevel_report(args.fvmd_setlevel, args.results_dir, args.cache_dir, args.dataset_dir, args.fvmd_out)
     else:
         evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
 
