@@ -45,10 +45,60 @@ excluding any `hash`/`_`-prefixed keys, so the annotation never perturbs it.
 
 ## Evaluation methodology — every experiment has a comparison target
 
-The claim under test is the chain **presley_ai > elvis > roi > baseline** on
-*foreground* quality at matched bitrate. Never report only overall metrics —
-the `metrics.foreground`/`metrics.background` split is the point. Analyze each
-component against its designated target:
+PRESLEY has **two co-equal goals**. Every experiment tests one of them, and a
+result is only complete when it says something about both:
+
+- **Goal 1 — bit relocation.** Degradation moves encoding bits **BG→FG**, so at
+  the same bitrate FG is *better*, respecting the chain
+  `baseline < roi < elvis < presley_ai` (elvis and presley_ai may legitimately
+  **tie** — see the FG-flatness finding). Lower BG quality is an *accepted cost*.
+  **Metric:** FG-PSNR/FG-LPIPS at matched *actual* bitrate; BD-rate for
+  paper-grade claims. Expected signature: FG ↑, BG ↓.
+- **Goal 2 — generative restoration.** The client-side model restores the BG as
+  close as possible to the **original**, without hurting FG; ideally exceeding
+  original BG and/or FG. **Metric (perceptual primary): BG-LPIPS / BG-DISTS of
+  the restored output vs the ORIGINAL**, compared against the pristine
+  baseline's BG at matched bitrate. **BG-PSNR is reported alongside but is never
+  the verdict** — `mean_fill` scores the *highest* BG-PSNR while being
+  perceptually the *worst* (flat DC blocks are mathematically "closer" than
+  hallucinated detail), so a PSNR-primary Goal 2 rewards a fill for **not**
+  hallucinating, i.e. punishes the generative model for doing its job. The
+  restoration *gain* (`metrics.background` − `metrics.transmitted.background`)
+  is the mechanism; the **headline is restored-vs-original**, not
+  restored-vs-degraded.
+
+Goal 1 is not evidence for Goal 2 or vice versa. A method can free bits and
+still fail to restore (that is the current standing — see the reports).
+
+### ⛔ Hard rule: degradation experiments MUST use fixed-QP/CRF
+
+Under **VBR the encoder spends the bitrate target regardless of source
+complexity**, so degradation *cannot* free bits — it only makes the content
+harder to code at that target, and the holes steal bits *from* FG, inverting
+Goal 1. This is not a hypothesis: **25/25 matched VBR pairs, across every
+degradation method ever run (freeze, downsample, blur, shrink), encode to MORE
+bits than the pristine baseline. Zero counterexamples.** Under fixed QP the same
+methods free bits (elvis_blackout −8.6% avg, elvis_freeze −9.7%, mean_fill
+−6.8%).
+
+**A VBR degradation curve is not evidence about the method — do not commission
+one, and do not accept a spec that asks for one** (a 2026-07-16 TOP-PRIORITY
+spec did exactly this and burned hours of GPU time re-measuring VBR laundering).
+This is the same mechanism that already bit the codec-ROI work; see
+TECHNICAL_REPORT_ROI_ENCODING's fixed-QP finding.
+
+### Reporting rule: never dress up imperceptible deltas
+
+Sub-1 dB FG differences are **imperceptible** — do not report them as a result
+or a trend. State the comparison the way it actually lands: *"at FG quality that
+is indistinguishable, method X costs N% more/fewer bits than the baseline, and
+BG-LPIPS is Y vs the baseline's Z."* Bitrate cost at matched quality is the
+claim; a 0.3 dB FG delta is not.
+
+Never report only overall metrics — the `metrics.foreground`/`metrics.background`
+split is the point (and for bridge runs `overall` is actively misleading, since
+the collapsed BG dominates it). Analyze each component against its designated
+target:
 
 - **Codec ROI methods** (`kvazaar`, `x265_aq`, `svtav1`) vs the **same codec's
   baseline** at comparable bitrate. Expected signature: FG quality ↑, BG

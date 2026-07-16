@@ -3882,3 +3882,80 @@ experiments:
     qp: 37
     preset: '8'
   restorer_params: {}
+# DO NOT COPY THIS BLOCK AS A TEMPLATE -- it is a mis-specified experiment, kept
+# because its results are on disk and its Goal 2 data is valid.
+# These are VBR (target-bitrate) points, chosen to match the bear 640x360 svtav1
+# baselines' rate-control mode. That was the wrong call: under VBR the encoder
+# spends the target regardless of source complexity, so degradation CANNOT free
+# bits (25/25 matched VBR pairs projectwide encode LARGER than pristine). The
+# resulting +10.56% BD-rate measures VBR laundering, not the method -- see
+# CLAUDE.md's fixed-QP hard rule. A valid starved test needs fixed-QP baselines
+# at 640x360, which do not exist yet.
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 150000
+  codec: svtav1
+  codec_params:
+    preset: 8
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 250000
+  codec: svtav1
+  codec_params:
+    preset: 8
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 460800
+  codec: svtav1
+  codec_params:
+    preset: 8
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 800000
+  codec: svtav1
+  codec_params:
+    preset: 8
+  restorer_params: {}
