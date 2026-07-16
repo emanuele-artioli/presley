@@ -3959,3 +3959,190 @@ experiments:
   codec_params:
     preset: 8
   restorer_params: {}
+
+# Fixed-QP starved SVT-AV1 rerun (2026-07-16, corrected spec): the VBR block
+# above measured rate-control laundering, not the method. These 12 entries
+# (4 baselines + 4 presley_ai/freeze + 4 elvis/blackout, same 4 QPs) are the
+# valid starved test. QPs calibrated against pristine bear 640x360 svtav1 to
+# land near the original 144-777 kbps starved band: qp43~753, qp51~442,
+# qp58~252, qp61~163 kbps (pristine reference; degraded bitrates will differ).
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 43
+    preset: '8'
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 51
+    preset: '8'
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 58
+    preset: '8'
+- component: baselines
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 61
+    preset: '8'
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 51
+    preset: '8'
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: '8'
+  restorer_params: {}
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 61
+    preset: '8'
+  restorer_params: {}
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  inpainter_params: {}
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 51
+    preset: '8'
+  inpainter_params: {}
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: '8'
+  inpainter_params: {}
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 61
+    preset: '8'
+  inpainter_params: {}

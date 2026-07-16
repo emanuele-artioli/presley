@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, Any
 
 from presley.preprocessing import get_reference_frames, get_removability_scores
-from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265
+from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_svtav1
 from presley.degradation import apply_selective_removal, select_removal_mask_global
 from presley.restoration import stretch_frame
 from presley.sidechannel import save_binary_masks, composite_passthrough
@@ -118,8 +118,14 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
             encode_video_x265_qp(temp_shrunk_vid, encoded_shrunk, framerate, int(codec_params['qp']), preset=codec_params.get('preset', 'medium'))
         else:
             encode_video_x265(temp_shrunk_vid, encoded_shrunk, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
+    elif codec == 'svtav1':
+        if 'qp' in codec_params:
+            from presley.encode_utils import encode_video_svtav1_qp
+            encode_video_svtav1_qp(temp_shrunk_vid, encoded_shrunk, framerate, int(codec_params['qp']), preset=str(codec_params.get('preset', '8')))
+        else:
+            encode_video_svtav1(temp_shrunk_vid, encoded_shrunk, framerate, target_bitrate, preset=str(codec_params.get('preset', '8')))
     else:
-        raise ValueError(f"Elvis currently requires x265 for encoding, got {codec}")
+        raise ValueError(f"Elvis currently requires x265 or svtav1 for encoding, got {codec}")
         
     encoding_time = time.time() - start_time
     restoration_start = time.time()
