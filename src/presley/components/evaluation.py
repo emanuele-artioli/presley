@@ -724,51 +724,163 @@ def backfill_fvmd_all(results_dir: str, cache_dir: str, dataset_dir: str, force:
 # per-experiment result.json.
 # ---------------------------------------------------------------------------
 
+def _fvmd_feats_dir(cache_dir: str) -> str:
+    d = os.path.join(cache_dir, "fvmd_feats")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def _savez_atomic(path: str, **arrays) -> None:
+    """Write an .npz via tmp+rename. These are long GPU jobs on a shared box; an
+    interrupted in-place savez leaves a truncated file that a later run would
+    find via os.path.exists and fail to load."""
+    tmp = path + ".tmp.npz"
+    np.savez_compressed(tmp, **arrays)
+    os.replace(tmp, path)
+
+
+def _fvmd_rows_cached(experiment_hash, results_dir, cache_dir, dataset_dir):
+    """Return `(gt_rows, gen_rows, key)` for one experiment, tracking keypoints
+    only on a cache miss.
+
+    Keypoint tracking is the whole cost of FVMD (~a minute of GPU per video);
+    every statistic built on the rows afterwards is pure numpy. Persisting the
+    768-dim rows to `cache/fvmd_feats/` makes the null control, the jackknife and
+    any future analysis variant instant and re-runnable instead of costing a full
+    GPU pass each.
+
+    `key` is `(video, width, height, n_frames)`. The frame count is part of the
+    key so a truncated decode can never read back another length's rows.
+
+    A decode whose length differs from the reference is REJECTED rather than
+    silently trimmed to `min(len(refs), len(decs))`. Two reasons, both
+    correctness:
+      * trimming makes `gt_rows` length-dependent, so the same source video
+        would mint a second, near-duplicate reference block and get
+        double-weighted in the pooled ground truth — breaking the
+        "each video contributes exactly once" contract in `_collect_fvmd_rows`.
+      * a set whose clips come from different-length decodes is not a
+        like-for-like distribution comparison in the first place.
+    A rejection is announced loudly; it must not pass as a quietly smaller set.
+
+    Returns `(None, None, None)` if the experiment can't contribute.
+    """
+    result_path = os.path.join(results_dir, experiment_hash, "result.json")
+    if not os.path.exists(result_path):
+        print(f"  FVMD skip {experiment_hash}: no result.json"); return None, None, None
+    data = json.load(open(result_path))
+    cfg = data['config']
+    video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+    output_video = data.get('output_video')
+    if not output_video or not os.path.exists(output_video):
+        print(f"  FVMD skip {experiment_hash}: output video missing"); return None, None, None
+
+    feats_dir = _fvmd_feats_dir(cache_dir)
+    gen_path = os.path.join(feats_dir, f"{experiment_hash}.npz")
+    if os.path.exists(gen_path):
+        z = np.load(gen_path)
+        key = (video_name, width, height, int(z['n_frames']))
+        ref_path = os.path.join(feats_dir, f"ref_{video_name}_{width}x{height}_{key[3]}.npz")
+        if os.path.exists(ref_path):
+            return np.load(ref_path)['rows'], z['rows'], key
+
+    _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+    decs = load_frames_from_video(output_video)
+    if not decs:
+        print(f"  FVMD skip {experiment_hash}: no decodable frames"); return None, None, None
+    if len(decs) != len(refs):
+        print(f"  FVMD REJECT {experiment_hash} ({video_name}): decode has {len(decs)} frames "
+              f"but reference has {len(refs)} — excluded from the set (see _fvmd_rows_cached)")
+        return None, None, None
+    n = len(refs)
+    try:
+        gt_rows, gen_rows = _fvmd_hist_rows(refs, decs)
+    except Exception as e:
+        print(f"  FVMD skip {experiment_hash}: {e}"); return None, None, None
+
+    key = (video_name, width, height, n)
+    _savez_atomic(gen_path, rows=gen_rows, n_frames=n)
+    ref_path = os.path.join(feats_dir, f"ref_{video_name}_{width}x{height}_{n}.npz")
+    if not os.path.exists(ref_path):
+        _savez_atomic(ref_path, rows=gt_rows)
+    return gt_rows, gen_rows, key
+
+
 def fvmd_set_level(hashes, results_dir, cache_dir, dataset_dir, ref_cache=None):
     """Pool per-clip motion-histogram rows across a SET of experiments (which
     together span several source videos) and return one FVMD for the set's
     generated distribution vs the pooled clean-reference distribution.
 
     Returns `(fvmd_value, used_hashes)`. `ref_cache` (a dict keyed by
-    `(video,width,height)`) is populated with each source video's reference rows
-    so the ground-truth distribution is tracked once and reused (and, crucially,
-    each video contributes to the reference set exactly once) across every set
-    that shares `ref_cache`.
+    `(video,width,height,n_frames)`) is populated with each source video's
+    reference rows so the ground-truth distribution is tracked once and reused
+    (and, crucially, each video contributes to the reference set exactly once)
+    across every set that shares `ref_cache`.
     """
-    from fvmd.frechet_distance import calculate_fd_given_vectors
+    gt_all, gen_all, used = _collect_fvmd_rows(hashes, results_dir, cache_dir,
+                                               dataset_dir, ref_cache=ref_cache)
+    if not gen_all:
+        return float('nan'), []
+    fd, _ = _fd_with_terms(np.concatenate(gt_all, axis=0), np.concatenate(gen_all, axis=0))
+    return fd, [h for h, _ in used]
+
+
+def _collect_fvmd_rows(hashes, results_dir, cache_dir, dataset_dir, ref_cache=None):
+    """Gather rows for a set. Returns `(gt_blocks, gen_blocks, used)` where
+    `gt_blocks` holds one reference row-block per *unique* source video in the
+    set (deduped — a video that appears twice must not double-weight the ground
+    truth) and `used` is a list of `(hash, key)`."""
     if ref_cache is None:
         ref_cache = {}
-    gt_all, gen_all, used = [], [], []
+    gen_all, used = [], []
     for h in hashes:
-        result_path = os.path.join(results_dir, h, "result.json")
-        if not os.path.exists(result_path):
-            print(f"  set-level FVMD skip {h}: no result.json"); continue
-        data = json.load(open(result_path))
-        cfg = data['config']
-        video_name, width, height = cfg['video'], cfg['width'], cfg['height']
-        output_video = data.get('output_video')
-        if not output_video or not os.path.exists(output_video):
-            print(f"  set-level FVMD skip {h}: output video missing"); continue
-        _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
-        decs = load_frames_from_video(output_video)
-        n = min(len(refs), len(decs))
-        if n == 0:
-            print(f"  set-level FVMD skip {h}: no decodable frames"); continue
-        try:
-            gt_rows, gen_rows = _fvmd_hist_rows(refs[:n], decs[:n])
-        except Exception as e:
-            print(f"  set-level FVMD skip {h}: {e}"); continue
-        key = (video_name, width, height)
+        gt_rows, gen_rows, key = _fvmd_rows_cached(h, results_dir, cache_dir, dataset_dir)
+        if gen_rows is None:
+            continue
         ref_cache.setdefault(key, gt_rows)  # reference rows depend only on the clean video
         gen_all.append(gen_rows)
         used.append((h, key))
     if not gen_all:
-        return float('nan'), []
-    # one reference row-block per unique source video in this set (dedup)
+        return [], [], []
     ref_keys = {k for _, k in used}
-    gt_hist = np.concatenate([ref_cache[k] for k in ref_keys], axis=0)
-    gen_hist = np.concatenate(gen_all, axis=0)
-    return float(calculate_fd_given_vectors(gt_hist, gen_hist)), [h for h, _ in used]
+    return [ref_cache[k] for k in ref_keys], gen_all, used
+
+
+def _fd_with_terms(feat1, feat2):
+    """Frechet distance plus its decomposition into the mean and covariance
+    terms: `FD = ||mu1-mu2||^2 + (tr(s1) + tr(s2) - 2*tr(covmean))`.
+
+    At our sample size the rows are 768-dim but a 6-video set pools only ~402 of
+    them, so the covariance estimate is rank-deficient and its term carries most
+    of the estimator's bias. Splitting the terms out shows directly whether a
+    score is driven by the mean difference (trustworthy at this N) or by the
+    covariance term (not).
+
+    Returns `(fd, {"mean_term":…, "cov_term":…})`. Raises on a numerically
+    invalid sqrtm — callers must not turn that into a score.
+    """
+    from scipy import linalg
+    from fvmd.frechet_distance import calculate_activation_statistics
+    mu1, s1 = calculate_activation_statistics(feat1)
+    mu2, s2 = calculate_activation_statistics(feat2)
+    diff = mu1 - mu2
+    mean_term = float(diff.dot(diff))
+    eps = 1e-5  # parity with fvmd.frechet_distance.calculate_frechet_distance's default
+    offset = np.eye(s1.shape[0]) * eps
+    covmean, _ = linalg.sqrtm((s1 + offset).dot(s2 + offset), disp=False)
+    if not np.isfinite(covmean).all():
+        covmean = linalg.sqrtm((s1 + offset).dot(s2 + offset))
+    if np.iscomplexobj(covmean):
+        # Mirror the reference implementation EXACTLY: a materially complex
+        # sqrtm means the result is numerically meaningless, and taking .real
+        # unconditionally would launder that failure into a plausible finite
+        # score. That matters most here -- a near-singular product is expected
+        # when N < D, which is the regime this whole report exists to measure.
+        if not np.allclose(np.diagonal(covmean).imag, 0, atol=1e-3):
+            raise ValueError(f'Imaginary component {np.max(np.abs(covmean.imag))}')
+        covmean = covmean.real
+    cov_term = float(np.trace(s1) + np.trace(s2) - 2 * np.trace(covmean))
+    return mean_term + cov_term, {"mean_term": mean_term, "cov_term": cov_term}
 
 
 def fvmd_setlevel_report(groups_path: str, results_dir: str, cache_dir: str,
@@ -794,6 +906,134 @@ def fvmd_setlevel_report(groups_path: str, results_dir: str, cache_dir: str,
         for name, fd, nu, nt in rows:
             f.write(f"{name}\t{fd}\t{nu}\t{nt}\n")
     print(f"[set-level FVMD] wrote {out_path}")
+
+
+def fvmd_validity_report(groups_path: str, results_dir: str, cache_dir: str,
+                         dataset_dir: str, out_path: str, n_null: int = 10,
+                         seed: int = 0) -> None:
+    """Decide whether set-level FVMD can discriminate our methods AT ALL at this
+    sample size, before any score is cited.
+
+    FVMD rows here are 1024-dim while a 6-video set pools only ~372 of them, so
+    the covariance is rank-deficient (N < D) and the Frechet distance is
+    eps-regularised. That sounds fatal and is NOT, for one specific reason:
+
+      **our comparison is PAIRED.** The decoded/restored video contains the same
+      clips as its reference, so `gt_rows` and `gen_rows` describe the same
+      underlying motion. The covariance-estimation error is then common to both
+      sides and largely cancels inside `sqrtm(s1·s2)`. Measured: an *unpaired*
+      split of identical data at N=186/side scores ~5.9e3 (real rows) and ~6.5e4
+      (synthetic), while a *paired* comparison at N=372 with 1%/5%/20% added
+      noise scores 4 / 103 / 1645 — small, and cleanly monotone in the
+      perturbation. Rank-deficiency does not dominate a paired score.
+
+    Consequences, learned the hard way (an earlier version of this report got
+    both wrong and produced a "null floor" larger than the scores it was meant to
+    bound -- an impossibility that revealed the error):
+
+      * A split-half null of the reference is **UNPAIRED** and therefore does not
+        bound our paired scores. It is reported below strictly as a diagnostic of
+        the estimator's unpaired behaviour, and must never be read as a floor.
+      * Subsampling `gen` to match a reference half likewise **breaks the
+        pairing** and produces meaningless (huge) numbers. Not done.
+
+    The real uncertainty is that we have only **6 source videos**, so the live
+    question is video-sampling, not covariance rank. Hence:
+
+      * chain scores -- one paired FVMD per group, with the mean/cov term split.
+      * identity check -- FD(ref, ref) must be exactly 0 (instrument gate).
+      * jackknife -- leave-one-video-out spread per group. **This is the gate:**
+        if the between-group gaps are not large compared to the jackknife spread,
+        the ordering is driven by which videos we happened to pick, and must not
+        be cited.
+    """
+    with open(groups_path) as f:
+        groups = json.load(f)
+    ref_cache: Dict[Any, Any] = {}
+    rows = []
+
+    per_group = {}
+    for name, hashes in groups.items():
+        print(f"[FVMD validity] collecting {name}: {len(hashes)} experiments")
+        gt_blocks, gen_blocks, used = _collect_fvmd_rows(hashes, results_dir, cache_dir,
+                                                         dataset_dir, ref_cache=ref_cache)
+        if not gen_blocks:
+            print(f"  {name}: no usable experiments"); continue
+        per_group[name] = (gt_blocks, gen_blocks, used)
+
+    if not per_group:
+        print("[FVMD validity] nothing to report"); return
+
+    # --- chain scores + term decomposition -------------------------------
+    for name, (gt_blocks, gen_blocks, used) in per_group.items():
+        gt = np.concatenate(gt_blocks, axis=0)
+        gen = np.concatenate(gen_blocks, axis=0)
+        fd, terms = _fd_with_terms(gt, gen)
+        print(f"[FVMD validity] {name}: FVMD={fd:.2f} "
+              f"(mean_term={terms['mean_term']:.2f} cov_term={terms['cov_term']:.2f}) "
+              f"N_gen={gen.shape[0]} N_gt={gt.shape[0]} D={gen.shape[1]}")
+        rows.append((name, "score", fd, terms['mean_term'], terms['cov_term'],
+                     gen.shape[0], gen.shape[1], len(used)))
+
+    # Groups must span the same source videos, or their scores are not
+    # comparable to each other (different ground-truth mixtures).
+    vid_sets = {name: frozenset(k[0] for _, k in used) for name, (_, _, used) in per_group.items()}
+    if len(set(vid_sets.values())) != 1:
+        print("[FVMD validity] WARNING: groups do NOT span the same source videos — "
+              "their scores are not directly comparable to each other.")
+        for name, vs in vid_sets.items():
+            print(f"    {name}: {sorted(vs)}")
+
+    used_keys = sorted({k for _, (_, _, used) in per_group.items() for _, k in used})
+    all_ref = np.concatenate([ref_cache[k] for k in used_keys], axis=0)
+
+    # --- instrument gate: a paired comparison of identical rows must be 0 ---
+    ident, _ = _fd_with_terms(all_ref, all_ref)
+    print(f"[FVMD validity] identity check FD(ref,ref) = {ident:.6g} (must be ~0)")
+    rows.append(("_identity_ref_vs_ref", "identity", ident, 0.0, 0.0,
+                 all_ref.shape[0], all_ref.shape[1], 0))
+
+    # --- diagnostic ONLY: unpaired split-half of the reference -------------
+    # NOT a floor for the paired group scores above — see the docstring. Kept
+    # because it quantifies how badly an UNPAIRED pooling behaves at this N/D,
+    # which is the trap to avoid if anyone later compares across
+    # non-corresponding clip sets.
+    rng = np.random.default_rng(seed)
+    half = all_ref.shape[0] // 2
+    nulls = []
+    for _ in range(n_null):
+        idx = rng.permutation(all_ref.shape[0])
+        fd, terms = _fd_with_terms(all_ref[idx[:half]], all_ref[idx[half:2 * half]])
+        nulls.append(fd)
+        rows.append(("_unpaired_ref_split", "diagnostic_unpaired", fd,
+                     terms['mean_term'], terms['cov_term'], half, all_ref.shape[1], 0))
+    print(f"[FVMD validity] [diagnostic, NOT a floor] unpaired ref split "
+          f"(N={half}/side): mean={np.mean(nulls):.2f} std={np.std(nulls):.2f}")
+
+
+    # --- jackknife: leave one source video out ---------------------------
+    for name, (_, _, used) in per_group.items():
+        vids = sorted({k[0] for _, k in used})
+        jk = []
+        for drop in vids:
+            keep = [h for h, k in used if k[0] != drop]
+            gt_b, gen_b, u2 = _collect_fvmd_rows(keep, results_dir, cache_dir,
+                                                 dataset_dir, ref_cache=ref_cache)
+            if not gen_b:
+                continue
+            fd, _ = _fd_with_terms(np.concatenate(gt_b, axis=0), np.concatenate(gen_b, axis=0))
+            jk.append(fd)
+            rows.append((name, f"jackknife_drop_{drop}", fd, float('nan'), float('nan'),
+                         0, 0, len(u2)))
+        if jk:
+            print(f"[FVMD validity] {name}: jackknife mean={np.mean(jk):.2f} "
+                  f"std={np.std(jk):.2f} range=[{np.min(jk):.2f}, {np.max(jk):.2f}]")
+
+    with open(out_path, 'w') as f:
+        f.write("group\tkind\tfvmd\tmean_term\tcov_term\tn_gen\td\tn_used\n")
+        for r in rows:
+            f.write("\t".join(str(x) for x in r) + "\n")
+    print(f"[FVMD validity] wrote {out_path}")
 
 
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
@@ -836,7 +1076,11 @@ def main():
     parser.add_argument('--fvmd-setlevel', type=str, default=None, metavar='GROUPS_JSON',
                         help='Compute paper-grade set-level FVMD: JSON file mapping set-name -> list of experiment hashes')
     parser.add_argument('--fvmd-out', type=str, default='fvmd_setlevel.tsv',
-                        help='Output table path for --fvmd-setlevel')
+                        help='Output table path for --fvmd-setlevel/--fvmd-validity')
+    parser.add_argument('--fvmd-validity', type=str, default=None, metavar='GROUPS_JSON',
+                        help='Set-level FVMD plus its validity gate (identity check, leave-one-video-out '
+                             'jackknife = the real uncertainty at n=6, mean/cov term split) — run this '
+                             'before citing any set-level score')
 
     parser.add_argument('--force', action='store_true',
                         help='With a --backfill-* flag, recompute even if the metric is already present')
@@ -853,6 +1097,8 @@ def main():
         backfill_fid_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     elif args.backfill_fvmd:
         backfill_fvmd_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force, shard=args.shard)
+    elif args.fvmd_validity:
+        fvmd_validity_report(args.fvmd_validity, args.results_dir, args.cache_dir, args.dataset_dir, args.fvmd_out)
     elif args.fvmd_setlevel:
         fvmd_setlevel_report(args.fvmd_setlevel, args.results_dir, args.cache_dir, args.dataset_dir, args.fvmd_out)
     else:
