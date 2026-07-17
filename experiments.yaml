@@ -4146,3 +4146,188 @@ experiments:
     qp: 61
     preset: '8'
   inpainter_params: {}
+
+# Fixed-QP starved SVT-AV1, camel (2026-07-16, later session): generalization
+# of the bear result above. QPs calibrated against pristine camel 640x360 to
+# land near bear's starved band: qp42~744, qp50~469, qp58~261, qp62~138 kbps
+# (pristine reference; degraded bitrates will differ).
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 42
+    preset: '8'
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 50
+    preset: '8'
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 58
+    preset: '8'
+- component: baselines
+  video: camel
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 62
+    preset: '8'
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 42
+    preset: '8'
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 50
+    preset: '8'
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: '8'
+  restorer_params: {}
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 62
+    preset: '8'
+  restorer_params: {}
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 42
+    preset: '8'
+  inpainter_params: {}
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 50
+    preset: '8'
+  inpainter_params: {}
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: '8'
+  inpainter_params: {}
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 62
+    preset: '8'
+  inpainter_params: {}
