@@ -85,7 +85,7 @@ methods free bits (elvis_blackout −8.6% avg, elvis_freeze −9.7%, mean_fill
 one, and do not accept a spec that asks for one** (a 2026-07-16 TOP-PRIORITY
 spec did exactly this and burned hours of GPU time re-measuring VBR laundering).
 This is the same mechanism that already bit the codec-ROI work; see
-TECHNICAL_REPORT_ROI_ENCODING's fixed-QP finding.
+the RESEARCH_LOG's fixed-QP hard rule.
 
 ### Reporting rule: never dress up imperceptible deltas
 
@@ -111,7 +111,7 @@ target:
   baseline** at comparable bitrate. Expected signature: FG quality ↑, BG
   quality ↓. If it's absent, assume our usage is wrong before blaming the
   codec — "codec X doesn't implement ROI correctly" is a strong claim needing
-  evidence beyond reasonable doubt (see TECHNICAL_REPORT for past false alarms).
+  evidence beyond reasonable doubt (see RESEARCH_LOG.md for past false alarms).
 - **presley_* ROI methods** (mask-driven degradation before encoding) vs the
   codec ROI methods: does direct block-level control buy more FG quality, and
   at what BG cost?
@@ -201,23 +201,26 @@ right then. Note: edits to `settings.json`/hooks only take effect on the next
 session (open `/hooks` or restart to reload); skills and CLAUDE.md load fresh
 each session too, so prefer those for anything you want to rely on immediately.
 
-## Technical reports are the research source of truth
+## The paper is the primary living document
 
-`68e8b6bb11d0dd9e62a67aef/TECHNICAL_REPORTS.md` (paper repo) is the dashboard
-for the whole experimental effort: chain-status table, prioritized next
-steps, and the catalog of topic reports (ROI encoding, ELVIS in-painting,
-PRESLEY AI restoration, pipeline/evaluation infra), each with a standardized
-findings log. **Read the relevant topic report's TL;DR before working on that
-area** — it records what's already been tried, fixed, and disproven (e.g. why
-ROI must run in fixed-QP/CRF mode, why addroi/x265-AQ can't do semantic ROI).
-After any experiment run or diagnosis that produces new knowledge, fold it
-back in with the `/update-reports` skill.
+The manuscript (`68e8b6bb11d0dd9e62a67aef/main.tex` + `sections/*.tex`)
+carries the research plan as machine-readable comment markers
+(`STATUS/GOAL/HOLE/NOTE/NEXT/CLAIM(anchor):` — spec in the paper repo's
+CLAUDE.md). **Before planning any experiment, grep the paper's `HOLE()`
+markers** — run only the experiments the paper needs. After a session
+produces committed, tested results, fold them in with the `/update-paper`
+skill. `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md` is the secondary store:
+hard methodology rules (fixed-QP-only, JND gating, FG-metric citability),
+the dead-end registry (what's been tried and disproven — read it before
+re-attempting anything), and the queue of results not yet in the text. The
+old technical reports were consolidated into it on 2026-07-18 (full history
+via `git log --follow` in the paper repo).
 
 ## Where to look for more
 
 - Experiment workflow, filters, and reading back results → `/run-experiment` skill
 - Summarizing/comparing results → `/results-report` skill
-- Folding new findings into the technical reports → `/update-reports` skill
+- Folding new findings into the paper → `/update-paper` skill
 - Reviewer-response checklist workflow → see the paper repo's own CLAUDE.md
-- Degradation/restoration algorithm details, past debugging dead-ends →
-  topic reports catalogued in `68e8b6bb11d0dd9e62a67aef/TECHNICAL_REPORTS.md`
+- Algorithm details, hard rules, past dead-ends →
+  `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md`
