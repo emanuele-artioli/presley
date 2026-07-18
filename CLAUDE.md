@@ -89,11 +89,18 @@ TECHNICAL_REPORT_ROI_ENCODING's fixed-QP finding.
 
 ### Reporting rule: never dress up imperceptible deltas
 
-Sub-1 dB FG differences are **imperceptible** — do not report them as a result
-or a trend. State the comparison the way it actually lands: *"at FG quality that
-is indistinguishable, method X costs N% more/fewer bits than the baseline, and
-BG-LPIPS is Y vs the baseline's Z."* Bitrate cost at matched quality is the
-claim; a 0.3 dB FG delta is not.
+Imperceptible deltas are not a result or a trend. **Run `presley-compare` to
+decide whether a quality difference is real** — don't eyeball deltas. Its JND
+table (`src/presley/compare.py`) is the single source of truth and is
+deliberately not restated here. `presley-compare results/ --hash-a <h1>
+--hash-b <h2>` for a pair; `presley-compare results/ --group-by
+component,video,codec_params.qp --baseline-component baselines` for a
+matched-QP sweep, which reports each group's quality verdict and its bitrate
+winner. At matched QP this is the *whole* analysis: FG differences are small
+by construction, so the question is never "who wins FG" but "who encodes
+fewest bits at indistinguishable FG quality." State it the way it lands: *"at
+FG quality that is indistinguishable, method X costs N% fewer bits than the
+baseline, and BG-LPIPS is Y vs the baseline's Z."*
 
 Never report only overall metrics — the `metrics.foreground`/`metrics.background`
 split is the point (and for bridge runs `overall` is actively misleading, since

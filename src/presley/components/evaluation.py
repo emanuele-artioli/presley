@@ -19,6 +19,19 @@ from presley.encode_utils import load_frames_from_video
 _REF_CACHE: Dict[Any, Any] = {}
 _MASK_CACHE: Dict[Any, Any] = {}
 
+# DISTS is a stateless scorer, so one instance can serve every experiment in a
+# backfill pass (VGG16 + weights.pt construction is ~1-3s, paid 267x otherwise).
+# NOTE: do NOT do this for FID -- FrechetInceptionDistance is a stateful
+# accumulator, and a shared instance would silently pool every experiment
+# together. See the comment in calculate_fid.
+_DISTS_CACHE: Dict[str, Any] = {}
+
+def _get_dists_model(device: str):
+    if device not in _DISTS_CACHE:
+        from DISTS_pytorch import DISTS
+        _DISTS_CACHE[device] = DISTS().to(device).eval()
+    return _DISTS_CACHE[device]
+
 def _get_refs_cached(video_name, width, height, dataset_dir, cache_dir):
     key = (video_name, width, height)
     if key not in _REF_CACHE:
@@ -88,6 +101,11 @@ def calculate_lpips_masked(refs: List[np.ndarray], decs: List[np.ndarray],
     (overall). This is a true region-restricted perceptual metric — no bbox
     cropping or pixel-zeroing artifacts — and it's the FG number the paper argues.
     masks[i] is a >127 boolean foreground mask.
+
+    Frames with an empty mask yield NaN, not 0.0: 0.0 is a *perfect* LPIPS score, and
+    averaging fabricated zeros into foreground.lpips_mean would bias the paper's headline
+    FG metric optimistically. Same convention as calculate_dists_masked and
+    _fvmd_on_frames (see the fc203a9980dad7d3 fake-0.0 incident). Aggregate with nanmean.
     """
     import lpips
     model = lpips.LPIPS(net='alex', spatial=True).to(device)
@@ -100,12 +118,15 @@ def calculate_lpips_masked(refs: List[np.ndarray], decs: List[np.ndarray],
             if smap.shape != m.shape:
                 smap = cv2.resize(smap, (m.shape[1], m.shape[0]), interpolation=cv2.INTER_LINEAR)
             ov.append(float(smap.mean()))
-            fg.append(float(smap[m].mean()) if np.any(m) else 0.0)
-            bg.append(float(smap[~m].mean()) if np.any(~m) else 0.0)
+            fg.append(float(smap[m].mean()) if np.any(m) else float('nan'))
+            bg.append(float(smap[~m].mean()) if np.any(~m) else float('nan'))
     return {"foreground": fg, "background": bg, "overall": ov}
 
 
 def calculate_fid(refs, decs, device):
+    # NOTE: FrechetInceptionDistance is a stateful accumulator -- it must be constructed
+    # per call (or .reset()), never cached like _get_dists_model, or every experiment in
+    # a backfill pass would be pooled into one distribution.
     from torchmetrics.image.fid import FrechetInceptionDistance
     import torch
     fid = FrechetInceptionDistance(feature=2048).to(device)
@@ -119,6 +140,76 @@ def calculate_fid(refs, decs, device):
         fid.update(d_t, real=False)
     return float(fid.compute().item())
 
+
+def calculate_fid_bbox(refs: List[np.ndarray], decs: List[np.ndarray],
+                       masks: List[np.ndarray], device: str) -> Dict[str, Any]:
+    """Best-effort localised FID over per-frame tight FG bbox crops.
+
+    THIS IS NOT A FOREGROUND METRIC, and its key (`fid_fg_bbox`) must always be written
+    and cited by that full name. FID pools Inception down to a single 2048-d vector, so
+    there is no spatial axis left to mask and no principled FG-FID exists -- unlike
+    DISTS (see `calculate_dists_masked`) or LPIPS, whose spatial maps can be
+    mask-weighted. The best available improvement is to replace the union bbox (100% of
+    the frame on india, 58.6% on tennis vs 4.0% true FG) with a per-frame tight box,
+    which is 1.3-3.8x tighter but still ~74% background on tennis. Cite `dists_fg` or
+    FG-LPIPS for the foreground claim; cite this only as a corroborating signal.
+
+    Crops vary in size per frame, so they cannot be batched. We therefore feed them one
+    at a time at native size and let torchmetrics resize -- we deliberately do NOT resize
+    to 299 ourselves. torch_fidelity's Inception extractor already resizes any input to
+    299x299 internally (feature_extractor_inceptionv3.py:111, TF-compat bilinear), so an
+    explicit resize would resample twice and would put this metric on a different
+    preprocessing path than `overall.fid`, which is fed native frames. Do not "optimise"
+    a resize back in.
+
+    Because box size varies per frame while Inception's internal resize is anisotropic,
+    this metric carries scale variance that whole-frame FID does not. The returned
+    diagnostics quantify it. Note the box is derived from the *reference* mask and
+    applied identically to reference and decoded frames, so the resize distortion is the
+    same on both sides of every frame: it inflates within-distribution variance rather
+    than biasing one side.
+    """
+    from torchmetrics.image.fid import FrechetInceptionDistance
+    fid = FrechetInceptionDistance(feature=2048).to(device)
+    h, w = refs[0].shape[:2]
+    n_used = n_skipped = 0
+    areas, bg_fracs = [], []
+    for r, d, m in zip(refs, decs, masks):
+        bb = _fg_tight_bbox(m, w, h)
+        if bb is None:
+            # Skip on BOTH sides -- never asymmetrically, or the paired structure that
+            # the small-sample validity argument rests on is broken.
+            n_skipped += 1
+            continue
+        y1, y2, x1, x2 = bb
+        r_c, d_c, m_c = r[y1:y2, x1:x2], d[y1:y2, x1:x2], m[y1:y2, x1:x2]
+        box_px = (y2 - y1) * (x2 - x1)
+        areas.append(box_px)
+        bg_fracs.append(1.0 - float(m_c.sum()) / box_px)
+        for arr, real in ((r_c, True), (d_c, False)):
+            t = torch.from_numpy(cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)).permute(2,0,1).unsqueeze(0).byte().to(device)
+            fid.update(t, real=real)
+        n_used += 1
+
+    if n_used < 2:
+        # FID's covariance is undefined at N<2. Return NaN, never 0.0 (a perfect score).
+        score = float('nan')
+    else:
+        score = float(fid.compute().item())
+    side = np.sqrt(np.asarray(areas, dtype=np.float64)) if areas else np.array([0.0])
+    return {
+        "fid": score,
+        "n_used": n_used,
+        "n_skipped_empty": n_skipped,
+        "area_frac_mean": float(np.mean(areas) / (w * h)) if areas else float('nan'),
+        "area_frac_std": float(np.std(areas) / (w * h)) if areas else float('nan'),
+        # dimensionless scale jitter across frames -- the artifact whole-frame FID lacks
+        "scale_cv": float(side.std() / side.mean()) if areas and side.mean() > 0 else float('nan'),
+        # how much background is still inside the box: this is the number that justifies
+        # the key being named fid_fg_bbox and not fid_fg
+        "bg_frac_mean": float(np.mean(bg_fracs)) if bg_fracs else float('nan'),
+    }
+
 def calculate_dists(refs: List[np.ndarray], decs: List[np.ndarray], device: str) -> List[float]:
     from DISTS_pytorch import DISTS
     model = DISTS().to(device)
@@ -129,6 +220,102 @@ def calculate_dists(refs: List[np.ndarray], decs: List[np.ndarray], device: str)
             d_t = torch.from_numpy(cv2.cvtColor(d, cv2.COLOR_BGR2RGB)).permute(2,0,1).unsqueeze(0).float().to(device) / 255.0
             scores.append(model(r_t, d_t).item())
     return scores
+
+
+def _dists_layer_weights(mask_t, feats):
+    """Area-downsample a [1,1,H,W] weight map onto each DISTS layer's feature grid.
+
+    Area-averaging makes each entry the fraction of that feature location covered by
+    the mask, which is the natural weight for the pooled statistics below. feats[0]
+    is the input image at full resolution, so its map is the mask itself.
+
+    Sizes are read from the tensors, never assumed: for a 360x640 input the stages
+    are 360/180/90/45/22 rows (L2pooling is 3-tap, stride 2: 45 -> 22).
+    """
+    import torch.nn.functional as F
+    out = []
+    for f in feats:
+        size = tuple(f.shape[-2:])
+        w = mask_t if tuple(mask_t.shape[-2:]) == size else F.interpolate(mask_t, size=size, mode='area')
+        out.append(w)
+    return out
+
+
+def calculate_dists_masked(refs: List[np.ndarray], decs: List[np.ndarray],
+                           masks: List[np.ndarray], device: str) -> Dict[str, List[float]]:
+    """Per-frame FG/BG/overall DISTS with MASK-WEIGHTED spatial pooling.
+
+    Stock `DISTS.forward` pools every layer with `.mean([2,3])` -- a global spatial
+    mean/var/cov per channel. This replaces that pooling with a mask-weighted one
+    (weighted mean sum(wx)/sum(w), var sum(w(x-mu)^2)/sum(w), cov sum(wxy)/sum(w) - mu_x*mu_y),
+    keeping the pretrained alpha/beta weights untouched. It is the exact analogue of
+    `calculate_lpips_masked` and returns the same shape.
+
+    Uniform weights reproduce stock DISTS to <1e-5 (float32 reduction order only) --
+    that equivalence is the correctness gate for this function.
+
+    This supersedes the old `_fg_union_bbox`-cropped "FG-DISTS", which was not a
+    foreground metric: the union bbox is 100% of the frame on india (its FG-DISTS was
+    bit-identical to overall-DISTS, verified across 16/16 experiments) and 58.6% on
+    tennis against a 4.0% true FG. See TECHNICAL_REPORT_PIPELINE_INFRA.md 2026-07-16.
+
+    Caveat, and it must be stated wherever this is reported: this is mask-*weighted*,
+    not mask-*isolated*. Background locations get exactly zero weight, but VGG units at
+    stages 4-5 have receptive fields spanning tens of pixels, so an in-mask feature
+    still integrates some surrounding background. It measures the foreground in
+    context. The same is true of the FG-LPIPS we already report, and it is categorically
+    different from the union-bbox defect, where background *locations* were pooled in
+    directly.
+
+    masks[i] is a >127 boolean foreground mask. Frames with an empty mask yield NaN,
+    not 0.0 -- 0.0 is a perfect DISTS score, and this repo has already been burned once
+    by a fabricated 0.0 (fc203a9980dad7d3, a swallowed exception). Aggregate with nanmean.
+    """
+    model = _get_dists_model(device)
+    c1 = c2 = 1e-6
+    # Normalisation reproduced verbatim from DISTS.forward.
+    w_sum = model.alpha.sum() + model.beta.sum()
+    alpha = torch.split(model.alpha / w_sum, model.chns, dim=1)
+    beta = torch.split(model.beta / w_sum, model.chns, dim=1)
+
+    def _pooled_score(feats0, feats1, weights) -> float:
+        dist1 = 0
+        dist2 = 0
+        for k in range(len(model.chns)):
+            x, y, w = feats0[k], feats1[k], weights[k]
+            W = w.sum([2, 3], keepdim=True).clamp_min(1e-8)
+            x_mean = (w * x).sum([2, 3], keepdim=True) / W
+            y_mean = (w * y).sum([2, 3], keepdim=True) / W
+            S1 = (2 * x_mean * y_mean + c1) / (x_mean ** 2 + y_mean ** 2 + c1)
+            dist1 = dist1 + (alpha[k] * S1).sum(1, keepdim=True)
+
+            x_var = (w * (x - x_mean) ** 2).sum([2, 3], keepdim=True) / W
+            y_var = (w * (y - y_mean) ** 2).sum([2, 3], keepdim=True) / W
+            xy_cov = (w * x * y).sum([2, 3], keepdim=True) / W - x_mean * y_mean
+            S2 = (2 * xy_cov + c2) / (x_var + y_var + c2)
+            dist2 = dist2 + (beta[k] * S2).sum(1, keepdim=True)
+        return float((1 - (dist1 + dist2).squeeze()).item())
+
+    fg, bg, ov = [], [], []
+    with torch.no_grad():
+        for r, d, m in zip(refs, decs, masks):
+            r_t = torch.from_numpy(cv2.cvtColor(r, cv2.COLOR_BGR2RGB)).permute(2,0,1).unsqueeze(0).float().to(device) / 255.0
+            d_t = torch.from_numpy(cv2.cvtColor(d, cv2.COLOR_BGR2RGB)).permute(2,0,1).unsqueeze(0).float().to(device) / 255.0
+            feats0, feats1 = model.forward_once(r_t), model.forward_once(d_t)
+
+            m_t = torch.from_numpy(m.astype(np.float32)).unsqueeze(0).unsqueeze(0).to(device)
+            if tuple(m_t.shape[-2:]) != tuple(r_t.shape[-2:]):
+                m_t = torch.nn.functional.interpolate(m_t, size=tuple(r_t.shape[-2:]), mode='area')
+            fg_w = _dists_layer_weights(m_t, feats0)
+            # Area-averaging is linear, so 1 - area_avg(mask) == area_avg(1 - mask) exactly.
+            bg_w = [1.0 - w for w in fg_w]
+            ov_w = [torch.ones_like(w) for w in fg_w]
+
+            ov.append(_pooled_score(feats0, feats1, ov_w))
+            fg.append(_pooled_score(feats0, feats1, fg_w) if m.any() else float('nan'))
+            bg.append(_pooled_score(feats0, feats1, bg_w) if (~m).any() else float('nan'))
+    return {"foreground": fg, "background": bg, "overall": ov}
+
 
 def calculate_vmaf(ref_yuv: str, dec_video: str, width: int, height: int, framerate: float) -> Dict[str, float]:
     dec_yuv = dec_video + ".yuv"
@@ -420,14 +607,27 @@ def backfill_lpips(experiment_hash: str, results_dir: str, cache_dir: str, datas
     lp = calculate_lpips_masked(refs[:n], decs[:n], masks, device)
     for region in ("foreground", "background", "overall"):
         data["metrics"].setdefault(region, {})
-        data["metrics"][region]["lpips_mean"] = float(np.mean(lp[region]))
-        data["metrics"][region]["lpips_std"] = float(np.std(lp[region]))
+        vals = lp[region]
+        # nanmean, and NaN -> None: empty-mask frames are excluded rather than counted
+        # as a perfect 0.0, and a bare NaN literal would be invalid JSON.
+        if np.any(~np.isnan(vals)):
+            data["metrics"][region]["lpips_mean"] = float(np.nanmean(vals))
+            data["metrics"][region]["lpips_std"] = float(np.nanstd(vals))
+        else:
+            data["metrics"][region]["lpips_mean"] = None
+            data["metrics"][region]["lpips_std"] = None
+        data["metrics"][region]["lpips_n_valid"] = int(np.count_nonzero(~np.isnan(vals)))
 
     tmp = result_path + ".tmp"
     with open(tmp, 'w') as f:
         json.dump(data, f, indent=2)
     os.replace(tmp, result_path)
-    return f"{experiment_hash}: FG-LPIPS={np.mean(lp['foreground']):.4f} BG={np.mean(lp['background']):.4f} OV={np.mean(lp['overall']):.4f}"
+
+    def _f(region):
+        v = data["metrics"][region]["lpips_mean"]
+        return "n/a" if v is None else f"{v:.4f}"
+    return (f"{experiment_hash}: FG-LPIPS={_f('foreground')} BG={_f('background')} "
+            f"OV={_f('overall')}")
 
 def _write_yuv420(frames: List[np.ndarray], path: str) -> None:
     """Write BGR frames as a raw yuv420p file via an ffmpeg pipe."""
@@ -468,8 +668,36 @@ def _vmaf_on_frames(refs: List[np.ndarray], decs: List[np.ndarray], neg: bool = 
                 return {"mean": pooled[k].get("mean", 0.0), "std": pooled[k].get("stddev", 0.0)}
         return {"mean": 0.0, "std": 0.0}
 
+def _fg_tight_bbox(mask: np.ndarray, w: int, h: int, pad: int = 8):
+    """Per-frame tight FG bounding box. Returns (y1, y2, x1, x2), or None if empty.
+
+    Unlike `_fg_union_bbox` this does NOT union across frames. The union box is
+    background-dominated on every video (100% of the frame on india, 58.6% on tennis
+    against a 4.0% true FG), and any metric built on it is not a foreground metric --
+    see TECHNICAL_REPORT_PIPELINE_INFRA.md 2026-07-16. A per-frame box is 1.3-3.8x
+    tighter (tennis 58.6% -> 15.2%, dog 64.8% -> 23.6%) but is STILL
+    background-dominated (~74% BG on tennis), which is exactly why its only caller
+    writes the key `fid_fg_bbox` and never `fid_fg`.
+
+    No even-alignment here: that constraint exists in `_fg_union_bbox` only because its
+    crop is re-encoded as yuv420. This crop is fed straight to Inception. `pad` matches
+    `_fg_union_bbox` so the two boxes stay comparable.
+    """
+    yy, xx = np.where(mask)
+    if not len(yy):
+        return None
+    y1, y2 = max(0, yy.min() - pad), min(h, yy.max() + 1 + pad)
+    x1, x2 = max(0, xx.min() - pad), min(w, xx.max() + 1 + pad)
+    return y1, y2, x1, x2
+
 def _fg_union_bbox(masks: List[np.ndarray], w: int, h: int, pad: int = 8):
-    """Union FG bounding box across frames, padded and even-aligned for yuv420."""
+    """Union FG bounding box across frames, padded and even-aligned for yuv420.
+
+    WARNING: this box is not a foreground region -- it is 100% of the frame on india
+    and 58.6% on tennis (true FG 4.0%). Do not build a new "FG" metric on it; see
+    `_fg_tight_bbox` and TECHNICAL_REPORT_PIPELINE_INFRA.md 2026-07-16. Retained for
+    the VMAF backfill, whose FG numbers are already excluded from the paper's FG claim.
+    """
     ys, xs = [], []
     for m in masks:
         yy, xx = np.where(m)
@@ -559,13 +787,23 @@ def backfill_vmaf_all(results_dir: str, cache_dir: str, dataset_dir: str, force:
 
 
 def backfill_dists(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> str:
+    """Append overall + true mask-weighted FG/BG DISTS to an existing result.json.
+
+    Writes `foreground.dists_fg` / `background.dists_bg` (true masked, via
+    `calculate_dists_masked`) and `overall.dists_mean` (whole-frame, unchanged in
+    meaning -- the masked pass reproduces it exactly under uniform weights).
+
+    The old union-bbox `foreground.dists_mean` is NOT written any more; it is removed
+    separately by `drop_unionbbox_keys`. The sentinel below changed with it, so the
+    corpus recomputes once naturally -- no --force needed.
+    """
     exp_results_dir = os.path.join(results_dir, experiment_hash)
     result_path = os.path.join(exp_results_dir, "result.json")
     if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
     with open(result_path, 'r') as f: data = json.load(f)
     if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
-    if not force and "dists_mean" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: FG-DISTS already present"
-    
+    if not force and "dists_fg" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: masked FG-DISTS already present"
+
     cfg = data['config']
     video_name, width, height = cfg['video'], cfg['width'], cfg['height']
     block_size = cfg.get('block_size', 8)
@@ -582,28 +820,83 @@ def backfill_dists(experiment_hash: str, results_dir: str, cache_dir: str, datas
     masks = [ufo_masks[i] > 127 for i in range(n)]
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    ov_dists = float(np.mean(calculate_dists(refs[:n], decs[:n], device)))
-    bb = _fg_union_bbox(masks, width, height)
-    fg_dists = 0.0
-    if bb:
-        y1, y2, x1, x2 = bb
-        ref_c = [refs[i][y1:y2, x1:x2] for i in range(n)]
-        dec_c = [decs[i][y1:y2, x1:x2] for i in range(n)]
-        fg_dists = float(np.mean(calculate_dists(ref_c, dec_c, device)))
-        
+    # One masked pass yields all three regions -- this replaces the previous two passes
+    # (full frame + union-bbox crop), so it is cheaper as well as correct.
+    ds = calculate_dists_masked(refs[:n], decs[:n], masks, device)
+
+    def _agg(vals):
+        """(mean, std) as JSON-safe values: NaN -> None, which json.dump writes as
+        `null`. A bare float('nan') would be dumped as the literal `NaN`, which is
+        invalid JSON and rejected by strict parsers. Mirrors backfill_fvmd."""
+        if not np.any(~np.isnan(vals)):
+            return None, None
+        return float(np.nanmean(vals)), float(np.nanstd(vals))
+
     m = data["metrics"]
-    m.setdefault("overall", {})["dists_mean"] = ov_dists
-    m.setdefault("foreground", {})["dists_mean"] = fg_dists
+    ov_mean, ov_std = _agg(ds["overall"])
+    m.setdefault("overall", {})["dists_mean"] = ov_mean
+    m["overall"]["dists_std"] = ov_std
+    fg = m.setdefault("foreground", {})
+    fg["dists_fg"], fg["dists_fg_std"] = _agg(ds["foreground"])
+    # frames contributing to the FG number; < n means some frames had an empty mask
+    fg["dists_fg_n_valid"] = int(np.count_nonzero(~np.isnan(ds["foreground"])))
+    bgm = m.setdefault("background", {})
+    bgm["dists_bg"], bgm["dists_bg_std"] = _agg(ds["background"])
 
     tmp = result_path + ".tmp"
     with open(tmp, 'w') as f: json.dump(data, f, indent=2)
     os.replace(tmp, result_path)
-    return f"{experiment_hash}: OV-DISTS={ov_dists:.4f} FG-DISTS={fg_dists:.4f}"
+    def _f(x):
+        return "n/a" if x is None else f"{x:.4f}"
+    return (f"{experiment_hash}: OV-DISTS={_f(m['overall']['dists_mean'])} "
+            f"FG(masked)={_f(fg['dists_fg'])} BG(masked)={_f(bgm['dists_bg'])} "
+            f"n_valid={fg['dists_fg_n_valid']}/{n}")
 
 def backfill_dists_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
     for entry in sorted(os.listdir(results_dir)):
         if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
             print(backfill_dists(entry, results_dir, cache_dir, dataset_dir, force=force))
+
+
+def drop_unionbbox_keys(experiment_hash: str, results_dir: str) -> str:
+    """Delete the union-bbox "FG" DISTS/FID values from metrics.foreground.
+
+    `metrics.foreground.dists_mean` and `metrics.foreground.fid` were computed on
+    `_fg_union_bbox`, which is not a foreground region (100% of the frame on india --
+    where FG-DISTS was measured bit-identical to overall-DISTS on 16/16 experiments --
+    and 58.6% on tennis against a 4.0% true FG). They are superseded by `dists_fg` and
+    `fid_fg_bbox`, which are written under new key names, so these would otherwise sit
+    stale under a node called `foreground` where a future script or session would read
+    them as foreground numbers. That is exactly the failure this deletion prevents.
+
+    Their values are preserved in scratch/metric_audit_pre.tsv purely so the delta
+    report can quantify how far the corrected numbers moved -- they must never be cited.
+
+    `metrics.overall.dists_mean`/`dists_std`/`fid` are legitimate whole-frame metrics and
+    are NOT touched. Idempotent; a no-op once the keys are gone. No recomputation.
+    """
+    result_path = os.path.join(results_dir, experiment_hash, "result.json")
+    if not os.path.exists(result_path):
+        return f"{experiment_hash}: no result.json"
+    with open(result_path, 'r') as f:
+        data = json.load(f)
+    fg = data.get("metrics", {}).get("foreground", {})
+    dropped = [k for k in ("dists_mean", "fid") if k in fg]
+    if not dropped:
+        return f"{experiment_hash}: no union-bbox FG keys (already dropped)"
+    for k in dropped:
+        del fg[k]
+    tmp = result_path + ".tmp"
+    with open(tmp, 'w') as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp, result_path)
+    return f"{experiment_hash}: dropped foreground.{', foreground.'.join(dropped)}"
+
+
+def drop_unionbbox_keys_all(results_dir: str) -> None:
+    for entry in sorted(os.listdir(results_dir)):
+        if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
+            print(drop_unionbbox_keys(entry, results_dir))
 
 
 def backfill_fid(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> str:
@@ -612,8 +905,8 @@ def backfill_fid(experiment_hash: str, results_dir: str, cache_dir: str, dataset
     if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
     with open(result_path, 'r') as f: data = json.load(f)
     if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
-    if not force and "fid" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: FG-FID already present"
-    
+    if not force and "fid_fg_bbox" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: fid_fg_bbox already present"
+
     cfg = data['config']
     video_name, width, height = cfg['video'], cfg['width'], cfg['height']
     block_size = cfg.get('block_size', 8)
@@ -631,22 +924,34 @@ def backfill_fid(experiment_hash: str, results_dir: str, cache_dir: str, dataset
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     ov_fid = calculate_fid(refs[:n], decs[:n], device)
-    bb = _fg_union_bbox(masks, width, height)
-    fg_fid = 0.0
-    if bb:
-        y1, y2, x1, x2 = bb
-        ref_c = [refs[i][y1:y2, x1:x2] for i in range(n)]
-        dec_c = [decs[i][y1:y2, x1:x2] for i in range(n)]
-        fg_fid = calculate_fid(ref_c, dec_c, device)
-        
+    bx = calculate_fid_bbox(refs[:n], decs[:n], masks, device)
+
     m = data["metrics"]
     m.setdefault("overall", {})["fid"] = float(ov_fid)
-    m.setdefault("foreground", {})["fid"] = float(fg_fid)
+    fg = m.setdefault("foreground", {})
+    # Named fid_fg_bbox, never fid_fg: this is a per-frame bbox crop, still largely
+    # background (see bg_frac below), and is not a foreground metric.
+    # NaN -> None so json.dump writes `null`; a bare NaN literal is invalid JSON.
+    def _j(x):
+        return None if x is None or np.isnan(x) else float(x)
+    fg["fid_fg_bbox"] = _j(bx["fid"])
+    # Scale/coverage diagnostics -- per-frame boxes vary in size, which is variance that
+    # whole-frame FID does not carry, and bg_frac is what justifies the key's name.
+    fg["fid_fg_bbox_area_frac_mean"] = _j(bx["area_frac_mean"])
+    fg["fid_fg_bbox_area_frac_std"] = _j(bx["area_frac_std"])
+    fg["fid_fg_bbox_scale_cv"] = _j(bx["scale_cv"])
+    fg["fid_fg_bbox_bg_frac_mean"] = _j(bx["bg_frac_mean"])
+    fg["fid_fg_bbox_n_used"] = int(bx["n_used"])
+    fg["fid_fg_bbox_n_skipped_empty"] = int(bx["n_skipped_empty"])
 
     tmp = result_path + ".tmp"
     with open(tmp, 'w') as f: json.dump(data, f, indent=2)
     os.replace(tmp, result_path)
-    return f"{experiment_hash}: OV-FID={ov_fid:.2f} FG-FID={fg_fid:.2f}"
+    if not bx["n_used"]:
+        return f"{experiment_hash}: OV-FID={ov_fid:.2f} fid_fg_bbox=n/a (no non-empty FG masks)"
+    return (f"{experiment_hash}: OV-FID={ov_fid:.2f} fid_fg_bbox={bx['fid']:.2f} "
+            f"(box {bx['area_frac_mean']*100:.1f}% of frame, {bx['bg_frac_mean']*100:.0f}% BG inside, "
+            f"scale_cv={bx['scale_cv']:.3f}, n={bx['n_used']}/{n})")
 
 def backfill_fid_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
     for entry in sorted(os.listdir(results_dir)):
@@ -1036,6 +1341,183 @@ def fvmd_validity_report(groups_path: str, results_dir: str, cache_dir: str,
     print(f"[FVMD validity] wrote {out_path}")
 
 
+def _inception_feats(frames: List[np.ndarray], device: str, fid_model=None) -> np.ndarray:
+    """[N, 2048] Inception pool3 features, extracted through the SAME module torchmetrics
+    FID scores with (`fid.inception`) -- so this measures the actual features, not a
+    lookalike. Frames are fed one at a time at native size; the extractor resizes to
+    299x299 itself (see calculate_fid_bbox)."""
+    from torchmetrics.image.fid import FrechetInceptionDistance
+    model = fid_model if fid_model is not None else FrechetInceptionDistance(feature=2048).to(device)
+    out = []
+    with torch.no_grad():
+        for f in frames:
+            t = torch.from_numpy(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)).permute(2,0,1).unsqueeze(0).byte().to(device)
+            out.append(model.inception(t).squeeze(0).cpu().numpy())
+    return np.stack(out)
+
+
+def fid_validity_report(experiment_hash: str, results_dir: str, cache_dir: str,
+                        dataset_dir: str, out_path: str, seed: int = 0) -> None:
+    """Decide whether a PER-EXPERIMENT FID is meaningful at our sample size, before any
+    score is cited. Run this BEFORE backfilling the corpus -- if it fails, the
+    per-experiment design is wrong and the backfill is wasted.
+
+    The regime: one experiment gives N ~= 60-90 frames against D = 2048 Inception
+    features, so the covariance is badly rank-deficient (N/D ~= 0.03-0.04).
+
+    The obvious defence is the one that rescued set-level FVMD: **our comparison is
+    PAIRED** (decoded frames are the same content as their references), so the
+    covariance-estimation error is common to both sides and largely cancels inside
+    `sqrtm(s1*s2)`. That argument is NOT inherited here, and must not be assumed: FVMD
+    held at N=372, D=1024 (ratio 0.36) -- an order of magnitude better than FID's ratio
+    here. So it is tested:
+
+      1. identity     -- FD(ref, ref) must be ~0. Instrument gate; if it fails, stop.
+                         NOTE this row is deterministic, not data-dependent: with the
+                         eps offset, sqrtm((s+eI)(s+eI)) = s+eI, so the score collapses
+                         to 2tr(s) - 2tr(s+eI) = -2*eps*D exactly. D=2048 -> -0.0410.
+                         (It retro-explains FVMD's reported -0.02: D=1024 -> -0.0205.)
+                         It validates the sqrtm path, not the sample size.
+      2. estimator noise -- **THE GATE.** FD(ref, ref+noise) at 1%/5%/20%: a known,
+                         purely-additive paired perturbation against a clean baseline.
+                         Must rise monotonically from ~0. This isolates the estimator's
+                         ability to resolve a small paired difference at this N, which
+                         is the actual question, and it mirrors the FVMD precedent
+                         (4 / 103 / 1645 from an identity of ~0).
+      3. decoded+noise -- SECONDARY, and deliberately not a gate. FD(ref, decoded+noise)
+                         conflates two effects and must not be read as an estimator
+                         check: the decoded video is already far from the reference, and
+                         at low bitrate it is *blurred*, so added noise injects
+                         high-frequency energy that can move its Inception texture
+                         statistics back TOWARD the detailed reference. Measured on
+                         tennis fg_bbox: 386 (+1%) -> 369 (+5%) -> 381 (+20%),
+                         non-monotone, with the mean term falling 300 -> 254 -> 247.
+                         That is the metric conflating noise with texture -- the same
+                         effect that makes FID prefer hallucinated detail to blur -- and
+                         it is a property of FID, not evidence about N. Reported because
+                         it is a real caveat on citing FID for generative restoration.
+      4. unpaired split -- DIAGNOSTIC ONLY, reported as `_diagnostic_unpaired_split`.
+                         An unpaired split is NOT a floor for the paired scores above.
+                         The FVMD version of this row was misread as a floor once
+                         already, producing a "null" larger than the scores it was meant
+                         to bound -- an impossibility that is how the error was caught.
+                         Expect paired scores to sit legitimately below it.
+
+    Pre-registered fallback, recorded before the numbers are seen: if the identity check
+    is non-zero, or the noise ladder is not monotone, or the 1% score is not small
+    relative to the between-method gaps we intend to cite, then per-experiment FID does
+    not survive at N ~= 60-90 and must be DROPPED in favour of set-level pooling (frames
+    pooled across the 6 videos per method, as set-level FVMD does, giving N ~= 450-540
+    and restoring the FVMD regime). In that case `fid_fg_bbox` becomes set-level only,
+    and the existing per-experiment `overall.fid` carries the same warning.
+    """
+    from torchmetrics.image.fid import FrechetInceptionDistance
+    result_path = os.path.join(results_dir, experiment_hash, "result.json")
+    with open(result_path) as f:
+        data = json.load(f)
+    cfg = data['config']
+    video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+    _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+    ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+    ufo_masks = _get_masks_cached(video_name, width, height, cfg.get('block_size', 8),
+                                  ref_frames_dir, cache_dir)
+    decs = load_frames_from_video(data['output_video'])
+    n = min(len(refs), len(decs), len(ufo_masks))
+    refs, decs = refs[:n], decs[:n]
+    masks = [ufo_masks[i] > 127 for i in range(n)]
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = FrechetInceptionDistance(feature=2048).to(device)
+    rng = np.random.default_rng(seed)
+    rows = []
+    D = 2048
+
+    print(f"[FID validity] {experiment_hash} ({video_name}, {cfg.get('component')}): "
+          f"N={n} frames/side vs D={D} -> N/D={n/D:.3f}")
+    fg_frac = float(np.mean([m.mean() for m in masks]))
+    print(f"[FID validity] mean true FG fraction: {fg_frac:.3f}")
+
+    def _crop(frames, use_bbox):
+        """Whole-frame, or per-frame tight FG bbox (paired: same box on both sides)."""
+        if not use_bbox:
+            return frames
+        out = []
+        for f, m in zip(frames, masks):
+            bb = _fg_tight_bbox(m, width, height)
+            if bb is not None:
+                y1, y2, x1, x2 = bb
+                out.append(f[y1:y2, x1:x2])
+        return out
+
+    for kind, use_bbox in (("whole_frame", False), ("fg_bbox", True)):
+        r_f = _crop(refs, use_bbox)
+        d_f = _crop(decs, use_bbox)
+        if len(r_f) < 2:
+            print(f"[FID validity] {kind}: <2 usable frames, skipping")
+            continue
+        ref_feats = _inception_feats(r_f, device, model)
+        n_side = len(ref_feats)
+
+        # 1. identity gate
+        ident, terms = _fd_with_terms(ref_feats, ref_feats)
+        rows.append((kind, "identity_FD(ref,ref)", ident, terms['mean_term'], terms['cov_term'], n_side, D))
+        print(f"[FID validity] {kind:11s} identity FD(ref,ref) = {ident:.4f} (must be ~0) "
+              f"-> {'PASS' if abs(ident) < 1.0 else 'FAIL'}")
+
+        # real decoded-vs-reference score, for scale
+        dec_feats = _inception_feats(d_f, device, model)
+        fd_real, terms = _fd_with_terms(ref_feats, dec_feats)
+        rows.append((kind, "paired_decoded", fd_real, terms['mean_term'], terms['cov_term'], n_side, D))
+        print(f"[FID validity] {kind:11s} paired decoded-vs-ref = {fd_real:.2f} "
+              f"(mean {terms['mean_term']:.2f} / cov {terms['cov_term']:.2f})")
+
+        def _noisy(frames, pct):
+            return [np.clip(f.astype(np.float32) + rng.uniform(-pct*255, pct*255, f.shape),
+                            0, 255).astype(np.uint8) for f in frames]
+
+        # 2. THE GATE: estimator sensitivity, FD(ref, ref+noise), from a clean baseline.
+        est_ladder = []
+        for pct in (0.01, 0.05, 0.20):
+            nf = _inception_feats(_noisy(r_f, pct), device, model)
+            fd, t = _fd_with_terms(ref_feats, nf)
+            est_ladder.append(fd)
+            rows.append((kind, f"estimator_noise_{int(pct*100)}pct", fd, t['mean_term'], t['cov_term'], n_side, D))
+            print(f"[FID validity] {kind:11s} GATE estimator ref-vs-ref+{int(pct*100):2d}% = {fd:.2f} "
+                  f"(mean {t['mean_term']:.2f} / cov {t['cov_term']:.2f})")
+        mono = all(est_ladder[i] < est_ladder[i+1] for i in range(len(est_ladder)-1))
+        print(f"[FID validity] {kind:11s} GATE estimator ladder monotone from ~0? "
+              f"{'PASS' if mono else 'FAIL'} ({' < '.join(f'{x:.1f}' for x in est_ladder)})")
+
+        # 3. SECONDARY (not a gate): FD(ref, decoded+noise). Conflates estimator
+        # behaviour with FID's noise-vs-texture confusion -- see the docstring.
+        dec_ladder = []
+        for pct in (0.01, 0.05, 0.20):
+            nf = _inception_feats(_noisy(d_f, pct), device, model)
+            fd, t = _fd_with_terms(ref_feats, nf)
+            dec_ladder.append(fd)
+            rows.append((kind, f"secondary_decoded_plus_noise_{int(pct*100)}pct", fd, t['mean_term'], t['cov_term'], n_side, D))
+            print(f"[FID validity] {kind:11s} secondary decoded+{int(pct*100):2d}% = {fd:.2f} "
+                  f"(mean {t['mean_term']:.2f} / cov {t['cov_term']:.2f})")
+        dmono = all(dec_ladder[i] < dec_ladder[i+1] for i in range(len(dec_ladder)-1))
+        print(f"[FID validity] {kind:11s} secondary decoded+noise monotone? {'yes' if dmono else 'NO'} "
+              f"({' -> '.join(f'{x:.1f}' for x in dec_ladder)})"
+              f"{'' if dmono else '  <- FID reading noise as texture, NOT an N failure'}")
+
+        # 3. unpaired split -- DIAGNOSTIC ONLY, never a floor
+        idx = rng.permutation(n_side)
+        half = n_side // 2
+        if half >= 2:
+            fd, t = _fd_with_terms(ref_feats[idx[:half]], ref_feats[idx[half:2*half]])
+            rows.append((kind, "_diagnostic_unpaired_split", fd, t['mean_term'], t['cov_term'], half, D))
+            print(f"[FID validity] {kind:11s} _diagnostic_unpaired_split = {fd:.2f} at N={half}/side "
+                  f"-- NOT a floor for the paired scores above")
+
+    with open(out_path, 'w') as f:
+        f.write("kind\trow\tfd\tmean_term\tcov_term\tn_per_side\td\n")
+        for r in rows:
+            f.write("\t".join(str(x) for x in r) + "\n")
+    print(f"[FID validity] wrote {out_path}")
+
+
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
     for entry in os.listdir(results_dir):
         # Skip bookkeeping dirs (e.g. _superseded) — not experiment hashes.
@@ -1068,9 +1550,9 @@ def main():
     parser.add_argument('--backfill-vmaf', action='store_true',
                         help='Append overall + FG-crop VMAF (default and NEG models) to existing result.json files without re-encoding')
     parser.add_argument('--backfill-dists', action='store_true',
-                        help='Append overall + FG-crop DISTS to existing result.json files')
+                        help='Append overall DISTS + true mask-weighted FG/BG DISTS (dists_fg/dists_bg) to existing result.json files')
     parser.add_argument('--backfill-fid', action='store_true',
-                        help='Append overall + FG-crop FID to existing result.json files')
+                        help='Append overall FID + per-frame tight-bbox fid_fg_bbox (best-effort locality, NOT a foreground metric) to existing result.json files')
     parser.add_argument('--backfill-fvmd', action='store_true',
                         help='Append overall + FG-crop per-video FVMD to existing result.json files (internal signal; not the paper metric)')
     parser.add_argument('--fvmd-setlevel', type=str, default=None, metavar='GROUPS_JSON',
@@ -1082,12 +1564,55 @@ def main():
                              'jackknife = the real uncertainty at n=6, mean/cov term split) — run this '
                              'before citing any set-level score')
 
+    parser.add_argument('--fid-validity', type=str, default=None, metavar='EXPERIMENT_HASH',
+                        help='FID small-sample validity gate on one experiment (identity check, paired-noise '
+                             'monotonicity, unpaired-split diagnostic) at N~60-90 vs D=2048 — run this before '
+                             'citing any per-experiment FID')
+    parser.add_argument('--fid-out', type=str, default='scratch/fid_validity.tsv',
+                        help='Output table path for --fid-validity')
+    parser.add_argument('--drop-unionbbox-keys', action='store_true',
+                        help='One-shot: delete the superseded union-bbox foreground.dists_mean/foreground.fid '
+                             'keys (not foreground metrics; see TECHNICAL_REPORT_PIPELINE_INFRA.md 2026-07-16). '
+                             'No recomputation; idempotent')
+
     parser.add_argument('--force', action='store_true',
                         help='With a --backfill-* flag, recompute even if the metric is already present')
+    parser.add_argument('--only', type=str, default=None, metavar='HASH',
+                        help='With a --backfill-* / --drop-unionbbox-keys flag, act on a single experiment '
+                             '(for verification runs)')
     parser.add_argument('--shard', type=str, default=None,
                         help='Shard the evaluation (e.g. 0/2)')
     args = parser.parse_args()
-    if args.backfill_lpips:
+    if args.only:
+        # Single-experiment verification path: run the one hash through the same
+        # per-experiment function the *_all drivers call.
+        fns = {
+            'backfill_lpips': backfill_lpips, 'backfill_vmaf': backfill_vmaf,
+            'backfill_dists': backfill_dists, 'backfill_fid': backfill_fid,
+            'backfill_fvmd': backfill_fvmd,
+        }
+        selected = [f for f in fns if getattr(args, f)]
+        if args.drop_unionbbox_keys:
+            selected.append('drop_unionbbox_keys')
+        if not selected:
+            parser.error('--only requires a --backfill-* or --drop-unionbbox-keys flag')
+        # Fail loudly rather than silently honouring only the first: the *_all path is an
+        # elif chain, so passing two flags there already drops one, and --only is a
+        # verification flag where a silently skipped metric is exactly the wrong outcome.
+        if len(selected) > 1:
+            parser.error(f'--only takes a single action, got: {", ".join(selected)}')
+        if selected[0] == 'drop_unionbbox_keys':
+            print(drop_unionbbox_keys(args.only, args.results_dir))
+        else:
+            print(fns[selected[0]](args.only, args.results_dir, args.cache_dir,
+                                   args.dataset_dir, force=args.force))
+        return
+    if args.fid_validity:
+        fid_validity_report(args.fid_validity, args.results_dir, args.cache_dir,
+                            args.dataset_dir, args.fid_out)
+    elif args.drop_unionbbox_keys:
+        drop_unionbbox_keys_all(args.results_dir)
+    elif args.backfill_lpips:
         backfill_lpips_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     elif args.backfill_vmaf:
         backfill_vmaf_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)

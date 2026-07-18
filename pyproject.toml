@@ -50,6 +50,7 @@ dependencies = [
 [project.scripts]
 presley-run = "presley.runner:main"
 presley-evaluate = "presley.components.evaluation:main"
+presley-compare = "presley.compare:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
