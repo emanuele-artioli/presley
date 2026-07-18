@@ -176,6 +176,15 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         e2_keys = ('ref_stride', 'neighbor_stride', 'num_ref')
         e2_kwargs = {k: inpainter_params[k] for k in e2_keys if k in inpainter_params}
         inpaint_with_e2fgvi(stretched_dir, masks_dir, output_frames_dir, width, height, framerate, **e2_kwargs)
+    elif inpainter == 'none':
+        # No restoration: the output IS the decoded transmitted video (holes left
+        # as black/frozen). The control arm of the Goal-2 probe -- an in-painter
+        # only earns its keep if it beats this. Passthrough compositing below is
+        # then a no-op (hole pixels are copied from the same frames), which is
+        # exactly the intended semantics.
+        os.makedirs(output_frames_dir, exist_ok=True)
+        for i in range(len(stretched_frames_list)):
+            cv2.imwrite(os.path.join(output_frames_dir, f"{i:05d}.png"), stretched_frames_list[i])
     elif inpainter == 'telea':
         # Classical per-frame in-painting (cv2, CPU) — the NOSSDAV paper's
         # "ELVIS CV2 benchmark": the published "2-3 VMAF avg" claim is

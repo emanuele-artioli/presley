@@ -174,7 +174,7 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                 creative_start=restorer_params.get('creative_start', 1.0),
                 preview_start=restorer_params.get('preview_start', 0.0),
                 batch_size=restorer_params.get('batch_size', 4))
-        elif restorer in ('propainter', 'telea'):
+        elif restorer in ('propainter', 'e2fgvi', 'telea'):
             # In-painting restorers for the hole-punching degradations (mean_fill /
             # freeze): fill the degraded region rather than super-resolve it.
             if degradation not in INPAINT_DEGRADATIONS:
@@ -190,6 +190,13 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                 pp_keys = ('ref_stride', 'neighbor_length', 'subvideo_length', 'raft_iter', 'fp16', 'resize_ratio')
                 pp_kwargs = {k: restorer_params[k] for k in pp_keys if k in restorer_params}
                 inpaint_with_propainter(temp_frames_dir, masks_dir, restored_frames_dir, width, height, framerate, mask_dilation=0, **pp_kwargs)
+            elif restorer == 'e2fgvi':
+                # Same in-painter set as elvis, so the fill x restorer grid is
+                # symmetric across the two components (Goal-2 probe).
+                from presley.restoration import inpaint_with_e2fgvi
+                e2_keys = ('ref_stride', 'neighbor_stride', 'num_ref')
+                e2_kwargs = {k: restorer_params[k] for k in e2_keys if k in restorer_params}
+                inpaint_with_e2fgvi(temp_frames_dir, masks_dir, restored_frames_dir, width, height, framerate, **e2_kwargs)
             else:  # telea (classical CPU in-painting)
                 radius = int(restorer_params.get('inpaint_radius', 3))
                 for i in range(len(decoded_degraded)):
