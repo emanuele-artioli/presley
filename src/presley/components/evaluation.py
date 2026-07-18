@@ -877,6 +877,86 @@ def backfill_dists_all(results_dir: str, cache_dir: str, dataset_dir: str, force
         if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
             print(backfill_dists(entry, results_dir, cache_dir, dataset_dir, force=force))
 
+def backfill_transmitted_perceptual(experiment_hash: str, results_dir: str, cache_dir: str,
+                                    dataset_dir: str, force: bool = False) -> str:
+    """Append masked LPIPS + masked DISTS for the TRANSMITTED (decoded degraded)
+    video to metrics.transmitted.<region>, vs the original references.
+
+    This is what makes the restoration *perceptual* gain measurable
+    (metrics.<region>.lpips_mean - metrics.transmitted.<region>.lpips_mean):
+    until now only PSNR/SSIM/MSE existed under metrics.transmitted, and a
+    PSNR-only gain systematically understates hallucinated detail (the
+    mean_fill trap, in reverse). Metric-only pass like backfill_lpips: no
+    re-encode. Skips experiments without a native-resolution transmitted
+    video (elvis shrink packs blocks into a smaller rectangle; the FG/BG mask
+    is not pixel-comparable to that geometry -- same skip as run_evaluation).
+    """
+    exp_results_dir = os.path.join(results_dir, experiment_hash)
+    result_path = os.path.join(exp_results_dir, "result.json")
+    if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
+    with open(result_path, 'r') as f: data = json.load(f)
+    if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
+    transmitted_video = data.get('transmitted_video')
+    if not transmitted_video or not os.path.exists(transmitted_video):
+        return f"{experiment_hash}: no transmitted video"
+    trans = data["metrics"].setdefault("transmitted", {})
+    if not force and "lpips_mean" in trans.get("foreground", {}):
+        return f"{experiment_hash}: transmitted perceptual already present"
+
+    cfg = data['config']
+    video_name, width, height = cfg['video'], cfg['width'], cfg['height']
+    block_size = cfg.get('block_size', 8)
+
+    decs = load_frames_from_video(transmitted_video)
+    if not decs: return f"{experiment_hash}: transmitted video not decodable"
+    if decs[0].shape[:2] != (height, width):
+        th, tw = decs[0].shape[:2]
+        return (f"{experiment_hash}: transmitted is {tw}x{th}, native {width}x{height} "
+                f"(packed removal geometry) -- skipped")
+
+    _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)
+    ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+    # Always the true per-frame FG mask -- see the matching note in run_evaluation.
+    ufo_masks = _get_masks_cached(video_name, width, height, block_size, ref_frames_dir, cache_dir)
+    n = min(len(refs), len(decs), len(ufo_masks))
+    if n == 0: return f"{experiment_hash}: no comparable frames"
+    masks = [ufo_masks[i] > 127 for i in range(n)]
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    lp = calculate_lpips_masked(refs[:n], decs[:n], masks, device)
+    ds = calculate_dists_masked(refs[:n], decs[:n], masks, device)
+
+    def _agg(vals):
+        # NaN -> None (JSON null); empty-mask frames excluded, not counted as 0.0.
+        if not np.any(~np.isnan(vals)):
+            return None, None
+        return float(np.nanmean(vals)), float(np.nanstd(vals))
+
+    for region in ("foreground", "background", "overall"):
+        r = trans.setdefault(region, {})
+        r["lpips_mean"], r["lpips_std"] = _agg(lp[region])
+        r["lpips_n_valid"] = int(np.count_nonzero(~np.isnan(lp[region])))
+    fg = trans["foreground"]
+    fg["dists_fg"], fg["dists_fg_std"] = _agg(ds["foreground"])
+    fg["dists_fg_n_valid"] = int(np.count_nonzero(~np.isnan(ds["foreground"])))
+    trans["background"]["dists_bg"], trans["background"]["dists_bg_std"] = _agg(ds["background"])
+    trans["overall"]["dists_mean"], trans["overall"]["dists_std"] = _agg(ds["overall"])
+
+    tmp = result_path + ".tmp"
+    with open(tmp, 'w') as f: json.dump(data, f, indent=2)
+    os.replace(tmp, result_path)
+    def _f(x):
+        return "n/a" if x is None else f"{x:.4f}"
+    return (f"{experiment_hash}: transmitted BG-LPIPS={_f(trans['background']['lpips_mean'])} "
+            f"BG-DISTS={_f(trans['background']['dists_bg'])} "
+            f"FG-LPIPS={_f(fg['lpips_mean'])} n={n}")
+
+def backfill_transmitted_perceptual_all(results_dir: str, cache_dir: str, dataset_dir: str,
+                                        force: bool = False) -> None:
+    for entry in sorted(os.listdir(results_dir)):
+        if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
+            print(backfill_transmitted_perceptual(entry, results_dir, cache_dir, dataset_dir, force=force))
+
 
 def drop_unionbbox_keys(experiment_hash: str, results_dir: str) -> str:
     """Delete the union-bbox "FG" DISTS/FID values from metrics.foreground.
@@ -1571,6 +1651,9 @@ def main():
                         help='Append overall + FG-crop VMAF (default and NEG models) to existing result.json files without re-encoding')
     parser.add_argument('--backfill-dists', action='store_true',
                         help='Append overall DISTS + true mask-weighted FG/BG DISTS (dists_fg/dists_bg) to existing result.json files')
+    parser.add_argument('--backfill-transmitted', action='store_true',
+                        help='Append masked LPIPS+DISTS for the transmitted (decoded degraded) video to '
+                             'metrics.transmitted -- makes the restoration perceptual gain measurable')
     parser.add_argument('--backfill-fid', action='store_true',
                         help='Append overall FID + per-frame tight-bbox fid_fg_bbox (best-effort locality, NOT a foreground metric) to existing result.json files')
     parser.add_argument('--backfill-fvmd', action='store_true',
@@ -1610,6 +1693,7 @@ def main():
             'backfill_lpips': backfill_lpips, 'backfill_vmaf': backfill_vmaf,
             'backfill_dists': backfill_dists, 'backfill_fid': backfill_fid,
             'backfill_fvmd': backfill_fvmd,
+            'backfill_transmitted': backfill_transmitted_perceptual,
         }
         selected = [f for f in fns if getattr(args, f)]
         if args.drop_unionbbox_keys:
@@ -1638,6 +1722,8 @@ def main():
         backfill_vmaf_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     elif args.backfill_dists:
         backfill_dists_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
+    elif args.backfill_transmitted:
+        backfill_transmitted_perceptual_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     elif args.backfill_fid:
         backfill_fid_all(args.results_dir, args.cache_dir, args.dataset_dir, force=args.force)
     elif args.backfill_fvmd:
