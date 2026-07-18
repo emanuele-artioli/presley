@@ -3,7 +3,49 @@ import subprocess
 import cv2
 import math
 import numpy as np
-from typing import List
+from typing import List, Optional, Dict, Any
+
+def derive_rate_control(codec: str, codec_params: Optional[Dict[str, Any]] = None, roi_method: Optional[str] = None) -> str:
+    """Classify the rate-control mode an encode_video_*/encode_with_roi_* call
+    actually used, as a derived result field (not an experiments.yaml key --
+    adding a key would perturb compute_experiment_hash and orphan every
+    existing results/<hash>/ dir).
+
+    'qp' in codec_params means different things per codec: x265/kvazaar honor
+    it as constant-QP (rate control off); SVT-AV1's baseline/elvis/presley_ai
+    path (encode_video_svtav1_qp) passes it as 'rc=0:q=<qp>', which with the
+    default aq-mode=2 is equivalent to --crf (see SvtAv1EncApp --help) -- a
+    different mechanism with the same "no bitrate target" property. The ROI
+    component's own encode_with_roi_* helpers always binary-search a fixed
+    QP/CRF regardless of codec_params, so roi_method is checked first.
+    """
+    codec_params = codec_params or {}
+    codec = (codec or '').lower()
+    if roi_method is not None:
+        roi_method = roi_method.lower()
+        if roi_method == 'kvazaar':
+            return 'cqp'
+        if roi_method == 'svtav1':
+            return 'crf'
+        if roi_method == 'x265_aq':
+            return 'vbr_2pass'
+        if roi_method in ('presley_downsample', 'presley_blur', 'presley_noise', 'presley_qp'):
+            # These degrade pixels then always encode to a target_bitrate,
+            # regardless of any codec_params.qp (that key is a degradation
+            # knob here -- filter_frame_qp -- not an encoder rate-control flag).
+            presley_codec = codec
+            return 'vbr_1pass' if presley_codec == 'kvazaar' else 'vbr_2pass'
+        return 'n/a'
+    has_qp = 'qp' in codec_params
+    if codec == 'x265':
+        return 'cqp' if has_qp else 'vbr_2pass'
+    if codec == 'x264':
+        return 'vbr_2pass'
+    if codec == 'kvazaar':
+        return 'vbr_1pass'
+    if codec == 'svtav1':
+        return 'crf' if has_qp else 'vbr_1pass'
+    return 'n/a'
 
 def save_frames_as_video(frames: List[np.ndarray], output_path: str, framerate: float, lossless: bool = True, codec: str = "libx265") -> None:
     """Encode frames to video (lossless intermediate by default)."""

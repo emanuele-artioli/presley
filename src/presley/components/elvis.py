@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, Any
 
 from presley.preprocessing import get_reference_frames, get_removability_scores
-from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_svtav1
+from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_svtav1, derive_rate_control
 from presley.degradation import apply_selective_removal, select_removal_mask_global
 from presley.restoration import stretch_frame
 from presley.sidechannel import save_binary_masks, composite_passthrough
@@ -239,6 +239,7 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         "video_framerate": framerate,
         "output_video": final_output,
         "transmitted_video": encoded_shrunk,
+        "rate_control": derive_rate_control(codec, codec_params),
         "actual_bitrate_bps": actual_bitrate,
         "file_size_bytes": os.path.getsize(final_output),
         "transmitted_size_bytes": total_transmitted_bytes,

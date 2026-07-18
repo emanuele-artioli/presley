@@ -4,7 +4,7 @@ from typing import Dict, Any
 import numpy as np
 from presley.preprocessing import get_reference_frames, get_removability_scores
 from presley.encode_utils import (
-    encode_with_roi_kvazaar, 
+    encode_with_roi_kvazaar, derive_rate_control,
     # other roi encoding functions can be imported here once implemented
 )
 
@@ -107,6 +107,7 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
         "video_frames": len(frames),
         "video_framerate": framerate,
         "output_video": output_video,
+        "rate_control": derive_rate_control(experiment.get('codec', 'x265'), codec_params, roi_method=roi_method),
         "actual_bitrate_bps": actual_bitrate,
         "file_size_bytes": file_size,
         "transmitted_size_bytes": file_size,

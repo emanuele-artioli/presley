@@ -3,8 +3,8 @@ import time
 from typing import Dict, Any
 from presley.preprocessing import get_reference_frames
 from presley.encode_utils import (
-    encode_video_x264, encode_video_x265, 
-    encode_video_svtav1, encode_video_kvazaar
+    encode_video_x264, encode_video_x265,
+    encode_video_svtav1, encode_video_kvazaar, derive_rate_control
 )
 
 def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cache_dir: str) -> Dict[str, Any]:
@@ -65,6 +65,7 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
         "video_frames": len(frames),
         "video_framerate": framerate,
         "output_video": output_video,
+        "rate_control": derive_rate_control(codec, codec_params),
         "actual_bitrate_bps": actual_bitrate,
         "file_size_bytes": file_size,
         "transmitted_size_bytes": file_size,

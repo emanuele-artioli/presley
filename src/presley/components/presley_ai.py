@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, Any
 
 from presley.preprocessing import get_reference_frames, get_removability_scores
-from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_x265_qp, encode_video_svtav1_qp, encode_video_svtav1
+from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_x265_qp, encode_video_svtav1_qp, encode_video_svtav1, derive_rate_control
 from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
                                  filter_frame_mean_fill, filter_frame_freeze,
                                  select_removal_mask_global)
@@ -126,77 +126,88 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     
     # 4. Decode degraded frames
     decoded_degraded = load_frames_from_video(transmitted_video)
-    
-    # 5. Restore
-    temp_frames_dir = os.path.join(results_dir, "temp_restoring")
-    restored_frames_dir = os.path.join(results_dir, "restored_frames")
-    os.makedirs(temp_frames_dir, exist_ok=True)
-    os.makedirs(restored_frames_dir, exist_ok=True)
-    
+
     import cv2
-    for i in range(len(decoded_degraded)):
-        cv2.imwrite(os.path.join(temp_frames_dir, f"{i:05d}.png"), decoded_degraded[i])
-        
-    smap_arr = np.array(strength_maps_list)
-    
-    if restorer == 'realesrgan':
-        if degradation != 'downsample':
-            raise ValueError("RealESRGAN restorer expects 'downsample' degradation")
-        from presley.restoration import restore_downsampled_with_realesrgan
-        # tile>0 processes the frame in tiles → much lower peak VRAM (lets the job
-        # fit alongside other GPU processes); tile=0 is full-frame (fastest, most VRAM).
-        restore_downsampled_with_realesrgan(
-            temp_frames_dir, restored_frames_dir, smap_arr, block_size,
-            denoise_strength=restorer_params.get('denoise_strength', 1.0),
-            tile=restorer_params.get('tile', 0),
-            tile_pad=restorer_params.get('tile_pad', 10),
-            fp32=restorer_params.get('fp32', False))
 
-    elif restorer == 'instantir':
-        if degradation != 'blur':
-            raise ValueError("InstantIR restorer expects 'blur' degradation")
-        from presley.restoration import restore_with_instantir_adaptive
-        # batch_size is the main VRAM lever for InstantIR (SDXL-class); drop to 1–2
-        # to run alongside other GPU jobs instead of needing a whole free GPU.
-        restore_with_instantir_adaptive(
-            temp_frames_dir, restored_frames_dir, smap_arr, block_size,
-            cfg=restorer_params.get('cfg', 7.0),
-            creative_start=restorer_params.get('creative_start', 1.0),
-            preview_start=restorer_params.get('preview_start', 0.0),
-            batch_size=restorer_params.get('batch_size', 4))
-    elif restorer in ('propainter', 'telea'):
-        # In-painting restorers for the hole-punching degradations (mean_fill /
-        # freeze): fill the degraded region rather than super-resolve it.
-        if degradation not in INPAINT_DEGRADATIONS:
-            raise ValueError(f"{restorer} restorer expects a hole degradation {INPAINT_DEGRADATIONS}, got '{degradation}'")
-        masks_dir = os.path.join(results_dir, "temp_masks")
-        os.makedirs(masks_dir, exist_ok=True)
-        for i in range(len(strength_maps_list)):
-            m_full = cv2.resize((strength_maps_list[i] > 0).astype(np.uint8) * 255,
-                                (width, height), interpolation=cv2.INTER_NEAREST)
-            cv2.imwrite(os.path.join(masks_dir, f"{i:05d}.png"), m_full)
-        if restorer == 'propainter':
-            from presley.restoration import inpaint_with_propainter
-            pp_keys = ('ref_stride', 'neighbor_length', 'subvideo_length', 'raft_iter', 'fp16', 'resize_ratio')
-            pp_kwargs = {k: restorer_params[k] for k in pp_keys if k in restorer_params}
-            inpaint_with_propainter(temp_frames_dir, masks_dir, restored_frames_dir, width, height, framerate, mask_dilation=0, **pp_kwargs)
-        else:  # telea (classical CPU in-painting)
-            radius = int(restorer_params.get('inpaint_radius', 3))
-            for i in range(len(decoded_degraded)):
-                m = cv2.imread(os.path.join(masks_dir, f"{i:05d}.png"), 0)
-                inp = cv2.inpaint(decoded_degraded[i], (m > 127).astype(np.uint8), radius, cv2.INPAINT_TELEA)
-                cv2.imwrite(os.path.join(restored_frames_dir, f"{i:05d}.png"), inp)
-        import shutil as _shutil
-        _shutil.rmtree(masks_dir, ignore_errors=True)
+    # 5. Restore. restorer == 'none' is a Goal-1-only screen: skip the PNG
+    # round-trip and any restorer entirely, so bitrate/FG-quality can be
+    # measured with zero GPU cost before committing to a real restoration run.
+    if restorer == 'none':
+        restored_frames = list(decoded_degraded)
+        restoration_time = 0.0
     else:
-        raise ValueError(f"Unknown restorer: {restorer}")
+        temp_frames_dir = os.path.join(results_dir, "temp_restoring")
+        restored_frames_dir = os.path.join(results_dir, "restored_frames")
+        os.makedirs(temp_frames_dir, exist_ok=True)
+        os.makedirs(restored_frames_dir, exist_ok=True)
 
-    # Read restored frames
-    import glob
-    restored_frames = []
-    restored_paths = sorted(glob.glob(os.path.join(restored_frames_dir, "*.png")))
-    for f in restored_paths:
-        restored_frames.append(cv2.imread(f))
+        for i in range(len(decoded_degraded)):
+            cv2.imwrite(os.path.join(temp_frames_dir, f"{i:05d}.png"), decoded_degraded[i])
+
+        smap_arr = np.array(strength_maps_list)
+
+        if restorer == 'realesrgan':
+            if degradation != 'downsample':
+                raise ValueError("RealESRGAN restorer expects 'downsample' degradation")
+            from presley.restoration import restore_downsampled_with_realesrgan
+            # tile>0 processes the frame in tiles → much lower peak VRAM (lets the job
+            # fit alongside other GPU processes); tile=0 is full-frame (fastest, most VRAM).
+            restore_downsampled_with_realesrgan(
+                temp_frames_dir, restored_frames_dir, smap_arr, block_size,
+                denoise_strength=restorer_params.get('denoise_strength', 1.0),
+                tile=restorer_params.get('tile', 0),
+                tile_pad=restorer_params.get('tile_pad', 10),
+                fp32=restorer_params.get('fp32', False))
+
+        elif restorer == 'instantir':
+            if degradation != 'blur':
+                raise ValueError("InstantIR restorer expects 'blur' degradation")
+            from presley.restoration import restore_with_instantir_adaptive
+            # batch_size is the main VRAM lever for InstantIR (SDXL-class); drop to 1–2
+            # to run alongside other GPU jobs instead of needing a whole free GPU.
+            restore_with_instantir_adaptive(
+                temp_frames_dir, restored_frames_dir, smap_arr, block_size,
+                cfg=restorer_params.get('cfg', 7.0),
+                creative_start=restorer_params.get('creative_start', 1.0),
+                preview_start=restorer_params.get('preview_start', 0.0),
+                batch_size=restorer_params.get('batch_size', 4))
+        elif restorer in ('propainter', 'telea'):
+            # In-painting restorers for the hole-punching degradations (mean_fill /
+            # freeze): fill the degraded region rather than super-resolve it.
+            if degradation not in INPAINT_DEGRADATIONS:
+                raise ValueError(f"{restorer} restorer expects a hole degradation {INPAINT_DEGRADATIONS}, got '{degradation}'")
+            masks_dir = os.path.join(results_dir, "temp_masks")
+            os.makedirs(masks_dir, exist_ok=True)
+            for i in range(len(strength_maps_list)):
+                m_full = cv2.resize((strength_maps_list[i] > 0).astype(np.uint8) * 255,
+                                    (width, height), interpolation=cv2.INTER_NEAREST)
+                cv2.imwrite(os.path.join(masks_dir, f"{i:05d}.png"), m_full)
+            if restorer == 'propainter':
+                from presley.restoration import inpaint_with_propainter
+                pp_keys = ('ref_stride', 'neighbor_length', 'subvideo_length', 'raft_iter', 'fp16', 'resize_ratio')
+                pp_kwargs = {k: restorer_params[k] for k in pp_keys if k in restorer_params}
+                inpaint_with_propainter(temp_frames_dir, masks_dir, restored_frames_dir, width, height, framerate, mask_dilation=0, **pp_kwargs)
+            else:  # telea (classical CPU in-painting)
+                radius = int(restorer_params.get('inpaint_radius', 3))
+                for i in range(len(decoded_degraded)):
+                    m = cv2.imread(os.path.join(masks_dir, f"{i:05d}.png"), 0)
+                    inp = cv2.inpaint(decoded_degraded[i], (m > 127).astype(np.uint8), radius, cv2.INPAINT_TELEA)
+                    cv2.imwrite(os.path.join(restored_frames_dir, f"{i:05d}.png"), inp)
+            import shutil as _shutil
+            _shutil.rmtree(masks_dir, ignore_errors=True)
+        else:
+            raise ValueError(f"Unknown restorer: {restorer}")
+
+        # Read restored frames
+        import glob
+        restored_frames = []
+        restored_paths = sorted(glob.glob(os.path.join(restored_frames_dir, "*.png")))
+        for f in restored_paths:
+            restored_frames.append(cv2.imread(f))
+
+        restoration_time = time.time() - restoration_start
+        import shutil
+        shutil.rmtree(temp_frames_dir, ignore_errors=True)
 
     # Passthrough compositing: keep the decoded transmitted pixels (bit-exact FG)
     # and take restored pixels only where the frame was degraded (strength > 0).
@@ -211,11 +222,8 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # compared directly against reference frames for the FG-quality claim.
     final_output = os.path.join(results_dir, "restored_lossless.mkv")
     save_frames_as_video(restored_frames, final_output, framerate, lossless=True, codec="ffv1")
-    
-    restoration_time = time.time() - restoration_start
-    
+
     import shutil
-    shutil.rmtree(temp_frames_dir, ignore_errors=True)
     if os.path.exists(temp_degraded_vid):
         os.remove(temp_degraded_vid)
         
@@ -230,6 +238,7 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         "video_framerate": framerate,
         "output_video": final_output,
         "transmitted_video": transmitted_video,
+        "rate_control": derive_rate_control(codec, codec_params),
         "actual_bitrate_bps": actual_bitrate,
         "file_size_bytes": os.path.getsize(final_output),
         "transmitted_size_bytes": total_transmitted_bytes,
