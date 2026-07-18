@@ -28,10 +28,12 @@ frame on india** and 58.6% on tennis against a **4.0%** true FG (measured; see
   ~74% background on tennis (see its `fid_fg_bbox_bg_frac_mean`). FID pools
   Inception to one 2048-d vector, so no principled FG-FID exists. Cite it only
   as a corroborating signal, always by its full name, never as "FG-FID".
-- **Banned for the FG claim:** `foreground.vmaf_mean`/`vmaf_neg_mean` and
-  `foreground.fvmd` (union-bbox crops). `foreground.dists_mean`/`foreground.fid`
-  were the same defect and have been deleted from `results/`; if you see them in
-  an old copy, do not cite them.
+- **Banned for the FG claim:** `foreground.vmaf_fg_bbox`/`vmaf_neg_fg_bbox`
+  (renamed 2026-07-17 from `vmaf_mean`/`vmaf_neg_mean` so the on-disk key
+  itself carries the caveat, matching `fid_fg_bbox`) and `foreground.fvmd`
+  (union-bbox crops). `foreground.dists_mean`/`foreground.fid` were the same
+  defect and have been deleted from `results/`; if you see them, or the old
+  `vmaf_mean`/`vmaf_neg_mean` names, in an old copy, do not cite them.
 - `overall.*` versions of all of these are legitimate whole-frame metrics.
 
 Also present: `output_video`, `actual_bitrate_bps`, `file_size_bytes`,
@@ -48,6 +50,18 @@ do not use it for a bitrate claim.
 Entries with `metrics.fast_only: true` came from a `--fast-metrics` run and
 lack LPIPS/DISTS/VMAF/FVMD and block-level maps; run `presley-evaluate
 results/` to upgrade them before reporting perceptual metrics.
+
+**Top-level `rate_control`** (`cqp`/`crf`/`vbr_1pass`/`vbr_2pass`/`n/a`) records
+the actual encoder rate-control mode used, derived from `config.codec` +
+`config.codec_params`/`roi_method` at result-write time (`derive_rate_control`
+in `encode_utils.py`) — not a config field, so it doesn't affect
+`compute_experiment_hash`. `qp` in `codec_params` means constant-QP for
+x265/kvazaar but **CRF** for SVT-AV1 (`rc=0:q=N` with default `aq-mode=2` is
+equivalent to `--crf N`); this field disambiguates that instead of leaving it
+implicit. Within-codec comparisons are unaffected either way (both sides of a
+comparison already share a mode); check this field before stating a
+cross-codec rate-control claim. Results written before this field existed were
+backfilled once from their `config` (no re-encoding, no metric change).
 
 `presley-compare` (see `src/presley/compare.py`) already respects the FG
 citability rules above when picking which key to read per region/metric —

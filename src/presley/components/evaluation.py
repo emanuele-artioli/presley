@@ -442,9 +442,22 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     if has_transmitted:
         trans_decs = load_frames_from_video(transmitted_video)
         num_frames = min(num_frames, len(trans_decs))
-        t_fg_psnr, t_fg_ssim, t_fg_mse = [], [], []
-        t_bg_psnr, t_bg_ssim, t_bg_mse = [], [], []
-        t_ov_psnr, t_ov_ssim, t_ov_mse = [], [], []
+        # elvis's shrink removal_mode packs surviving blocks into a smaller
+        # rectangle, so its transmitted_video is sub-native resolution (unlike
+        # blackout/freeze/presley_ai/baselines, whose transmitted video is
+        # always native). The native-resolution FG/BG mask isn't pixel-
+        # comparable to that packed geometry -- skip the transmitted-quality
+        # metric rather than crash the whole evaluation on the boolean-index
+        # shape mismatch.
+        if trans_decs and trans_decs[0].shape[:2] != (height, width):
+            th, tw = trans_decs[0].shape[:2]
+            print(f"Transmitted video for {experiment_hash} is {tw}x{th}, native is "
+                  f"{width}x{height} (packed removal geometry) -- skipping transmitted-quality metric")
+            has_transmitted = False
+        else:
+            t_fg_psnr, t_fg_ssim, t_fg_mse = [], [], []
+            t_bg_psnr, t_bg_ssim, t_bg_mse = [], [], []
+            t_ov_psnr, t_ov_ssim, t_ov_mse = [], [], []
     
     # Block level metrics (slow: full per-block loop; skipped in fast mode)
     num_blocks_y = height // block_size
@@ -719,11 +732,15 @@ def backfill_vmaf(experiment_hash: str, results_dir: str, cache_dir: str, datase
     result.json in place.
 
     Metric-only pass over on-disk artifacts, like backfill_lpips: no re-encode.
-    FG-VMAF is computed on the per-video union FG bounding-box crop (VMAF needs
+    The FG value is written as `vmaf_fg_bbox` (not `vmaf_mean`) because it is
+    computed on the per-video union FG bounding-box crop (VMAF needs
     constant-resolution natural frames; a mask cannot be applied directly), so
-    it includes some BG context within the box — comparisons are within-video
-    at matched bitrate, where the box is identical across methods. The NEG
-    model discounts enhancement/sharpening gains; reporting both makes the
+    it includes substantial BG context within the box and is NOT a foreground
+    metric — see TECHNICAL_REPORT_PIPELINE_INFRA.md 2026-07-16 and
+    `compare.py`'s BANNED_FG_KEYS. Comparisons are within-video at matched
+    bitrate, where the box is identical across methods, but the value must
+    never be cited for the FG chain claim. The NEG model discounts
+    enhancement/sharpening gains; reporting both makes the
     sharpening-vs-fidelity split explicit.
     """
     exp_results_dir = os.path.join(results_dir, experiment_hash)
@@ -734,7 +751,7 @@ def backfill_vmaf(experiment_hash: str, results_dir: str, cache_dir: str, datase
         data = json.load(f)
     if "metrics" not in data:
         return f"{experiment_hash}: no metrics yet (run eval first)"
-    if not force and "vmaf_mean" in data["metrics"].get("foreground", {}):
+    if not force and "vmaf_fg_bbox" in data["metrics"].get("foreground", {}):
         return f"{experiment_hash}: FG-VMAF already present"
 
     cfg = data['config']
@@ -769,9 +786,12 @@ def backfill_vmaf(experiment_hash: str, results_dir: str, cache_dir: str, datase
     m.setdefault("overall", {})["vmaf_mean"] = ov["mean"]
     m["overall"]["vmaf_std"] = ov["std"]
     m["overall"]["vmaf_neg_mean"] = ov_neg["mean"]
-    m.setdefault("foreground", {})["vmaf_mean"] = fg["mean"]
-    m["foreground"]["vmaf_std"] = fg["std"]
-    m["foreground"]["vmaf_neg_mean"] = fg_neg["mean"]
+    # Named _fg_bbox (not vmaf_mean/vmaf_neg_mean): this is a union-bbox crop,
+    # not a mask metric, and must never be read as a foreground quality signal
+    # (see docstring above and compare.py's BANNED_FG_KEYS).
+    m.setdefault("foreground", {})["vmaf_fg_bbox"] = fg["mean"]
+    m["foreground"]["vmaf_std_fg_bbox"] = fg["std"]
+    m["foreground"]["vmaf_neg_fg_bbox"] = fg_neg["mean"]
 
     tmp = result_path + ".tmp"
     with open(tmp, 'w') as f:

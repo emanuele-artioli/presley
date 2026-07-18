@@ -56,7 +56,13 @@ REGION_METRIC_KEYS: Dict[str, Dict[str, str]] = {
 # Keys that are known union-bbox artifacts under "foreground" specifically.
 # _metric_value refuses to read these for region="foreground" even if a caller
 # hand-edits REGION_METRIC_KEYS, since this is the one invariant that must hold.
-BANNED_FG_KEYS = {"vmaf_mean", "vmaf_neg_mean", "fvmd", "dists_mean", "fid"}
+# vmaf_mean/vmaf_neg_mean are the pre-2026-07-17 key names (renamed to
+# vmaf_fg_bbox/vmaf_neg_fg_bbox in backfill_vmaf); kept banned here too in case
+# any un-migrated result.json still carries the old names.
+BANNED_FG_KEYS = {
+    "vmaf_mean", "vmaf_neg_mean", "vmaf_fg_bbox", "vmaf_neg_fg_bbox",
+    "fvmd", "dists_mean", "fid",
+}
 
 
 @dataclass
