@@ -19,7 +19,7 @@ Each `results/<hash>/result.json` has two parts:
 Only **true masked** metrics measure the foreground. A metric computed on a
 *bounding box* is not one, however it is named: the union bbox is **100% of the
 frame on india** and 58.6% on tennis against a **4.0%** true FG (measured; see
-`TECHNICAL_REPORT_PIPELINE_INFRA.md`, 2026-07-16).
+`68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md`, Hard rules).
 
 - **Citable as FG:** `foreground.lpips_mean` (spatial-mode map over the true
   per-frame UFO mask) and `foreground.dists_fg` (mask-weighted DISTS pooling;
