@@ -6,6 +6,7 @@ from typing import Dict, Any
 from presley.preprocessing import get_reference_frames, get_removability_scores
 from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_x265_qp, encode_video_svtav1_qp, encode_video_svtav1, derive_rate_control
 from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
+                                 filter_frame_noise,
                                  filter_frame_mean_fill, filter_frame_freeze,
                                  select_removal_mask_global)
 from presley.sidechannel import save_binary_masks, composite_passthrough
@@ -84,6 +85,8 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             degraded, smap = filter_frame_downsample(frame, score, block_size)
         elif degradation == 'blur':
             degraded, smap = filter_frame_gaussian(frame, score, block_size)
+        elif degradation == 'noise':
+            degraded, smap = filter_frame_noise(frame, score, block_size)
         elif degradation == 'mean_fill':
             degraded, smap = filter_frame_mean_fill(frame, score, block_size, sel=sel)
         elif degradation == 'freeze':

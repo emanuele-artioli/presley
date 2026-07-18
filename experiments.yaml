@@ -4709,3 +4709,66 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# --- Noise fixed-QP screen (2026-07-18): the only retired-trio member never
+# screened under fixed QP. Same recipe as the Goal-1 screen (restorer none,
+# passthrough composite); expectation: noise is high-entropy and costs bits.
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: noise
+  restorer: none
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: noise
+  restorer: none
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: noise
+  restorer: none
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: noise
+  restorer: none
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
