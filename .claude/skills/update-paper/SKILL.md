@@ -36,7 +36,10 @@ The paper is the primary living document. Its comment markers
      `actual_bitrate_bps` (`transmitted_size_bytes` for presley_ai). Report
      the FG/BG split, never overall-only.
 4. **Edit via the `paper-editor` agent** (it knows the file layout and
-   macros): reviewer-visible text in `\rev{}`, removals in `\del{}`; **clear
+   macros). Hand it *verified* numbers and the exact result hashes — verify
+   against `results/<hash>/result.json` yourself first (past reports have
+   mis-summarized their own numbers; trust data over docs). Reviewer-visible
+   text in `\rev{}`, removals in `\del{}`; **clear
    the `HOLE` and write/update the `CLAIM(id): src=<result hashes> date=`
    line in the same edit** — a HOLE may never be cleared without its data
    landing in the text.
