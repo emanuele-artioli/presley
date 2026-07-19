@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 from presley.preprocessing import get_reference_frames, get_removability_scores
 from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_svtav1, derive_rate_control
-from presley.degradation import apply_selective_removal, select_removal_mask_global
+from presley.degradation import apply_selective_removal, select_removal_mask_global, upsample_block_mask
 from presley.restoration import stretch_frame
 from presley.sidechannel import save_binary_masks, composite_passthrough
 
@@ -91,8 +91,7 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
             excl = fg_block_masks[i] if fg_block_masks is not None and i < len(fg_block_masks) else None
             binary_mask = select_removal_mask_global(score, shrink_amount, cluster_blocks=True, exclude=excl)
             masks_list.append(binary_mask)
-            pix_mask = cv2.resize(binary_mask.astype(np.uint8), (width, height),
-                                  interpolation=cv2.INTER_NEAREST).astype(bool)
+            pix_mask = upsample_block_mask(binary_mask.astype(np.uint8), block_size, width, height).astype(bool)
             degraded = frame.copy()
             if removal_mode == 'blackout':
                 degraded[pix_mask] = 0
@@ -157,9 +156,10 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     for i in range(len(stretched_frames_list)):
         cv2.imwrite(os.path.join(stretched_dir, f"{i:05d}.png"), stretched_frames_list[i])
         # Inpainting models usually expect mask where 255 is the region to inpaint
-        inpainting_mask = (masks_list[i] * 255).astype(np.uint8)
-        # resize mask to full resolution
-        inpainting_mask_full = cv2.resize(inpainting_mask, (width, height), interpolation=cv2.INTER_NEAREST)
+        # exact block-grid upsample, not cv2.resize (misaligns block boundaries
+        # when height/width isn't an exact multiple of block_size, feeding the
+        # in-painter a mask that doesn't match the actual removed pixels)
+        inpainting_mask_full = upsample_block_mask(masks_list[i].astype(np.uint8), block_size, width, height) * 255
         cv2.imwrite(os.path.join(masks_dir, f"{i:05d}.png"), inpainting_mask_full)
         
     # 6. Inpaint

@@ -246,6 +246,33 @@ def apply_selective_removal(image: np.ndarray, frame_scores: np.ndarray, block_s
         new_image = new_image[:, :-pad_x, :]
         removal_mask = removal_mask[:, :-1]
     return (new_image, removal_mask, block_coords_to_remove)
+
+
+def upsample_block_mask(block_mask: np.ndarray, block_size: int, width: int, height: int) -> np.ndarray:
+    """Exact block-grid -> pixel-resolution upsample (replaces cv2.resize INTER_NEAREST).
+
+    cv2.resize misaligns block boundaries whenever height or width isn't an exact
+    multiple of block_size (e.g. 360/16 = 22.5): resizing a (22, 40) grid to
+    (360, 640) uses a non-integer 16.36x row scale, so a block nominally covering
+    pixel rows [80,96) actually lands at [82,98] -- a few rows of a "removed"
+    block bleed into the pixel range of its FG-protected neighbour, and vice
+    versa. This silently violates the passthrough-compositing "FG reproduced
+    bit-exact" guarantee near block-row/column boundaries (found 2026-07-19 via
+    the Goal-2 probe's `inpainter: none` control, where the leak became visible
+    as a 0.33 dB FG-PSNR shift on camel; invisible with natural-looking restorer
+    fills). Each block is replicated to exactly block_size x block_size pixels;
+    any leftover strip beyond the last full block (e.g. rows 352:360 when
+    height=360, block_size=16) is left unmarked (never a hole), matching
+    fg_block_masks' own truncation of that same strip.
+    """
+    nby, nbx = block_mask.shape
+    up = np.repeat(np.repeat(block_mask, block_size, axis=0), block_size, axis=1)
+    out = np.zeros((height, width), dtype=up.dtype)
+    h, w = min(up.shape[0], height), min(up.shape[1], width)
+    out[:h, :w] = up[:h, :w]
+    return out
+
+
 def select_removal_mask_global(frame_scores: np.ndarray, amount: float, cluster_blocks: bool = True, exclude: Optional[np.ndarray] = None) -> np.ndarray:
     """Select the globally top-k most-removable blocks (no per-row constraint).
 

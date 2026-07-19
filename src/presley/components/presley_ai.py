@@ -8,7 +8,7 @@ from presley.encode_utils import save_frames_as_video, load_frames_from_video, e
 from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
                                  filter_frame_noise,
                                  filter_frame_mean_fill, filter_frame_freeze,
-                                 select_removal_mask_global)
+                                 select_removal_mask_global, upsample_block_mask)
 from presley.sidechannel import save_binary_masks, composite_passthrough
 
 # Degradations that punch holes to be filled by an in-painter (the ELVIS<->PRESLEY
@@ -182,8 +182,11 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             masks_dir = os.path.join(results_dir, "temp_masks")
             os.makedirs(masks_dir, exist_ok=True)
             for i in range(len(strength_maps_list)):
-                m_full = cv2.resize((strength_maps_list[i] > 0).astype(np.uint8) * 255,
-                                    (width, height), interpolation=cv2.INTER_NEAREST)
+                # exact block-grid upsample, not cv2.resize (misaligns block
+                # boundaries when height/width isn't an exact multiple of
+                # block_size -- see upsample_block_mask docstring)
+                m_full = upsample_block_mask((strength_maps_list[i] > 0).astype(np.uint8),
+                                             block_size, width, height) * 255
                 cv2.imwrite(os.path.join(masks_dir, f"{i:05d}.png"), m_full)
             if restorer == 'propainter':
                 from presley.restoration import inpaint_with_propainter
@@ -222,8 +225,8 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # Passthrough compositing: keep the decoded transmitted pixels (bit-exact FG)
     # and take restored pixels only where the frame was degraded (strength > 0).
     if composite_output:
-        pix_masks = [cv2.resize((strength_maps_list[i] > 0).astype(np.uint8), (width, height),
-                                interpolation=cv2.INTER_NEAREST).astype(bool)
+        pix_masks = [upsample_block_mask((strength_maps_list[i] > 0).astype(np.uint8),
+                                         block_size, width, height).astype(bool)
                      for i in range(len(restored_frames))]
         restored_frames = composite_passthrough(decoded_degraded, restored_frames, pix_masks)
 
