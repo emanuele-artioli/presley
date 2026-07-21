@@ -9,11 +9,75 @@ from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
                                  filter_frame_noise,
                                  filter_frame_mean_fill, filter_frame_freeze,
                                  select_removal_mask_global, upsample_block_mask)
-from presley.sidechannel import save_binary_masks, composite_passthrough
+from presley.sidechannel import save_level_masks, composite_passthrough
 
 # Degradations that punch holes to be filled by an in-painter (the ELVIS<->PRESLEY
 # bridge), rather than blur/downsample restored by a super-resolver.
 INPAINT_DEGRADATIONS = ('mean_fill', 'freeze')
+
+# Restorer -> which degradations it can consume.
+#
+# In-painters MASK OUT the degraded region before doing anything -- ProPainter's
+# inference opens with `masked_frames = frames * (1 - masks_dilated)` -- so they
+# discard whatever was transmitted inside the hole and can only synthesize from
+# neighbouring frames. Pairing one with an information-preserving degradation
+# would pay bits for a prior that is then thrown away, so they stay restricted
+# to the hole degradations.
+#
+# CONDITIONED restorers take the degraded pixels as input and are degradation-
+# agnostic in their internals: `restore_with_instantir_adaptive` restores the
+# whole frame each round and copies back blocks whose map has hit 0, and
+# `upscale_realesrgan_adaptive` re-injects the degraded input at every pyramid
+# level. Neither ever sees a mask. They were previously pinned to
+# downsample/blur by a hard assert, which is exactly the pairing that made
+# Goal 2 untestable: the only degradations they accepted are the ones that free
+# no bits under fixed QP, and the only degradations that free bits were paired
+# with restorers that discard the prior. Unlocking the hole degradations for
+# them is the point of this table.
+#
+# It is NOT a free-for-all, because each conditioned restorer INTERPRETS the
+# strength map differently and a wrong pairing fails silently rather than
+# loudly. `upscale_realesrgan_adaptive` does `np.power(2, map)` (downscale
+# exponent), so handing it a noise map (values up to noise_variance) computes
+# 2**50 and degenerates cv2.resize; `restore_blur_opencv_unsharp_mask` reads
+# the map as sharpening rounds. So each restorer lists exactly the degradations
+# whose map it can interpret, and `_restorer_strength_map` below converts +
+# clamps. `None` = genuinely map-agnostic.
+RESTORER_DEGRADATIONS = {
+    'none':       None,
+    'propainter': INPAINT_DEGRADATIONS,
+    'e2fgvi':     INPAINT_DEGRADATIONS,
+    'telea':      INPAINT_DEGRADATIONS,
+    # map = log2 downscale factor
+    'realesrgan': ('downsample',) + INPAINT_DEGRADATIONS,
+    # map = number of restoration rounds
+    'instantir':  ('blur',) + INPAINT_DEGRADATIONS,
+    # map = sharpening rounds; downsample is also a low-pass, so unsharp is a
+    # meaningful no-ML benchmark for it too.
+    'unsharp':    ('blur', 'downsample') + INPAINT_DEGRADATIONS,
+}
+# NOTE: no `lanczos` entry. `restore_downsample_opencv_lanczos` expects a frame
+# whose blocks are still physically shrunk, but `filter_frame_downsample`
+# downsamples AND re-upsamples within each block, so the transmitted frame is
+# already full-resolution. Running it there re-downsamples and scores BELOW
+# `restorer: none` (18.17 dB vs 18.43 dB on a bear frame) -- it is a second
+# degradation, not a benchmark. `unsharp` is the correct no-ML control.
+
+# Per-restorer clamps for the converted strength map: (max_value, dtype).
+_STRENGTH_CLAMP = {'realesrgan': 3, 'instantir': 8, 'unsharp': 8}
+
+
+def _restorer_strength_map(smap_arr, restorer: str, degradation: str, restorer_params: Dict[str, Any]):
+    """Translate the transmitted strength map into the restorer's own units."""
+    if degradation in INPAINT_DEGRADATIONS:
+        # Hole maps are binary; `rounds` lets the conditioned arm ask for more
+        # than a single pass over the hole.
+        level = int(restorer_params.get('rounds', 1))
+        out = (np.asarray(smap_arr) > 0).astype(np.int32) * level
+    else:
+        out = np.rint(np.asarray(smap_arr)).astype(np.int32)
+    cap = _STRENGTH_CLAMP.get(restorer)
+    return np.clip(out, 0, cap) if cap is not None else out
 
 def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cache_dir: str) -> Dict[str, Any]:
     video_name = experiment['video']
@@ -35,12 +99,17 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # untouched foreground is reproduced bit-exact instead of re-encoded through
     # the restorer. Set composite_output: false for the raw restorer frames.
     composite_output = experiment.get('composite_output', True)
-    # Budgeted selection for the bridge degradations (mean_fill/freeze): when
-    # shrink_amount is set, select blocks with elvis's global top-k (same
-    # removal budget -> same starved operating point) instead of the
-    # round(score)>0 threshold, which degrades too few blocks (9.4% on bear ->
-    # 844 kbps, the comfortable regime where nothing can win). fg_protect adds
-    # the hard UFO-mask exclusion, same as elvis.
+    # Budgeted selection: when shrink_amount is set, select blocks with elvis's
+    # global top-k (same removal budget -> same starved operating point) instead
+    # of the round(score)>0 threshold, which degrades too few blocks (9.4% on
+    # bear -> 844 kbps, the comfortable regime where nothing can win).
+    # fg_protect adds the hard UFO-mask exclusion, same as elvis.
+    #
+    # This applies to EVERY degradation as of 2026-07-20. It used to be gated on
+    # `degradation in INPAINT_DEGRADATIONS`, so downsample/blur/noise silently
+    # fell back to the bare threshold -- meaning the screen that retired them
+    # ("relocate no bits under fixed QP") compared 9-13% unclustered degraded
+    # blocks against the bridge's 25% clustered, and was never budget-matched.
     select_amount = experiment.get('shrink_amount')
     fg_protect = experiment.get('fg_protect', False)
     temporal_pool_masks = experiment.get('temporal_pool_masks', False)
@@ -58,7 +127,7 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     
     # Block-level FG masks for hard protection (same recipe as elvis).
     fg_block_masks = None
-    if fg_protect and degradation in INPAINT_DEGRADATIONS:
+    if fg_protect:
         import cv2 as _cv2
         from presley.preprocessing import get_ufo_masks
         ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
@@ -77,16 +146,16 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         score = removability_scores[i]
 
         sel = None
-        if select_amount is not None and degradation in INPAINT_DEGRADATIONS:
+        if select_amount is not None:
             excl = fg_block_masks[i] if fg_block_masks is not None and i < len(fg_block_masks) else None
             sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
 
         if degradation == 'downsample':
-            degraded, smap = filter_frame_downsample(frame, score, block_size)
+            degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel)
         elif degradation == 'blur':
-            degraded, smap = filter_frame_gaussian(frame, score, block_size)
+            degraded, smap = filter_frame_gaussian(frame, score, block_size, sel=sel)
         elif degradation == 'noise':
-            degraded, smap = filter_frame_noise(frame, score, block_size)
+            degraded, smap = filter_frame_noise(frame, score, block_size, sel=sel)
         elif degradation == 'mean_fill':
             degraded, smap = filter_frame_mean_fill(frame, score, block_size, sel=sel)
         elif degradation == 'freeze':
@@ -119,13 +188,13 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     encoding_time = time.time() - start_time
     restoration_start = time.time()
 
-    # Save strength maps (transmitted side information). Binary hole maps
-    # (mean_fill/freeze) are bit-packed; multi-level maps stay savez'd.
+    # Save strength maps (transmitted side information), bit-plane packed for
+    # every degradation. Binary hole maps pack to a single plane, which is
+    # byte-identical to the previous save_binary_masks output -- so no existing
+    # experiment's transmitted_size_bytes moves. Multi-level maps used to be
+    # written as raw savez'd int32, ~2.3x larger than necessary.
     strength_maps_path = os.path.join(results_dir, "strength_maps.npz")
-    if degradation in INPAINT_DEGRADATIONS:
-        save_binary_masks(strength_maps_list, strength_maps_path)
-    else:
-        np.savez_compressed(strength_maps_path, strength_maps=np.array(strength_maps_list))
+    save_level_masks(strength_maps_list, strength_maps_path)
     
     # 4. Decode degraded frames
     decoded_degraded = load_frames_from_video(transmitted_video)
@@ -149,36 +218,51 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
 
         smap_arr = np.array(strength_maps_list)
 
+        # Capability check, single point of truth (see RESTORER_DEGRADATIONS).
+        # Unknown names must fall through to the "Unknown restorer" branch
+        # below rather than being reported as a capability conflict.
+        if restorer in RESTORER_DEGRADATIONS:
+            allowed = RESTORER_DEGRADATIONS[restorer]
+            if allowed is not None and degradation not in allowed:
+                raise ValueError(
+                    f"restorer '{restorer}' cannot consume degradation '{degradation}': "
+                    f"it either masks the degraded region out (in-painters discard the "
+                    f"transmitted prior) or cannot interpret that strength map. "
+                    f"Allowed: {allowed}")
+        smap_r = _restorer_strength_map(smap_arr, restorer, degradation, restorer_params)
+
         if restorer == 'realesrgan':
-            if degradation != 'downsample':
-                raise ValueError("RealESRGAN restorer expects 'downsample' degradation")
             from presley.restoration import restore_downsampled_with_realesrgan
             # tile>0 processes the frame in tiles → much lower peak VRAM (lets the job
             # fit alongside other GPU processes); tile=0 is full-frame (fastest, most VRAM).
             restore_downsampled_with_realesrgan(
-                temp_frames_dir, restored_frames_dir, smap_arr, block_size,
+                temp_frames_dir, restored_frames_dir, smap_r, block_size,
                 denoise_strength=restorer_params.get('denoise_strength', 1.0),
                 tile=restorer_params.get('tile', 0),
                 tile_pad=restorer_params.get('tile_pad', 10),
                 fp32=restorer_params.get('fp32', False))
 
         elif restorer == 'instantir':
-            if degradation != 'blur':
-                raise ValueError("InstantIR restorer expects 'blur' degradation")
             from presley.restoration import restore_with_instantir_adaptive
             # batch_size is the main VRAM lever for InstantIR (SDXL-class); drop to 1–2
             # to run alongside other GPU jobs instead of needing a whole free GPU.
             restore_with_instantir_adaptive(
-                temp_frames_dir, restored_frames_dir, smap_arr, block_size,
+                temp_frames_dir, restored_frames_dir, smap_r, block_size,
                 cfg=restorer_params.get('cfg', 7.0),
                 creative_start=restorer_params.get('creative_start', 1.0),
                 preview_start=restorer_params.get('preview_start', 0.0),
                 batch_size=restorer_params.get('batch_size', 4))
+        elif restorer == 'unsharp':
+            # No-ML conditioned benchmark: a generative restorer has to beat
+            # this before its cost is justified. Not a formality -- on freeze
+            # the classical Telea in-painter already beats both in-painters.
+            from presley.restoration import restore_blur_opencv_unsharp_mask
+            for i in range(len(decoded_degraded)):
+                out = restore_blur_opencv_unsharp_mask(decoded_degraded[i], smap_r[i], block_size)
+                cv2.imwrite(os.path.join(restored_frames_dir, f"{i:05d}.png"), out)
         elif restorer in ('propainter', 'e2fgvi', 'telea'):
             # In-painting restorers for the hole-punching degradations (mean_fill /
             # freeze): fill the degraded region rather than super-resolve it.
-            if degradation not in INPAINT_DEGRADATIONS:
-                raise ValueError(f"{restorer} restorer expects a hole degradation {INPAINT_DEGRADATIONS}, got '{degradation}'")
             masks_dir = os.path.join(results_dir, "temp_masks")
             os.makedirs(masks_dir, exist_ok=True)
             for i in range(len(strength_maps_list)):

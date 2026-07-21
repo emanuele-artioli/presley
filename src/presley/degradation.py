@@ -376,16 +376,47 @@ def combine_blocks_into_image(blocks: np.ndarray) -> np.ndarray:
     image = blocks.swapaxes(1, 2)
     image = image.reshape(num_blocks_y * block_size, num_blocks_x * block_size, c)
     return image
-def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5) -> Tuple[np.ndarray, np.ndarray]:
-    """Adaptively downsample each block based on removability scores. Returns (image, downsample_maps)."""
+def _apply_sel_to_map(strength_map: np.ndarray, sel: Optional[np.ndarray], floor) -> np.ndarray:
+    """Restrict a per-block strength map to an explicit selection.
+
+    Without ``sel`` the multi-level degradations degrade every block with
+    round(score) > 0, which is a *threshold*, not a budget: on bear that is
+    9.4% of blocks (13.0% on camel), unclustered, versus the 25% clustered
+    budget mean_fill/freeze get from ``select_removal_mask_global``. Comparing
+    the two families without matching that budget is what made the original
+    downsample/blur screen an uncontrolled comparison -- see the dead-end
+    registry. With ``sel`` the selection is the budget, and ``floor`` keeps a
+    selected block from carrying strength 0 (i.e. being selected but not
+    actually degraded, which would silently shrink the real removal rate).
+    """
+    if sel is None:
+        return strength_map
+    return np.where(sel, np.maximum(strength_map, floor), 0).astype(strength_map.dtype)
+
+
+def _pad_sel(sel: Optional[np.ndarray], pad_y: int, pad_x: int) -> Optional[np.ndarray]:
+    """Pad a block-resolution selection the same way frame_scores is padded."""
+    if sel is None or (pad_y <= 0 and pad_x <= 0):
+        return sel
+    return np.pad(sel, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)),
+                  mode='constant', constant_values=False)
+
+
+def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5, sel: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+    """Adaptively downsample each block based on removability scores. Returns (image, downsample_maps).
+
+    ``sel`` overrides the default threshold selection (round(score)>0) with an
+    explicit boolean block mask, same contract as filter_frame_mean_fill.
+    """
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
     pad_x = (block_size - w % block_size) % block_size
     if pad_y > 0 or pad_x > 0:
         image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
+        sel = _pad_sel(sel, pad_y, pad_x)
     blocks = split_image_into_blocks(image, block_size)
-    downsample_maps = np.round(frame_scores).astype(np.int32)
+    downsample_maps = _apply_sel_to_map(np.round(frame_scores).astype(np.int32), sel, 1)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):
@@ -404,16 +435,21 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
         new_image = new_image[:, :-pad_x, :]
         downsample_maps = downsample_maps[:, :-1]
     return (new_image, downsample_maps)
-def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_size: int, kernel_size: int = 15) -> Tuple[np.ndarray, np.ndarray]:
-    """Apply adaptive Gaussian blur per block based on scores. Returns (image, blur_strengths)."""
+def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_size: int, kernel_size: int = 15, sel: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+    """Apply adaptive Gaussian blur per block based on scores. Returns (image, blur_strengths).
+
+    ``sel`` overrides the default threshold selection (round(score)>0) with an
+    explicit boolean block mask, same contract as filter_frame_mean_fill.
+    """
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
     pad_x = (block_size - w % block_size) % block_size
     if pad_y > 0 or pad_x > 0:
         image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
+        sel = _pad_sel(sel, pad_y, pad_x)
     blocks = split_image_into_blocks(image, block_size)
-    blur_strengths = np.round(frame_scores).astype(np.int32)
+    blur_strengths = _apply_sel_to_map(np.round(frame_scores).astype(np.int32), sel, 1)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):
@@ -433,16 +469,29 @@ def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_siz
         blur_strengths = blur_strengths[:, :-1]
     return (new_image, blur_strengths)
 
-def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: int, noise_variance: float = 50.0) -> Tuple[np.ndarray, np.ndarray]:
-    """Apply adaptive Gaussian noise per block based on scores. Returns (image, noise_strengths)."""
+def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: int, noise_variance: float = 50.0, sel: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+    """Apply adaptive Gaussian noise per block based on scores. Returns (image, noise_strengths).
+
+    ``sel`` overrides the default threshold selection with an explicit boolean
+    block mask, same contract as filter_frame_mean_fill. (Noise is a retired
+    dead end -- worst of every degradation screened, +213...+334% bits at
+    matched fixed QP -- but it keeps the selection contract uniform.)
+    """
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
     pad_x = (block_size - w % block_size) % block_size
     if pad_y > 0 or pad_x > 0:
         image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
+        sel = _pad_sel(sel, pad_y, pad_x)
     blocks = split_image_into_blocks(image, block_size)
-    noise_strengths = np.round(frame_scores * noise_variance).astype(np.float32)
+    # floor = 1.0, NOT noise_variance: removability scores are normalized to
+    # [0,1], so round(score*noise_variance) <= noise_variance always, and a
+    # floor of noise_variance would clamp every selected block to exactly
+    # noise_variance -- destroying the adaptive strength this map exists to
+    # carry, and inflating the side channel from 1 bit-plane to 6. A floor of 1
+    # only guarantees a selected block is actually noised.
+    noise_strengths = _apply_sel_to_map(np.round(frame_scores * noise_variance).astype(np.float32), sel, 1.0)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):
