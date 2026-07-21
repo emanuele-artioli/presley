@@ -17,10 +17,15 @@ full detail):
 - Do a `--dry-run` first if the experiment config is new or was just edited,
   and check the printed config against what was intended before proceeding.
 - Then run for real. These can be long — GPU in-painting/restoration jobs
-  especially. Do not summarize partial/truncated stdout as if it were the
-  final result; wait for the process to actually finish (or, if run in the
-  background yourself, poll rather than declaring success on the first
-  progress line).
+  especially, well past the 10-minute cap on a foreground `Bash` call. Launch
+  them with `run_in_background: true` and then **stop**: the harness re-invokes
+  you when the process exits and hands you its output-file path. Do not write
+  a wait loop (`until ! pgrep …; do sleep …; done`) — the harness runs your
+  command inside a shell whose own command line contains your pattern, so
+  `pgrep -f` matches the loop itself and it can never terminate. Do not
+  summarize partial or truncated stdout as if it were the final result, and do
+  not declare success off the first progress line — wait for the actual
+  completion notification.
 - After completion, read `results/<hash>/result.json` and, once evaluation
   has appended `metrics`, report back only the relevant distilled numbers
   (e.g. VMAF/LPIPS/DISTS mean, bitrate, timing) — never dump the full raw

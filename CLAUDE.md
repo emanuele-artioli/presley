@@ -22,6 +22,12 @@ based on its `component` field, then calls evaluation automatically unless
 GPU runs are slow (ProPainter/InstantIR can take hours) and there is no
 cheap way to cancel mid-run cleanly.
 
+Because they take hours, run them either through the `experiment-runner`
+subagent or as a background `Bash` (`run_in_background: true`), which
+notifies on exit. Never poll for completion with a hand-written
+`until ! pgrep …` loop — see the global CLAUDE.md's waiting rule for why
+that loop can never terminate.
+
 **`src/presley/cli.py` and `src/presley/pipeline_legacy.py` are dead code**
 left over from before the `components/` refactor — they import
 `presley.config`, a module that no longer exists, so they are already broken.
