@@ -214,9 +214,15 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # and take in-painted pixels only inside the holes. `stretched_frames_list`
     # is the native-resolution transmitted frame (decode for blackout/freeze,
     # stretched decode for shrink); holes there are black/frozen/zero-filled.
+    # Must use the same exact block-grid upsample as the in-painting mask above
+    # (line ~162): cv2.resize misaligns block boundaries whenever height/width
+    # isn't an exact multiple of block_size, so a resized mask here would source
+    # ~8% of every frame from the wrong image (measured at bs16/640x360, where
+    # 360/16 = 22.5). Note this is invisible to the `inpainter: none` control --
+    # both composite sources are identical there -- so an FG-spread check across
+    # restorers cannot detect it.
     if composite_output:
-        pix_masks = [cv2.resize(m.astype(np.uint8), (width, height),
-                                interpolation=cv2.INTER_NEAREST).astype(bool)
+        pix_masks = [upsample_block_mask(m.astype(np.uint8), block_size, width, height).astype(bool)
                      for m in masks_list]
         inpainted_frames = composite_passthrough(stretched_frames_list, inpainted_frames, pix_masks)
 
