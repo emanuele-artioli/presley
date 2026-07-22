@@ -161,7 +161,10 @@ cython_debug/
 
 # project files
 experiment*/
+# Catches scratch output dirs like results_test/. The test suite is source and
+# must not be swallowed by it.
 *test*/
+!tests/
 Real-ESRGAN/
 *.pt
 *.bin
