@@ -58,7 +58,20 @@ def strip_claude_only(text: str) -> str:
 
 
 def project_name() -> str:
-    return REPO_ROOT.name
+    """The project's name, from pyproject.toml rather than the directory.
+
+    The directory name is not stable: GitHub Actions checks this repo out as
+    `PointStream` while it is `pointstream` locally, which made the generated
+    filenames differ by case and failed `--check` on CI only.
+    """
+    pyproject = REPO_ROOT / "pyproject.toml"
+    if pyproject.is_file():
+        match = re.search(
+            r'^\s*name\s*=\s*["\']([^"\']+)["\']', pyproject.read_text(), re.MULTILINE
+        )
+        if match:
+            return match.group(1)
+    return REPO_ROOT.name.lower()
 
 
 def describe(claude_md: str) -> str:

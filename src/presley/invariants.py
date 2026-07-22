@@ -35,7 +35,14 @@ REGIONS = ("foreground", "background", "overall")
 
 
 def _is_bad_number(value: Any) -> bool:
-    return not isinstance(value, (int, float)) or math.isnan(value) or math.isinf(value)
+    """True when the value is absent or not a real measurement.
+
+    `bool` counts as bad deliberately: it passes `isinstance(x, int)`, so a
+    result carrying `psnr_mean: true` would otherwise sail through as 1.0.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return True
+    return math.isnan(value) or math.isinf(value)
 
 
 def check_result(result: Dict[str, Any]) -> List[str]:
