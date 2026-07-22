@@ -5,6 +5,7 @@ import json
 import yaml
 import hashlib
 import argparse
+import importlib
 from typing import Dict, Any, List
 
 def compute_experiment_hash(experiment: Dict[str, Any]) -> str:
@@ -123,6 +124,28 @@ def load_experiments(yaml_path: str, filters: Dict[str, str]) -> List[Dict[str, 
             
     return filtered
 
+# component name (the `component` key in experiments.yaml) -> module, entry function.
+# Kept as names rather than imported callables so that importing this module stays
+# cheap and a run only loads the deps of the component it actually dispatches to.
+COMPONENT_RUNNERS: Dict[str, tuple] = {
+    'baselines': ('presley.components.baselines', 'run_baseline'),
+    'roi': ('presley.components.roi', 'run_roi'),
+    'elvis': ('presley.components.elvis', 'run_elvis'),
+    'presley_ai': ('presley.components.presley_ai', 'run_presley_ai'),
+}
+
+def dispatch_component(component_name: str, experiment: Dict[str, Any], dataset_dir: str,
+                       exp_results_dir: str, cache_dir: str) -> Dict[str, Any]:
+    """Import the component named by `component_name` and run it."""
+    if component_name not in COMPONENT_RUNNERS:
+        raise ValueError(
+            f"Unknown component: {component_name}. "
+            f"Known: {', '.join(sorted(COMPONENT_RUNNERS))}"
+        )
+    module_name, func_name = COMPONENT_RUNNERS[component_name]
+    module = importlib.import_module(module_name)
+    return getattr(module, func_name)(experiment, dataset_dir, exp_results_dir, cache_dir)
+
 def run_single_experiment(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cache_dir: str, dry_run: bool) -> None:
     component_name = experiment.get('component')
     if not component_name:
@@ -158,33 +181,34 @@ def run_single_experiment(experiment: Dict[str, Any], dataset_dir: str, results_
     from presley.gpu_utils import preflight_gpu
     preflight_gpu(component_name, experiment)
 
-    # Dispatch
-    # We lazily import the components to avoid heavy dependencies if not needed
+    # Dispatch. Components are named here rather than imported at module scope so
+    # a run only pays for the heavy deps (torch, diffusers) of the one it uses.
     try:
-        if component_name == 'baselines':
-            from presley.components.baselines import run_baseline
-            result = run_baseline(experiment, dataset_dir, exp_results_dir, cache_dir)
-        elif component_name == 'roi':
-            from presley.components.roi import run_roi
-            result = run_roi(experiment, dataset_dir, exp_results_dir, cache_dir)
-        elif component_name == 'elvis':
-            from presley.components.elvis import run_elvis
-            result = run_elvis(experiment, dataset_dir, exp_results_dir, cache_dir)
-        elif component_name == 'presley_ai':
-            from presley.components.presley_ai import run_presley_ai
-            result = run_presley_ai(experiment, dataset_dir, exp_results_dir, cache_dir)
-        else:
-            raise ValueError(f"Unknown component: {component_name}")
-            
+        result = dispatch_component(
+            component_name, experiment, dataset_dir, exp_results_dir, cache_dir
+        )
+
         # Add hash and timestamp to result, write it
         result['experiment_hash'] = exp_hash
         # also store the raw experiment config inside
         result['config'] = experiment
-        
+
+        # Record whether this run actually satisfies the methodology rules the
+        # paper's claims rest on. Stored in the result rather than only printed,
+        # so a run that violated one cannot be quietly cited weeks later.
+        from presley.invariants import check_result
+        failures = check_result(result)
+        result['invariant_failures'] = failures
+
         with open(result_json_path, 'w') as f:
             json.dump(result, f, indent=2)
-            
+
         print(f"  -> Saved {result_json_path}")
+        if failures:
+            print(f"  !! {len(failures)} INVARIANT FAILURE(S) — this result is NOT citable:",
+                  file=sys.stderr)
+            for failure in failures:
+                print(f"     - {failure}", file=sys.stderr)
         
     except Exception as e:
         print(f"  Error running experiment {exp_hash}: {e}")

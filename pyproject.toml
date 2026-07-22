@@ -47,6 +47,15 @@ dependencies = [
   "torchmetrics[image]==1.4.0"
 ]
 
+[project.optional-dependencies]
+# Pure-Python test tooling only. Deliberately separate from the runtime deps
+# above, which are pinned tightly because the forked model code is version
+# sensitive — CI installs this extra against CPU torch and never resolves them.
+test = [
+  "pytest>=8,<9",
+  "pytest-cov>=5,<7",
+]
+
 [project.scripts]
 presley-run = "presley.runner:main"
 presley-evaluate = "presley.components.evaluation:main"
@@ -55,3 +64,27 @@ presley-compare = "presley.compare:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["presley*"]
+
+[tool.coverage.run]
+source = ["src/presley"]
+
+[tool.coverage.report]
+# Only modules whose behaviour needs a GPU or model weights to exercise. The
+# gate is meant to describe what is actually verified, so an entry here is a
+# debt to repay, not a permanent exemption: delete it when the module gains
+# real tests, and never add one to make a number go up.
+omit = [
+  "*/presley/restoration.py",
+  "*/presley/degradation.py",
+  "*/presley/hnerv_arch.py",
+  "*/presley/hnerv_utils.py",
+  "*/presley/gpu_utils.py",
+  "*/presley/concurrency.py",
+  "*/presley/preprocessing.py",
+  "*/presley/sidechannel.py",
+  "*/presley/components/presley_ai.py",
+  "*/presley/components/elvis.py",
+  "*/presley/components/baselines.py",
+  "*/presley/components/roi.py",
+  "*/presley/components/evaluation.py",
+]
