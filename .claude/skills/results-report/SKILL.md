@@ -13,6 +13,28 @@ Each `results/<hash>/result.json` has two parts:
   `overall.lpips_mean`, `overall.dists_mean`, `overall.vmaf_mean`,
   `overall.fvmd`. Block-level PSNR/SSIM/MSE arrays are referenced by path to
   sibling `.npz` files (`block_psnr.npz` etc.), not inlined.
+- `invariant_failures`: the verdict from `presley.invariants` on whether this
+  run satisfies the methodology rules — see below.
+
+## Check `invariant_failures` before reporting anything
+
+**A result whose `invariant_failures` list is non-empty is not citable.** The
+field records that the run itself is unsound, not that its numbers are odd: a
+degradation experiment that ran under VBR, a bitrate that disagrees with the
+transmitted bytes, a restoration that left the background perceptually worse.
+Such a run produces perfectly well-formed metrics, which is exactly why the
+check exists.
+
+Exclude those hashes from tables and comparisons, and say plainly which ones
+you dropped and why rather than silently omitting them.
+
+A result with **no** `invariant_failures` key predates the check and has never
+been evaluated. Backfill before relying on it — a missing verdict reads as
+clean:
+
+```
+python -m presley.invariants results/
+```
 
 ## Which FG perceptual metrics are citable — this is not cosmetic
 

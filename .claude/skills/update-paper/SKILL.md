@@ -56,6 +56,16 @@ The paper is the primary living document. Its comment markers
 
 ## Guardrails
 
+- **Never cite a result whose `invariant_failures` is non-empty.** Every
+  `result.json` carries a verdict from `presley.invariants` recording whether
+  the run actually satisfies the methodology rules the paper's claims rest on —
+  a VBR degradation run, a bitrate that disagrees with the transmitted bytes, a
+  restoration that regressed. Check the field before writing a number down. If
+  a result carries no verdict at all, backfill it first
+  (`python -m presley.invariants results/`); a missing verdict reads as clean
+  and is the one state this rule cannot catch.
+- If a component's contract changed, update `ARCHITECTURE.md` in the same
+  session — CI checks it lists every module, but not that the prose is true.
 - No number without a `results/<hash>` path (or `results/_superseded/`,
   explicitly flagged as superseded — see the log's registry before citing
   anything old).

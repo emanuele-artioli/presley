@@ -25,6 +25,10 @@ jobs:
         run: |
           python3 tools/sync_agent_rules.py --check
 
+      - name: ARCHITECTURE.md covers every module
+        run: |
+          python3 tools/check_architecture.py
+
   tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
