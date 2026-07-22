@@ -8,7 +8,7 @@ a result. These tests pin the cases where that would happen.
 import numpy as np
 import pytest
 
-from presley.components.evaluation import (
+from presley.evaluation.masked import (
     _fg_tight_bbox,
     _fg_union_bbox,
     _masked_mse,

@@ -86,5 +86,15 @@ omit = [
   "*/presley/components/elvis.py",
   "*/presley/components/baselines.py",
   "*/presley/components/roi.py",
-  "*/presley/components/evaluation.py",
+  # The evaluation package's GPU-bound and IO-bound halves. masked.py is
+  # deliberately absent — splitting the old monolith is what made those metrics
+  # testable without a GPU, and they are now covered.
+  "*/presley/evaluation/perceptual.py",
+  "*/presley/evaluation/vmaf.py",
+  "*/presley/evaluation/fvmd.py",
+  "*/presley/evaluation/cache.py",
+  "*/presley/evaluation/run.py",
+  "*/presley/evaluation/backfill.py",
+  "*/presley/evaluation/reports.py",
+  "*/presley/evaluation/cli.py",
 ]
