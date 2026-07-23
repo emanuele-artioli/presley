@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-status.py\""
+            "command": "/home/itec/emanuele/.agent-rules/scripts/session-status.py"
           }
         ]
       }
@@ -16,12 +16,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-rm.py\"",
+            "command": "python3",
+            "args": [
+              "/home/itec/emanuele/.agent-rules/scripts/guard-rm.py",
+              "--protected", "results",
+              "--protected", "dataset",
+              "--protected", "cache",
+              "--detail", "experiment outputs / DAVIS symlinks / preprocessing cache"
+            ],
             "statusMessage": "Checking rm target..."
           },
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-wait-loop.py\"",
+            "command": "python3 \"/home/itec/emanuele/.agent-rules/scripts/guard-wait-loop.py\"",
             "statusMessage": "Checking for hand-rolled wait loops..."
           }
         ]
@@ -32,7 +39,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/paper-sync-reminder.py\""
+            "command": "/home/itec/emanuele/.agent-rules/scripts/paper-sync-reminder.py",
+            "args": [
+              "--outputs-dir", "results",
+              "--paper-dir", "68e8b6bb11d0dd9e62a67aef",
+              "--summary-file", "result.json",
+              "--noun", "Results"
+            ]
           }
         ]
       }

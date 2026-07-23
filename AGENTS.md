@@ -276,9 +276,11 @@ on. Launch detached — never attached to a shell an SSH drop takes with it.
 history — a wholesale `rm` cannot be undone with git. The expensive
 preprocessing (`cache/`: reference frames, EVCA scores, UFO masks) is
 regenerable but slow; the GPU restoration outputs in `results/` cost hours to
-recompute. A `.claude/hooks/guard-rm.py` PreToolUse hook blocks `rm` against
-the whole `results/`/`dataset/`/`cache/` tree for this reason. Never test a
-destructive command against these real directories.
+recompute. A PreToolUse hook (`~/.agent-rules/scripts/guard-rm.py`,
+centralized and shared with other repos on this host, configured in this
+repo's `.claude/settings.json`) blocks `rm` against the whole
+`results/`/`dataset/`/`cache/` tree for this reason. Never test a destructive
+command against these real directories.
 
 ## This tooling is meant to evolve
 
