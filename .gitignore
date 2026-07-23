@@ -161,7 +161,13 @@ cython_debug/
 
 # project files
 experiment*/
+# Catches scratch output dirs like results_test/. It is broader than it looks —
+# it matches any directory whose name contains "test" at any depth, which has
+# already swallowed both tests/ and .claude/skills/test-design/. Add a negation
+# for anything that is source.
 *test*/
+!tests/
+!.claude/skills/test-design/
 Real-ESRGAN/
 *.pt
 *.bin

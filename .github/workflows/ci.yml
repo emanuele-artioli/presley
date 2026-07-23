@@ -1,0 +1,63 @@
+name: presley-ci
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  agent-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Agent rule files match CLAUDE.md
+        run: |
+          python3 tools/sync_agent_rules.py --check
+
+      - name: ARCHITECTURE.md covers every module
+        run: |
+          python3 tools/check_architecture.py
+
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      # The runtime deps in pyproject are pinned around a CUDA build and several
+      # forked model repos, none of which the fast tier touches. CI installs CPU
+      # torch plus only what the tested modules import, so the suite stays a few
+      # minutes rather than resolving the full GPU stack.
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install "numpy<2" opencv-python-headless scikit-image pyyaml pandas tqdm lpips
+          pip install "pytest>=8,<9" "pytest-cov>=5,<7"
+
+      - name: Install presley without dependencies
+        run: |
+          pip install -e . --no-deps
+
+      - name: Run the fast tier with a coverage gate
+        run: |
+          pytest --cov --cov-report=term-missing --cov-fail-under=40
