@@ -113,10 +113,14 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     select_amount = experiment.get('shrink_amount')
     fg_protect = experiment.get('fg_protect', False)
     temporal_pool_masks = experiment.get('temporal_pool_masks', False)
-    
+    # Which foreground mask feeds removability scoring AND fg_protect below:
+    # 'ufo' (default, existing behavior), 'gt' (ground-truth annotations), or
+    # 'yolo' (open-vocab YOLOE). See preprocessing.resolve_masks.
+    mask_source = experiment.get('mask_source', 'ufo').lower()
+
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
-    removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir)
+    removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir, mask_source=mask_source)
     
     start_time = time.time()
     
@@ -129,9 +133,10 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     fg_block_masks = None
     if fg_protect:
         import cv2 as _cv2
-        from presley.preprocessing import get_ufo_masks
+        from presley.preprocessing import resolve_masks
         ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-        ufo = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool_masks)
+        ufo = resolve_masks(mask_source, video_name, width, height, block_size, ref_frames_dir, cache_dir,
+                            dataset_dir, temporal_pool=temporal_pool_masks)
         nby, nbx = height // block_size, width // block_size
         fg_block_masks = []
         for m in ufo:

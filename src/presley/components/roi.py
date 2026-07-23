@@ -19,12 +19,16 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
     roi_method = experiment['roi_method'].lower()
     target_bitrate = experiment['target_bitrate']
     codec_params = experiment.get('codec_params', {})
-    
+    # Which foreground mask feeds the removability scores: 'ufo' (default,
+    # existing behavior), 'gt' (ground-truth annotations), or 'yolo' (open-vocab
+    # YOLOE). See preprocessing.resolve_masks.
+    mask_source = experiment.get('mask_source', 'ufo').lower()
+
     # Get reference frames and removability scores
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_pattern = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames", "%05d.png")
-    
-    removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir)
+
+    removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir, mask_source=mask_source)
     
     output_video = os.path.join(results_dir, "encoded.mp4")
     

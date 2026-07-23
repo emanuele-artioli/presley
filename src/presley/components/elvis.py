@@ -41,16 +41,20 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # should set fg_protect: true explicitly.
     fg_protect = experiment.get('fg_protect', False)
     temporal_pool_masks = experiment.get('temporal_pool_masks', False)
+    # Which foreground mask feeds removability scoring AND fg_protect below:
+    # 'ufo' (default, existing behavior), 'gt' (ground-truth annotations), or
+    # 'yolo' (open-vocab YOLOE). See preprocessing.resolve_masks.
+    mask_source = experiment.get('mask_source', 'ufo').lower()
 
     codec = experiment['codec'].lower()
     target_bitrate = experiment['target_bitrate']
     codec_params = experiment.get('codec_params', {})
     # Speed/quality knobs for the in-painter (forwarded to the restoration fn).
     inpainter_params = experiment.get('inpainter_params', {})
-    
+
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
-    removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir)
+    removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir, mask_source=mask_source)
     
     start_time = time.time()
 
@@ -64,9 +68,10 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # max-pooled to the block grid: a block is FG if it contains any FG pixel).
     fg_block_masks = None
     if fg_protect and removal_mode in ('blackout', 'freeze'):
-        from presley.preprocessing import get_ufo_masks
+        from presley.preprocessing import resolve_masks
         ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-        ufo = get_ufo_masks(video_name, width, height, block_size, ref_frames_dir, cache_dir, temporal_pool=temporal_pool_masks)
+        ufo = resolve_masks(mask_source, video_name, width, height, block_size, ref_frames_dir, cache_dir,
+                            dataset_dir, temporal_pool=temporal_pool_masks)
         nby, nbx = height // block_size, width // block_size
         fg_block_masks = []
         for m in ufo:
