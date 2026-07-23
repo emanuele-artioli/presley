@@ -5,7 +5,7 @@ regions server-side (QP mapping, downsampling, or noise injection) and restore
 them client-side with generative models (Real-ESRGAN, InstantIR, ProPainter,
 E2FGVI). Extends prior work ELVIS (block removal + in-painting). Companion
 paper lives in [68e8b6bb11d0dd9e62a67aef/](68e8b6bb11d0dd9e62a67aef/) — a
-separate git repo (Overleaf sync, gitignored here) with its own CLAUDE.md and
+separate git repo (Overleaf sync, gitignored here) with its own AGENTS.md and
 its own conventions. Don't apply this file's rules there.
 
 ## Entry points — use these, not cli.py
@@ -21,12 +21,6 @@ based on its `component` field, then calls evaluation automatically unless
 `--dry-run`. Always try `--dry-run` first when adding or editing experiments —
 GPU runs are slow (ProPainter/InstantIR can take hours) and there is no
 cheap way to cancel mid-run cleanly.
-
-Because they take hours, run them either through the `experiment-runner`
-subagent or as a background `Bash` (`run_in_background: true`), which
-notifies on exit. Never poll for completion with a hand-written
-`until ! pgrep …` loop — see the global CLAUDE.md's waiting rule for why
-that loop can never terminate.
 
 **`src/presley/cli.py` and `src/presley/pipeline_legacy.py` are dead code**
 left over from before the `components/` refactor — they import
@@ -51,73 +45,16 @@ excluding any `hash`/`_`-prefixed keys, so the annotation never perturbs it.
 
 ## Evaluation methodology — every experiment has a comparison target
 
-PRESLEY has **two co-equal goals**. Every experiment tests one of them, and a
-result is only complete when it says something about both:
-
-- **Goal 1 — bit relocation.** Degradation moves encoding bits **BG→FG**, so at
-  the same bitrate FG is *better*, respecting the chain
-  `baseline < roi < elvis < presley_ai` (elvis and presley_ai may legitimately
-  **tie** — see the FG-flatness finding). Lower BG quality is an *accepted cost*.
-  **Metric:** FG-PSNR/FG-LPIPS at matched *actual* bitrate; BD-rate for
-  paper-grade claims. Expected signature: FG ↑, BG ↓.
-- **Goal 2 — generative restoration.** The client-side model restores the BG as
-  close as possible to the **original**, without hurting FG; ideally exceeding
-  original BG and/or FG. **Metric (perceptual primary): BG-LPIPS / BG-DISTS of
-  the restored output vs the ORIGINAL**, compared against the pristine
-  baseline's BG at matched bitrate. **BG-PSNR is reported alongside but is never
-  the verdict** — `mean_fill` scores the *highest* BG-PSNR while being
-  perceptually the *worst* (flat DC blocks are mathematically "closer" than
-  hallucinated detail), so a PSNR-primary Goal 2 rewards a fill for **not**
-  hallucinating, i.e. punishes the generative model for doing its job. The
-  restoration *gain* (`metrics.background` − `metrics.transmitted.background`)
-  is the mechanism; the **headline is restored-vs-original**, not
-  restored-vs-degraded.
-
-Goal 1 is not evidence for Goal 2 or vice versa. A method can free bits and
-still fail to restore (that is the current standing — see the reports).
-
-### ⛔ Hard rule: degradation experiments MUST use fixed-QP/CRF
-
-Under **VBR the encoder spends the bitrate target regardless of source
-complexity**, so degradation *cannot* free bits — it only makes the content
-harder to code at that target, and the holes steal bits *from* FG, inverting
-Goal 1. This is not a hypothesis: **25/25 matched VBR pairs, across every
-degradation method ever run (freeze, downsample, blur, shrink), encode to MORE
-bits than the pristine baseline. Zero counterexamples.** Under fixed QP the same
-methods free bits (elvis_blackout −8.6% avg, elvis_freeze −9.7%, mean_fill
-−6.8%).
-
-**A VBR degradation curve is not evidence about the method — do not commission
-one, and do not accept a spec that asks for one** (a 2026-07-16 TOP-PRIORITY
-spec did exactly this and burned hours of GPU time re-measuring VBR laundering).
-This is the same mechanism that already bit the codec-ROI work; see
-the RESEARCH_LOG's fixed-QP hard rule.
-
-### Reporting rule: never dress up imperceptible deltas
-
-Imperceptible deltas are not a result or a trend. **Run `presley-compare` to
-decide whether a quality difference is real** — don't eyeball deltas. Its JND
-table (`src/presley/compare.py`) is the single source of truth and is
-deliberately not restated here. `presley-compare results/ --hash-a <h1>
---hash-b <h2>` for a pair; `presley-compare results/ --group-by
-component,video,codec_params.qp --baseline-component baselines` for a
-matched-QP sweep, which reports each group's quality verdict and its bitrate
-winner. At matched QP this is the *whole* analysis: FG differences are small
-by construction, so the question is never "who wins FG" but "who encodes
-fewest bits at indistinguishable FG quality." State it the way it lands: *"at
-FG quality that is indistinguishable, method X costs N% fewer bits than the
-baseline, and BG-LPIPS is Y vs the baseline's Z."*
-
-Never report only overall metrics — the `metrics.foreground`/`metrics.background`
-split is the point (and for bridge runs `overall` is actively misleading, since
-the collapsed BG dominates it). Analyze each component against its designated
-target:
+The claim under test is the chain **presley_ai > elvis > roi > baseline** on
+*foreground* quality at matched bitrate. Never report only overall metrics —
+the `metrics.foreground`/`metrics.background` split is the point. Analyze each
+component against its designated target:
 
 - **Codec ROI methods** (`kvazaar`, `x265_aq`, `svtav1`) vs the **same codec's
   baseline** at comparable bitrate. Expected signature: FG quality ↑, BG
   quality ↓. If it's absent, assume our usage is wrong before blaming the
   codec — "codec X doesn't implement ROI correctly" is a strong claim needing
-  evidence beyond reasonable doubt (see RESEARCH_LOG.md for past false alarms).
+  evidence beyond reasonable doubt (see TECHNICAL_REPORT for past false alarms).
 - **presley_* ROI methods** (mask-driven degradation before encoding) vs the
   codec ROI methods: does direct block-level control buy more FG quality, and
   at what BG cost?
@@ -193,40 +130,37 @@ test this repo has.
 history — a wholesale `rm` cannot be undone with git. The expensive
 preprocessing (`cache/`: reference frames, EVCA scores, UFO masks) is
 regenerable but slow; the GPU restoration outputs in `results/` cost hours to
-recompute. A `.claude/hooks/guard-rm.py` PreToolUse hook blocks `rm` against
+recompute. A `.agents/hooks/guard-rm.py` PreToolUse hook blocks `rm` against
 the whole `results/`/`dataset/`/`cache/` tree for this reason. Never test a
 destructive command against these real directories.
 
 ## This tooling is meant to evolve
 
-The `.claude/` directory (this file, `skills/`, `agents/`, `hooks/`,
+The `.agents/` directory (this file, `skills/`, `agents/`, `hooks/`,
 `settings.json`) is part of the working setup, not frozen. If during work we
-find a convention Claude gets wrong twice, a skill that would help, a hook
-worth adding, or a rule that's stale — add/update/remove it in `.claude/`
+find a convention Antigravity gets wrong twice, a skill that would help, a hook
+worth adding, or a rule that's stale — add/update/remove it in `.agents/`
 right then. Note: edits to `settings.json`/hooks only take effect on the next
-session (open `/hooks` or restart to reload); skills and CLAUDE.md load fresh
+session (open `/hooks` or restart to reload); skills and AGENTS.md load fresh
 each session too, so prefer those for anything you want to rely on immediately.
 
-## The paper is the primary living document
+## Technical reports are the research source of truth
 
-The manuscript (`68e8b6bb11d0dd9e62a67aef/main.tex` + `sections/*.tex`)
-carries the research plan as machine-readable comment markers
-(`STATUS/GOAL/HOLE/NOTE/NEXT/CLAIM(anchor):` — spec in the paper repo's
-CLAUDE.md). **Before planning any experiment, grep the paper's `HOLE()`
-markers** — run only the experiments the paper needs. After a session
-produces committed, tested results, fold them in with the `/update-paper`
-skill. `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md` is the secondary store:
-hard methodology rules (fixed-QP-only, JND gating, FG-metric citability),
-the dead-end registry (what's been tried and disproven — read it before
-re-attempting anything), and the queue of results not yet in the text. The
-old technical reports were consolidated into it on 2026-07-18 (full history
-via `git log --follow` in the paper repo).
+`68e8b6bb11d0dd9e62a67aef/TECHNICAL_REPORTS.md` (paper repo) is the dashboard
+for the whole experimental effort: chain-status table, prioritized next
+steps, and the catalog of topic reports (ROI encoding, ELVIS in-painting,
+PRESLEY AI restoration, pipeline/evaluation infra), each with a standardized
+findings log. **Read the relevant topic report's TL;DR before working on that
+area** — it records what's already been tried, fixed, and disproven (e.g. why
+ROI must run in fixed-QP/CRF mode, why addroi/x265-AQ can't do semantic ROI).
+After any experiment run or diagnosis that produces new knowledge, fold it
+back in with the `/update-reports` skill.
 
 ## Where to look for more
 
 - Experiment workflow, filters, and reading back results → `/run-experiment` skill
 - Summarizing/comparing results → `/results-report` skill
-- Folding new findings into the paper → `/update-paper` skill
-- Reviewer-response checklist workflow → see the paper repo's own CLAUDE.md
-- Algorithm details, hard rules, past dead-ends →
-  `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md`
+- Folding new findings into the technical reports → `/update-reports` skill
+- Reviewer-response checklist workflow → see the paper repo's own AGENTS.md
+- Degradation/restoration algorithm details, past debugging dead-ends →
+  topic reports catalogued in `68e8b6bb11d0dd9e62a67aef/TECHNICAL_REPORTS.md`

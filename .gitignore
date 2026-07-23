@@ -176,3 +176,6 @@ x264_passlog*
 x265_passlog*
 # stray dir from an unexpanded $CLAUDE_PROJECT_DIR in a hook invocation
 $CLAUDE_PROJECT_DIR/
+# Ad-hoc scratch scripts / working dirs (not part of the pipeline)
+scratch/
+scratch_fvmd/

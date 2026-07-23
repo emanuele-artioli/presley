@@ -53,7 +53,7 @@ the index catalog — don't shoehorn.
 
 ## Reminders
 
-- The paper repo is a separate git repo with its own CLAUDE.md conventions
+- The paper repo is a separate git repo with its own AGENTS.md conventions
   (`\rev{}`/`\del{}` etc. apply to `main.tex`, not these .md reports).
 - If the finding also closes/advances a reviewer-comment item, follow up via
   the `/reviewer-response` skill so `reviewers_comments.md` stays in sync.

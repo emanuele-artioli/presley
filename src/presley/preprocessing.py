@@ -131,7 +131,7 @@ def get_evca_scores(video_name: str, width: int, height: int, block_size: int,
 
 
 def get_ufo_masks(video_name: str, width: int, height: int, block_size: int,
-                  reference_frames_dir: str, cache_dir: str):
+                  reference_frames_dir: str, cache_dir: str, temporal_pool: bool = False):
     """
     Returns UFO masks as (F, H, W) array.
     """
@@ -186,7 +186,12 @@ def get_ufo_masks(video_name: str, width: int, height: int, block_size: int,
     for p in sorted(Path(ufo_masks_dir).glob("*.png")):
         masks.append(cv2.imread(str(p), cv2.IMREAD_GRAYSCALE))
         
-    return np.array(masks)
+    masks_arr = np.array(masks)
+    if temporal_pool:
+        pooled = np.max(masks_arr, axis=0)
+        masks_arr = np.repeat(pooled[None, ...], len(masks_arr), axis=0)
+        
+    return masks_arr
 
 
 def get_removability_scores(video_name: str, width: int, height: int, block_size: int,

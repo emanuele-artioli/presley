@@ -43,12 +43,14 @@ dependencies = [
   "gradio",
   "fvmd",
   "pyyaml",
-  "DISTS_pytorch"
+  "DISTS_pytorch",
+  "torchmetrics[image]==1.4.0"
 ]
 
 [project.scripts]
 presley-run = "presley.runner:main"
 presley-evaluate = "presley.components.evaluation:main"
+presley-compare = "presley.compare:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

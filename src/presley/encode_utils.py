@@ -3,7 +3,49 @@ import subprocess
 import cv2
 import math
 import numpy as np
-from typing import List
+from typing import List, Optional, Dict, Any
+
+def derive_rate_control(codec: str, codec_params: Optional[Dict[str, Any]] = None, roi_method: Optional[str] = None) -> str:
+    """Classify the rate-control mode an encode_video_*/encode_with_roi_* call
+    actually used, as a derived result field (not an experiments.yaml key --
+    adding a key would perturb compute_experiment_hash and orphan every
+    existing results/<hash>/ dir).
+
+    'qp' in codec_params means different things per codec: x265/kvazaar honor
+    it as constant-QP (rate control off); SVT-AV1's baseline/elvis/presley_ai
+    path (encode_video_svtav1_qp) passes it as 'rc=0:q=<qp>', which with the
+    default aq-mode=2 is equivalent to --crf (see SvtAv1EncApp --help) -- a
+    different mechanism with the same "no bitrate target" property. The ROI
+    component's own encode_with_roi_* helpers always binary-search a fixed
+    QP/CRF regardless of codec_params, so roi_method is checked first.
+    """
+    codec_params = codec_params or {}
+    codec = (codec or '').lower()
+    if roi_method is not None:
+        roi_method = roi_method.lower()
+        if roi_method == 'kvazaar':
+            return 'cqp'
+        if roi_method == 'svtav1':
+            return 'crf'
+        if roi_method == 'x265_aq':
+            return 'vbr_2pass'
+        if roi_method in ('presley_downsample', 'presley_blur', 'presley_noise', 'presley_qp'):
+            # These degrade pixels then always encode to a target_bitrate,
+            # regardless of any codec_params.qp (that key is a degradation
+            # knob here -- filter_frame_qp -- not an encoder rate-control flag).
+            presley_codec = codec
+            return 'vbr_1pass' if presley_codec == 'kvazaar' else 'vbr_2pass'
+        return 'n/a'
+    has_qp = 'qp' in codec_params
+    if codec == 'x265':
+        return 'cqp' if has_qp else 'vbr_2pass'
+    if codec == 'x264':
+        return 'vbr_2pass'
+    if codec == 'kvazaar':
+        return 'vbr_1pass'
+    if codec == 'svtav1':
+        return 'crf' if has_qp else 'vbr_1pass'
+    return 'n/a'
 
 def save_frames_as_video(frames: List[np.ndarray], output_path: str, framerate: float, lossless: bool = True, codec: str = "libx265") -> None:
     """Encode frames to video (lossless intermediate by default)."""
@@ -20,9 +62,18 @@ def save_frames_as_video(frames: List[np.ndarray], output_path: str, framerate: 
     ]
     
     if lossless and codec == "libx265":
+        # NOTE: "lossless" here is lossless only relative to a yuv420p-quantized
+        # copy of the input -- chroma subsampling still discards information, so
+        # a BGR frame does NOT round-trip bit-exact (verified: ~2.3 mean abs
+        # diff/pixel). Fine for intermediates that get lossily re-encoded right
+        # after anyway; NOT fine for outputs whose pixels are compared directly
+        # (e.g. passthrough-composited results) -- use codec="ffv1" for those.
         cmd.extend(['-c:v', 'libx265', '-preset', 'medium', '-x265-params', 'lossless=1', '-pix_fmt', 'yuv420p'])
     elif lossless and codec == "ffv1":
-        cmd.extend(['-c:v', 'ffv1', '-level', '3', '-pix_fmt', 'yuv420p'])
+        # bgr0 = native RGB, no YUV color-matrix conversion or chroma
+        # subsampling -> verified bit-exact round-trip (0.0 diff). Requires an
+        # .mkv/.avi-style container; ffv1 will not mux into .mp4.
+        cmd.extend(['-c:v', 'ffv1', '-level', '3', '-pix_fmt', 'bgr0'])
     else:
         cmd.extend(['-c:v', codec])
         
@@ -42,7 +93,28 @@ def save_frames_as_video(frames: List[np.ndarray], output_path: str, framerate: 
         raise RuntimeError(f"FFmpeg encoding failed for {output_path}")
 
 def load_frames_from_video(video_path: str) -> List[np.ndarray]:
-    """Decode video into a list of BGR numpy arrays."""
+    """Decode video into a list of BGR numpy arrays.
+
+    Decodes straight to a bgr24 rawvideo pipe (same ffmpeg decoder as the old
+    temp-PNG path, so frames are bit-identical — PNG is lossless — but without
+    writing/reading 82 files, which is slow on NFS). Falls back to the temp-PNG
+    path if the pipe decode yields nothing.
+    """
+    cap = cv2.VideoCapture(video_path)
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    cap.release()
+    if w > 0 and h > 0:
+        proc = subprocess.run(
+            ['ffmpeg', '-hide_banner', '-loglevel', 'error', '-i', video_path,
+             '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-'],
+            capture_output=True)
+        frame_bytes = h * w * 3
+        if proc.returncode == 0 and proc.stdout and len(proc.stdout) % frame_bytes == 0 and proc.stdout:
+            arr = np.frombuffer(proc.stdout, dtype=np.uint8).reshape(-1, h, w, 3)
+            return [f.copy() for f in arr]
+
+    # Fallback: decode via temp PNGs (handles codecs cv2 can't probe)
     import tempfile
     frames = []
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -57,6 +129,19 @@ def calculate_target_bitrate(width: int, height: int, framerate: float, quality_
     pixels_per_second = width * height * framerate
     bits_per_pixel = 0.01 * quality_factor
     return int(pixels_per_second * bits_per_pixel)
+
+def encode_video_x265_qp(input_video_or_pattern: str, output_video: str, framerate: float, qp: int, preset: str = "medium") -> None:
+    """Encode with libx265 at a fixed QP (rate control off, single pass).
+
+    Fixed-QP is the operating mode where FG-protecting transports actually win
+    (VBR rate control partially absorbs their savings — measured repeatedly:
+    kvazaar ROI, and the elvis blackout/freeze transports). target_bitrate is
+    irrelevant here; compare results on actual_bitrate_bps.
+    """
+    input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
+                    '-c:v', 'libx265', '-preset', preset, '-x265-params', f'qp={qp}',
+                    '-pix_fmt', 'yuv420p', output_video], check=True)
 
 def encode_video_x265(input_video_or_pattern: str, output_video: str, framerate: float, target_bitrate: int, preset: str = "medium", passlog_file: str = "x265_passlog", x265_params: str = None) -> None:
     """Encode video using x265 2-pass."""
@@ -315,3 +400,10 @@ def decode_video(video_path: str, output_dir: str, framerate: float = None, star
         print(f'Error decoding {video_path}: {result.stderr}')
         return False
     return True
+
+
+def encode_video_svtav1_qp(input_video_or_pattern: str, output_video: str, framerate: float, qp: int, preset: str = "8") -> None:
+    input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
+                    '-c:v', 'libsvtav1', '-preset', preset, '-svtav1-params', f'rc=0:q={qp}', output_video], check=True)
+

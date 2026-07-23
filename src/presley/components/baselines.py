@@ -3,8 +3,8 @@ import time
 from typing import Dict, Any
 from presley.preprocessing import get_reference_frames
 from presley.encode_utils import (
-    encode_video_x264, encode_video_x265, 
-    encode_video_svtav1, encode_video_kvazaar
+    encode_video_x264, encode_video_x265,
+    encode_video_svtav1, encode_video_kvazaar, derive_rate_control
 )
 
 def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cache_dir: str) -> Dict[str, Any]:
@@ -26,13 +26,26 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
     if codec == 'x264':
         encode_video_x264(ref_frames_pattern, output_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
     elif codec == 'x265':
-        encode_video_x265(ref_frames_pattern, output_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
+        if 'qp' in codec_params:
+            # Fixed-QP mode (rate control off) — the operating mode where
+            # FG-protecting transports win; compare on actual_bitrate_bps.
+            from presley.encode_utils import encode_video_x265_qp
+            encode_video_x265_qp(ref_frames_pattern, output_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', 'medium'))
+        else:
+            encode_video_x265(ref_frames_pattern, output_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
     elif codec == 'kvazaar':
         encode_video_kvazaar(ref_frames_pattern, output_video, framerate, target_bitrate, width, height)
     elif codec == 'svtav1':
-        encode_video_svtav1(ref_frames_pattern, output_video, framerate, target_bitrate, preset=str(codec_params.get('preset', '8')))
+        if 'qp' in codec_params:
+            from presley.encode_utils import encode_video_svtav1_qp
+            encode_video_svtav1_qp(ref_frames_pattern, output_video, framerate, int(codec_params['qp']), preset=str(codec_params.get('preset', '8')))
+        else:
+            encode_video_svtav1(ref_frames_pattern, output_video, framerate, target_bitrate, preset=str(codec_params.get('preset', '8')))
     elif codec == 'hnerv':
-        raise NotImplementedError("HNeRV baseline not yet implemented")
+        from presley.hnerv_utils import encode_video_hnerv
+        checkpoint_path = os.path.join(results_dir, "hnerv_checkpoint.pt.gz")
+        # Returns train_seconds but we keep track of total encoding_time using start_time anyway
+        encode_video_hnerv(ref_frames_pattern, output_video, framerate, width, height, codec_params, checkpoint_path)
     elif codec == 'dcvc':
         raise NotImplementedError("DCVC baseline not yet implemented")
     else:
@@ -40,7 +53,11 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
         
     encoding_time = time.time() - start_time
     
-    file_size = os.path.getsize(output_video)
+    if codec == 'hnerv':
+        file_size = os.path.getsize(os.path.join(results_dir, "hnerv_checkpoint.pt.gz"))
+    else:
+        file_size = os.path.getsize(output_video)
+        
     duration = len(frames) / framerate
     actual_bitrate = (file_size * 8) / duration
     
@@ -48,6 +65,7 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
         "video_frames": len(frames),
         "video_framerate": framerate,
         "output_video": output_video,
+        "rate_control": derive_rate_control(codec, codec_params),
         "actual_bitrate_bps": actual_bitrate,
         "file_size_bytes": file_size,
         "transmitted_size_bytes": file_size,

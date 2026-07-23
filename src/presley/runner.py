@@ -23,9 +23,23 @@ def annotate_experiments_yaml(yaml_path: str) -> None:
 
     Uses a comment (not a real field) so it never enters the parsed config and
     can't perturb the hash. Regenerates cleanly: stale `# hash:` lines are
-    stripped and replaced. Entries are the `  - ` top-level list items under
+    stripped and replaced. Entries are the top-level list items under
     `experiments:`, in file order (PyYAML preserves list order), which lines up
     1:1 with the parsed list since there are no nested sequences at that indent.
+
+    The item indent is taken from the first list item *under `experiments:`*
+    rather than assumed: `experiments:` followed by zero-indent `- ` items is
+    valid YAML and is what this repo's file actually uses, but a two-space-
+    indented sequence parses identically. Hard-coding one of the two made this
+    function a silent no-op -- it parsed every experiment, computed every hash,
+    matched no lines, and rewrote the file unchanged while still reporting
+    success.
+
+    If the number of matched list items does not equal the number of parsed
+    experiments (either direction), the file is left untouched with a warning:
+    a misaligned map points entries at the wrong results/<hash>/ dir, which is
+    worse than no annotation. It warns rather than raises because this is
+    provenance metadata and must not block an experiment run.
     """
     if not os.path.exists(yaml_path):
         return
@@ -36,14 +50,48 @@ def annotate_experiments_yaml(yaml_path: str) -> None:
     with open(yaml_path, 'r') as f:
         lines = f.readlines()
 
-    out, idx = [], 0
     hash_re = re.compile(r'^\s*#\s*hash:\s*[0-9a-f]+\s*$')
-    item_re = re.compile(r'^  - ')
-    for line in lines:
+    any_item_re = re.compile(r'^( *)- ')
+
+    # Only consider lines after the `experiments:` key: latching the indent from
+    # the first `- ` *anywhere* would pick up a list under some other top-level
+    # key that happens to precede it, and then annotate the wrong region.
+    start = next((i + 1 for i, l in enumerate(lines)
+                  if re.match(r'^experiments:\s*$', l)), 0)
+    body = lines[start:]
+
+    # Lock onto the indent of the first list item in that region; anything
+    # deeper is a nested sequence and must not be annotated.
+    item_indent = next((m.group(1) for m in map(any_item_re.match, body) if m), None)
+
+    def is_item(line):
+        m = any_item_re.match(line)
+        return m is not None and m.group(1) == item_indent
+
+    # Count first, then write. Counting separately from the emit loop is what
+    # makes an *over*count detectable -- capping the emit on `idx < len(hashes)`
+    # would otherwise swallow extra items silently and mislabel every entry
+    # after the first spurious match.
+    matched = sum(1 for l in body if is_item(l) and not hash_re.match(l))
+    if matched != len(hashes):
+        # Do not write a misaligned map: labelling entries with the wrong
+        # results/<hash>/ dir is worse than no annotation at all. Warn loudly
+        # rather than raise -- this is provenance metadata, and a cosmetic
+        # problem here must not block hours-long GPU runs.
+        print(
+            f"WARNING: annotate_experiments_yaml matched {matched} list items but "
+            f"parsed {len(hashes)} experiments in {yaml_path}; leaving annotations "
+            f"untouched rather than writing a misaligned map.",
+            file=sys.stderr,
+        )
+        return
+
+    out, idx = lines[:start], 0
+    for line in body:
         if hash_re.match(line):
             continue  # drop old annotation, will be regenerated
-        if item_re.match(line) and idx < len(hashes):
-            out.append(f"  # hash: {hashes[idx]}\n")
+        if is_item(line):
+            out.append(f"{item_indent}# hash: {hashes[idx]}\n")
             idx += 1
         out.append(line)
 
@@ -103,7 +151,13 @@ def run_single_experiment(experiment: Dict[str, Any], dataset_dir: str, results_
         return
 
     os.makedirs(exp_results_dir, exist_ok=True)
-    
+
+    # Preflight GPU resources for GPU components BEFORE the lazy component import
+    # (which initializes torch/CUDA). Pins the least-loaded GPU via
+    # CUDA_VISIBLE_DEVICES and fills in a VRAM-safe InstantIR batch_size.
+    from presley.gpu_utils import preflight_gpu
+    preflight_gpu(component_name, experiment)
+
     # Dispatch
     # We lazily import the components to avoid heavy dependencies if not needed
     try:
