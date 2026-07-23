@@ -22,6 +22,13 @@ generation always reads the snapshot, and the snapshot is refreshed from the
 real file whenever this script runs somewhere that has one. That keeps `--check`
 reproducible on a machine that has never seen the host file.
 
+`~/.claude/CLAUDE.md` may itself be (partly) a Claude Code `@`-import — it now
+just imports `~/.agent-rules/shared.md` for the host-wide prose. Since
+AGENTS.md/Antigravity/Copilot don't understand `@`-import syntax, any such
+line is resolved (the imported file's content substituted in) before the text
+is used anywhere, so the generated files always end up with real prose, never
+a raw unresolved `@/path` string.
+
 Usage:
     python tools/sync_agent_rules.py            # write the generated files
     python tools/sync_agent_rules.py --check    # exit 1 if any is out of date
@@ -29,6 +36,15 @@ Usage:
 Text between `<!-- claude-only:start -->` and `<!-- claude-only:end -->` is
 dropped from the generated files — use it for skill and subagent references
 that mean nothing outside Claude Code.
+
+CANONICAL COPY: this file is hand-edited only at
+~/.agent-rules/scripts/sync_agent_rules.py and vendored (physically copied,
+not symlinked) into each project's tools/ directory by
+~/.agent-rules/scripts/vendor-sync-agent-rules.sh. It cannot be centralized
+the way the hooks in this directory are (referenced by absolute path) because
+CI runners have no access to ~/.agent-rules/ at all — this script must stay a
+real, self-contained file inside each project's own repo. See
+~/.agent-rules/README.md for the full explanation.
 """
 
 from __future__ import annotations
@@ -47,6 +63,8 @@ CLAUDE_ONLY = re.compile(
     re.DOTALL,
 )
 
+IMPORT_LINE = re.compile(r"^@(/\S+)\s*$", re.MULTILINE)
+
 BANNER = (
     "<!-- GENERATED from CLAUDE.md by tools/sync_agent_rules.py — DO NOT EDIT.\n"
     "     Edit CLAUDE.md and re-run the script; a pre-commit hook checks this. -->"
@@ -55,6 +73,28 @@ BANNER = (
 
 def strip_claude_only(text: str) -> str:
     return CLAUDE_ONLY.sub("", text)
+
+
+def resolve_imports(text: str, _depth: int = 0) -> str:
+    """Expand Claude Code `@/absolute/path` import lines, recursively.
+
+    A line consisting solely of `@` + an absolute path is Claude Code's own
+    import syntax for pulling in another file's content. Agents reading the
+    *generated* files (AGENTS.md, Antigravity, Copilot) don't understand
+    that syntax, so any such line is replaced with the referenced file's
+    actual content before use. Bounded to 4 hops, matching Claude Code's own
+    import-depth limit, so a cycle can't recurse forever.
+    """
+    if _depth >= 4:
+        return text
+
+    def _expand(match: "re.Match[str]") -> str:
+        path = Path(match.group(1))
+        if not path.is_file():
+            return match.group(0)
+        return resolve_imports(path.read_text(), _depth + 1)
+
+    return IMPORT_LINE.sub(_expand, text)
 
 
 def project_name() -> str:
@@ -86,9 +126,15 @@ def describe(claude_md: str) -> str:
 
 
 def host_rules() -> str:
-    """The tracked snapshot, refreshed from ~/.claude/CLAUDE.md when present."""
+    """The tracked snapshot, refreshed from ~/.claude/CLAUDE.md when present.
+
+    Whichever source is used, any `@`-import line is resolved before the
+    text is returned — so the snapshot written by `targets()` below is
+    always the fully-expanded prose, never a raw import line, and CI's
+    fallback read of the snapshot never needs to resolve anything itself.
+    """
     if HOST_RULES.is_file():
-        return HOST_RULES.read_text()
+        return resolve_imports(HOST_RULES.read_text())
     if HOST_SNAPSHOT.is_file():
         return HOST_SNAPSHOT.read_text()
     return ""
