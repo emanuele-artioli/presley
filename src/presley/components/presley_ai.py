@@ -50,6 +50,12 @@ RESTORER_DEGRADATIONS = {
     'telea':      INPAINT_DEGRADATIONS,
     # map = log2 downscale factor
     'realesrgan': ('downsample',) + INPAINT_DEGRADATIONS,
+    # map = log2 downscale factor (same units as realesrgan -- BSRGAN is the
+    # same RRDBNet architecture with a different training-time degradation
+    # model, so it consumes the strength map identically. Second conditioned
+    # GAN/CNN super-resolver for the restoration-comparison ablation; see
+    # `restore_downsampled_with_bsrgan` in presley.restoration.)
+    'bsrgan':     ('downsample',) + INPAINT_DEGRADATIONS,
     # map = number of restoration rounds
     'instantir':  ('blur',) + INPAINT_DEGRADATIONS,
     # map = sharpening rounds; downsample is also a low-pass, so unsharp is a
@@ -64,7 +70,7 @@ RESTORER_DEGRADATIONS = {
 # degradation, not a benchmark. `unsharp` is the correct no-ML control.
 
 # Per-restorer clamps for the converted strength map: (max_value, dtype).
-_STRENGTH_CLAMP = {'realesrgan': 3, 'instantir': 8, 'unsharp': 8}
+_STRENGTH_CLAMP = {'realesrgan': 3, 'bsrgan': 3, 'instantir': 8, 'unsharp': 8}
 
 
 def _restorer_strength_map(smap_arr, restorer: str, degradation: str, restorer_params: Dict[str, Any]):
@@ -238,6 +244,20 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             restore_downsampled_with_realesrgan(
                 temp_frames_dir, restored_frames_dir, smap_r, block_size,
                 denoise_strength=restorer_params.get('denoise_strength', 1.0),
+                tile=restorer_params.get('tile', 0),
+                tile_pad=restorer_params.get('tile_pad', 10),
+                fp32=restorer_params.get('fp32', False))
+
+        elif restorer == 'bsrgan':
+            from presley.restoration import restore_downsampled_with_bsrgan
+            # Second conditioned GAN/CNN super-resolver (RRDBNet arch, same
+            # as realesrgan above, different training-time degradation
+            # model) -- the restoration-comparison ablation this branch
+            # exists for. No denoise_strength: that's a Real-ESRGAN DNI
+            # feature specific to the realesr-general-x4v3 checkpoint, not
+            # applicable to the fixed BSRGAN model.
+            restore_downsampled_with_bsrgan(
+                temp_frames_dir, restored_frames_dir, smap_r, block_size,
                 tile=restorer_params.get('tile', 0),
                 tile_pad=restorer_params.get('tile_pad', 10),
                 fp32=restorer_params.get('fp32', False))

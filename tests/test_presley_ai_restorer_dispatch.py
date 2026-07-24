@@ -1,0 +1,60 @@
+"""Dispatch/config-table tests for presley_ai's restorer capability table.
+
+These import only `presley.components.presley_ai`, which -- unlike
+`presley.restoration` -- does no module-level heavy-model imports (its own
+imports are preprocessing/encode_utils/degradation/sidechannel, all pure
+numpy/cv2), so they run in the fast CI tier without a GPU or the pinned
+conda env. The actual restoration call (`restore_downsampled_with_bsrgan`) is
+imported lazily inside `run_presley_ai`'s dispatch branch precisely so this
+stays testable without the heavy stack -- see `tests/test_restoration_bsrgan.py`
+for the output-contract coverage of that function.
+"""
+import numpy as np
+
+from presley.components.presley_ai import (
+    RESTORER_DEGRADATIONS,
+    INPAINT_DEGRADATIONS,
+    _STRENGTH_CLAMP,
+    _restorer_strength_map,
+)
+
+
+def test_bsrgan_is_registered_alongside_realesrgan():
+    """Second conditioned GAN/CNN restorer for the paper's
+    restoration-comparison ablation -- same allowed-degradation set as
+    realesrgan (both are conditioned restorers that consume `downsample` plus
+    the hole degradations, and interpret the map the same way)."""
+    assert "bsrgan" in RESTORER_DEGRADATIONS
+    assert RESTORER_DEGRADATIONS["bsrgan"] == ("downsample",) + INPAINT_DEGRADATIONS
+    assert RESTORER_DEGRADATIONS["bsrgan"] == RESTORER_DEGRADATIONS["realesrgan"]
+
+
+def test_bsrgan_rejects_a_degradation_it_cannot_interpret():
+    """bsrgan only knows the log2-downscale-factor map; blur/noise use
+    different units (sharpening rounds / variance) that would silently
+    corrupt its `np.power(2, map)` computation if allowed through."""
+    assert "blur" not in RESTORER_DEGRADATIONS["bsrgan"]
+    assert "noise" not in RESTORER_DEGRADATIONS["bsrgan"]
+
+
+def test_bsrgan_strength_map_is_clamped_like_realesrgan():
+    """Both restorers read the map as a log2 downscale factor and share the
+    same clamp -- the clamp exists so a mis-paired degradation (e.g. noise,
+    whose map goes up to noise_variance) can't blow up cv2.resize with an
+    astronomical factor (see `_restorer_strength_map`'s caller comment)."""
+    raw = np.array([[0, 1, 5, 10]])
+    clamped = _restorer_strength_map(raw, "bsrgan", "downsample", {})
+    assert clamped.max() <= _STRENGTH_CLAMP["bsrgan"]
+    np.testing.assert_array_equal(
+        clamped,
+        _restorer_strength_map(raw, "realesrgan", "downsample", {}),
+    )
+
+
+def test_bsrgan_hole_degradations_use_the_binary_rounds_recipe():
+    """Same recipe as every other conditioned/in-painting restorer for the
+    bridge degradations: binary hole map * requested rounds, not the raw
+    (irrelevant) transmitted strength value."""
+    raw = np.array([[0, 5, 0, 9]])  # freeze/mean_fill maps are binary in practice
+    clamped = _restorer_strength_map(raw, "bsrgan", "freeze", {"rounds": 2})
+    np.testing.assert_array_equal(clamped, [[0, 2, 0, 2]])

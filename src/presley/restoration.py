@@ -497,6 +497,58 @@ def _instantiate_realesrgan_upsampler(model_name: str, device: torch.device, *, 
     half_precision = device.type == 'cuda' and (not fp32)
     upsampler = RealESRGANer(scale=netscale, model_path=resolved_model_path, dni_weight=dni_weight, model=model, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, half=half_precision, device=device)
     return upsampler
+def _instantiate_bsrgan_upsampler(model_name: str, device: torch.device, *, tile: int=0, tile_pad: int=10, pre_pad: int=0, fp32: bool=False) -> 'RealESRGANer':
+    """Create and warm a BSRGAN upsampler on the specified device.
+
+    BSRGAN (Zhang et al., "Designing a Practical Degradation Model for Deep
+    Blind Image Super-Resolution", ICCV 2021) uses the exact same RRDBNet
+    architecture as RealESRGAN_x4plus (num_feat=64, num_block=23,
+    num_grow_ch=32, scale=4 -- see the official `main_test_bsrgan.py`,
+    `net(in_nc=3, out_nc=3, nf=64, nb=23, gc=32, sf=sf)`); the two methods
+    differ only in the synthetic degradation pipeline used at training time,
+    not in the network. That means the already-vendored `RealESRGANer`
+    tiling/inference wrapper (basicsr's RRDBNet + realesrgan's utils) works
+    unchanged for BSRGAN -- only the checkpoint and scale differ. Weights are
+    hosted on the official KAIR GitHub release (Apache-2.0 license), so
+    `load_file_from_url` fetches them exactly like Real-ESRGAN's own weights.
+    """
+    try:
+        import realesrgan
+        from realesrgan.utils import RealESRGANer
+        from realesrgan.inference import DEFAULT_RELEASE_SUBDIR, DEFAULT_WEIGHTS_SUBDIR, _resolve_existing_model_path
+        from basicsr.archs.rrdbnet_arch import RRDBNet
+        from basicsr.utils.download_util import load_file_from_url
+    except ImportError as exc:
+        raise RuntimeError('Real-ESRGAN/basicsr python packages with their dependencies are required to run BSRGAN through the shared RealESRGANer wrapper. Install them with `pip install realesrgan basicsr`.') from exc
+    model_name = model_name.split('.')[0]
+    if model_name == 'BSRGAN':
+        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+        netscale = 4
+        file_urls = ['https://github.com/cszn/KAIR/releases/download/v1.0/BSRGAN.pth']
+    elif model_name == 'BSRGANx2':
+        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=2)
+        netscale = 2
+        file_urls = ['https://github.com/cszn/KAIR/releases/download/v1.0/BSRGANx2.pth']
+    else:
+        raise ValueError(f"Unsupported BSRGAN model '{model_name}'.")
+    package_dir = Path(realesrgan.__file__).resolve().parent
+    release_dir = package_dir / DEFAULT_RELEASE_SUBDIR
+    weights_dir = package_dir / DEFAULT_WEIGHTS_SUBDIR
+    cwd_weights_dir = Path.cwd() / DEFAULT_WEIGHTS_SUBDIR
+    search_dirs: List[Path] = [release_dir, weights_dir, cwd_weights_dir]
+    existing = _resolve_existing_model_path(model_name, search_dirs)
+    if existing is None:
+        weights_dir.mkdir(parents=True, exist_ok=True)
+        root_dir = package_dir
+        for url in file_urls:
+            load_file_from_url(url=url, model_dir=os.path.join(root_dir, DEFAULT_WEIGHTS_SUBDIR), progress=True, file_name=None)
+        existing = _resolve_existing_model_path(model_name, search_dirs)
+        if existing is None:
+            raise RuntimeError(f"Unable to locate BSRGAN weights for model '{model_name}'.")
+    resolved_model_path: str = str(existing)
+    half_precision = device.type == 'cuda' and (not fp32)
+    upsampler = RealESRGANer(scale=netscale, model_path=resolved_model_path, dni_weight=None, model=model, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, half=half_precision, device=device)
+    return upsampler
 def _device_slot_key(device_obj: torch.device, slot_id: int) -> str:
     idx = device_obj.index if device_obj.type == 'cuda' and device_obj.index is not None else None
     base = f'cuda:{idx}' if idx is not None else str(device_obj)
@@ -537,6 +589,21 @@ def upscale_realesrgan_adaptive(downsampled_image: np.ndarray, downscale_maps: n
     """
     if upsample_fn is None:
         upsample_fn = functools.partial(upscale_realesrgan_2x, realesrgan_dir=realesrgan_dir)
+    return _adaptive_block_pyramid_upscale(downsampled_image, downscale_maps, block_size, upsample_fn)
+
+
+def _adaptive_block_pyramid_upscale(downsampled_image: np.ndarray, downscale_maps: np.ndarray, block_size: int, upsample_fn: Callable[[np.ndarray], np.ndarray]) -> np.ndarray:
+    """Model-agnostic core of the adaptive pyramid restoration shared by every
+    conditioned super-resolution restorer (Real-ESRGAN, BSRGAN, ...).
+
+    See `upscale_realesrgan_adaptive`'s docstring for the 4-stage algorithm
+    description (Algorithm 3 / alg:sr_round in the paper). `upsample_fn` is
+    the only model-specific piece -- a single 2x upscale -- so any conditioned
+    restorer that can be called that way (single image in, 2x image out) can
+    reuse this exact block-level bookkeeping (per-block downscale factor
+    tracking, re-injection of the already-adequate downsampled blocks at every
+    pyramid level) unchanged.
+    """
     downsampled_image, downscale_maps, pad_y, pad_x = _pad_for_restoration(downsampled_image, downscale_maps, block_size)
     downscale_maps = np.power(2, downscale_maps).astype(np.int32)
     max_factor = int(downscale_maps.max())
@@ -560,6 +627,31 @@ def upscale_realesrgan_adaptive(downsampled_image: np.ndarray, downscale_maps: n
         current_image = combine_blocks_into_image(blocks)
         current_factor /= 2
     return _crop_after_restoration(current_image, pad_y, pad_x)
+
+
+def upscale_bsrgan_adaptive(downsampled_image: np.ndarray, downscale_maps: np.ndarray, block_size: int, *, upsample_fn: Callable[[np.ndarray], np.ndarray]) -> np.ndarray:
+    """
+    Applies adaptive BSRGAN upscaling to restore an image where different
+    blocks were downsampled by different factors (powers of 2).
+
+    Same contract and same block-level pyramid algorithm as
+    `upscale_realesrgan_adaptive` (see its docstring) -- this is a drop-in
+    alternative conditioned restorer, not a redesign. Unlike Real-ESRGAN,
+    there is no bundled CLI/subprocess fallback for BSRGAN in this
+    environment, so `upsample_fn` (typically `get_bsrgan_upsampler` wrapped in
+    a single-image call, as `restore_frames_bsrgan` does) is required rather
+    than defaulted.
+
+    Args:
+        downsampled_image: The downsampled image (non-uniform block sizes) in BGR format
+        downscale_maps: 2D array (num_blocks_y, num_blocks_x) indicating the downscale factor applied to each block.
+        block_size: The side length of each block in the original resolution
+        upsample_fn: Callable performing a single 2x upscale.
+
+    Returns:
+        The adaptively upscaled image at original resolution
+    """
+    return _adaptive_block_pyramid_upscale(downsampled_image, downscale_maps, block_size, upsample_fn)
 import threading
 _REALESRGAN_UPSAMPLER_LOCK = threading.Lock()
 
@@ -571,6 +663,22 @@ def get_realesrgan_upsampler(device: torch.device, *, model_name: str='RealESRGA
         if upsampler is None:
             _safe_print(f'    -> Warming Real-ESRGAN runtime on {device}...')
             upsampler = _instantiate_realesrgan_upsampler(model_name=model_name, device=device, denoise_strength=denoise_strength, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, fp32=fp32)
+            _REALESRGAN_UPSAMPLER_CACHE[key] = upsampler
+    return upsampler
+
+def get_bsrgan_upsampler(device: torch.device, *, model_name: str='BSRGAN', tile: int=0, tile_pad: int=10, pre_pad: int=0, fp32: bool=False) -> 'RealESRGANer':
+    """Get or create a cached BSRGAN upsampler for the given device.
+
+    Mirrors `get_realesrgan_upsampler`, sharing the same cache dict/lock --
+    the cache key is namespaced by model_name ('BSRGAN'/'BSRGANx2'), which
+    already disambiguates it from every Real-ESRGAN model name.
+    """
+    key = f'bsrgan_{device}_{model_name}_{tile}_{tile_pad}_{pre_pad}_{fp32}'
+    with _REALESRGAN_UPSAMPLER_LOCK:
+        upsampler = _REALESRGAN_UPSAMPLER_CACHE.get(key)
+        if upsampler is None:
+            _safe_print(f'    -> Warming BSRGAN runtime on {device}...')
+            upsampler = _instantiate_bsrgan_upsampler(model_name=model_name, device=device, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, fp32=fp32)
             _REALESRGAN_UPSAMPLER_CACHE[key] = upsampler
     return upsampler
 def restore_frames_realesrgan(frames: List[np.ndarray], downscale_maps: np.ndarray, block_size: int, device: torch.device, *, model_name: str='RealESRGAN_x4plus', denoise_strength: float=1.0, tile: int=0, tile_pad: int=10, pre_pad: int=0, fp32: bool=False) -> List[np.ndarray]:
@@ -615,6 +723,59 @@ def restore_downsampled_with_realesrgan(input_frames_dir: str, output_frames_dir
         chunk_maps = downscale_maps[chunk.start:chunk.end]
         _safe_print(f'    -> Real-ESRGAN frames {chunk.start + 1}-{chunk.end} on {chunk.device}')
         restored = restore_frames_realesrgan(chunk_frames, chunk_maps, block_size, chunk.device, model_name=model_name, denoise_strength=denoise_strength, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, fp32=fp32)
+        all_restored.extend(restored)
+    for (idx, restored_frame) in enumerate(all_restored):
+        output_path = os.path.join(output_frames_dir, frame_paths[idx].name)
+        save_frame(restored_frame, output_path)
+
+def restore_frames_bsrgan(frames: List[np.ndarray], downscale_maps: np.ndarray, block_size: int, device: torch.device, *, model_name: str='BSRGAN', tile: int=0, tile_pad: int=10, pre_pad: int=0, fp32: bool=False) -> List[np.ndarray]:
+    """
+    Pure restoration function: restore frames using BSRGAN.
+
+    Mirrors `restore_frames_realesrgan`'s contract exactly (frames + downscale
+    maps as numpy arrays in, restored frames out; no file IO, no
+    parallelization) -- only the underlying upsampler differs.
+    """
+    upsampler = get_bsrgan_upsampler(device, model_name=model_name, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, fp32=fp32)
+
+    def _enhance_once(img: np.ndarray) -> np.ndarray:
+        return _upsample_with_realesrgan(upsampler, img, device_obj=device, outscale=2.0)
+    restored_frames = []
+    for (idx, frame) in enumerate(frames):
+        restored = upscale_bsrgan_adaptive(frame, downscale_maps[idx], block_size, upsample_fn=_enhance_once)
+        restored_frames.append(restored)
+    return restored_frames
+def restore_downsampled_with_bsrgan(input_frames_dir: str, output_frames_dir: str, downscale_maps: np.ndarray, block_size: int, *, model_name: str='BSRGAN', tile: int=0, tile_pad: int=10, pre_pad: int=0, fp32: bool=False, devices: Optional[Sequence[Union[int, str, torch.device]]]=None, parallel_chunk_length: Optional[int]=None, per_device_workers: int=1) -> None:
+    """Parallel adaptive BSRGAN restoration over a directory of frames.
+
+    Same contract as `restore_downsampled_with_realesrgan` (same
+    inputs/outputs, same block-level replacement logic via
+    `upscale_bsrgan_adaptive`) so it is a drop-in alternative conditioned
+    restorer for the `downsample` degradation -- see
+    `presley.components.presley_ai.RESTORER_DEGRADATIONS`.
+    """
+    frame_paths = get_frame_paths(input_frames_dir)
+    if not frame_paths:
+        raise ValueError(f'No frames found in {input_frames_dir}')
+    downscale_maps = np.asarray(downscale_maps)
+    num_frames = len(frame_paths)
+    if downscale_maps.shape[0] != num_frames:
+        raise ValueError(f'Downscale maps length ({downscale_maps.shape[0]}) does not match frame count ({num_frames}).')
+    clear_directory(output_frames_dir)
+    os.makedirs(output_frames_dir, exist_ok=True)
+    resolved_devices = _resolve_device_list(devices, prefer_cuda=True, allow_cpu_fallback=True)
+    device_summary = ', '.join((str(dev) for dev in resolved_devices))
+    tile_desc = str(tile) if tile and tile > 0 else 'full-frame'
+    _safe_print(f'  Using BSRGAN on devices: {device_summary} | tile: {tile_desc}')
+    _safe_print(f'  Total frames: {num_frames}')
+
+    chunks = chunk_for_devices(num_frames, resolved_devices)
+    all_restored: List[np.ndarray] = []
+    for chunk in chunks:
+        chunk_frames = [load_frame(str(frame_paths[i])) for i in range(chunk.start, chunk.end)]
+        chunk_maps = downscale_maps[chunk.start:chunk.end]
+        _safe_print(f'    -> BSRGAN frames {chunk.start + 1}-{chunk.end} on {chunk.device}')
+        restored = restore_frames_bsrgan(chunk_frames, chunk_maps, block_size, chunk.device, model_name=model_name, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, fp32=fp32)
         all_restored.extend(restored)
     for (idx, restored_frame) in enumerate(all_restored):
         output_path = os.path.join(output_frames_dir, frame_paths[idx].name)

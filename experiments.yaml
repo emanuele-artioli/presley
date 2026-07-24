@@ -242,6 +242,22 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: c26c5e9a05e47730
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: bsrgan
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    tile: 0
 # hash: 287d46b17dd07d54
 - component: presley_ai
   video: bear
@@ -921,6 +937,22 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 36b18dd72ccad44e
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: bsrgan
+  target_bitrate: 150000
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    tile: 0
 # hash: b58ff6864c41bc3f
 - component: presley_ai
   video: bear
@@ -937,6 +969,22 @@ experiments:
     preset: medium
   restorer_params:
     denoise_strength: 1.0
+    tile: 0
+# hash: 3848dfdf0a24f736
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: bsrgan
+  target_bitrate: 100000
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
     tile: 0
 # hash: 8d2eb91d0797f341
 - component: presley_ai
@@ -1174,6 +1222,22 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 7a722d016481d3b7
+- component: presley_ai
+  video: bmx-trees
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: bsrgan
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
+    tile: 0
 # hash: 9d24245a8ff40cb7
 - component: presley_ai
   video: drift-chicane
@@ -1190,6 +1254,22 @@ experiments:
     preset: medium
   restorer_params:
     denoise_strength: 1.0
+    tile: 0
+# hash: 98de03dc7b94563d
+- component: presley_ai
+  video: drift-chicane
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: bsrgan
+  target_bitrate: 460800
+  codec: x265
+  codec_params:
+    preset: medium
+  restorer_params:
     tile: 0
 # hash: 9da47db123186516
 - component: baselines
