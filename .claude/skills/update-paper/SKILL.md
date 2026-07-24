@@ -3,73 +3,34 @@ name: update-paper
 description: Fold new PRESLEY findings (experiment results, diagnoses, retractions) into the paper (68e8b6bb11d0dd9e62a67aef/sections/*.tex), guided by its GOAL/HOLE/CLAIM markers. Use after experiments complete and results are committed/tested, or when a conclusion changes. Replaces the retired update-reports workflow.
 ---
 
-# Folding findings into the paper
+Read `/home/itec/emanuele/.agent-rules/skills/update-paper/SKILL.md` and follow it.
 
-The paper is the primary living document. Its comment markers
-(`STATUS/GOAL/HOLE/NOTE/NEXT/CLAIM(anchor):` — full spec in the paper repo's
-`CLAUDE.md`) record each element's goal, missing data, and provenance.
-`RESEARCH_LOG.md` (paper repo) is the secondary store for non-paper knowledge.
+## PRESLEY specifics
 
-## Procedure
-
-1. **Locate.** Run the discovery grep in the paper repo
-   (`68e8b6bb11d0dd9e62a67aef/`):
-   ```
-   grep -n '^% *\(STATUS\|GOAL\|HOLE\|NOTE\|NEXT\|CLAIM\)(' main.tex sections/*.tex
-   ```
-   Find the anchors this finding touches; read the surrounding text and the
-   owning file's `STATUS` header.
-2. **Classify the impact:**
-   - **Fills a `HOLE`** → proceed to write (step 3–4).
-   - **Contradicts a rendered claim** → find its `CLAIM` provenance line;
-     decide rewrite vs reframe-as-ablation vs cut (`\del{}`); never leave a
-     stale number standing.
-   - **Not paper-relevant** → one entry in `RESEARCH_LOG.md` (Open questions,
-     Dead-end registry, or the append-only Log), stop.
-3. **Gate the claim** before wording anything:
-   - `presley-compare` decides whether a quality difference is real (JND
-     table in `src/presley/compare.py`). Within-JND deltas are "no
-     perceptible difference" — never a trend.
-   - Degradation comparisons must be fixed-QP/CRF (`rate_control` field),
-     never VBR. FG claims only from `foreground.lpips_mean` / `dists_fg`;
-     FG-VMAF/FG-FVMD banned; FID only as `fid_fg_bbox`. Compare on
-     `actual_bitrate_bps` (`transmitted_size_bytes` for presley_ai). Report
-     the FG/BG split, never overall-only.
-4. **Edit via the `paper-editor` agent** (it knows the file layout and
-   macros). Hand it *verified* numbers and the exact result hashes — verify
-   against `results/<hash>/result.json` yourself first (past reports have
-   mis-summarized their own numbers; trust data over docs). Reviewer-visible
-   text in `\rev{}`, removals in `\del{}`; **clear
-   the `HOLE` and write/update the `CLAIM(id): src=<result hashes> date=`
-   line in the same edit** — a HOLE may never be cleared without its data
-   landing in the text.
-5. **Cross-update:** if a referee item advanced, update
-   `reviewers_comments.md` Status/Resolution (Done only when the text or
-   experiment is actually in place). If a dead end or hard rule emerged, add
-   it to `RESEARCH_LOG.md`; if a Standing-results entry just landed in the
-   text, delete it from the log's queue.
-6. **Verify:** no local TeX on this host — check balanced braces/environments
-   in the edited file (unclosed `\rev{`/`\del{` especially); push and let
-   Overleaf compile.
-7. **Commit** the paper repo with a message naming the anchor ids and result
-   hashes.
-
-## Guardrails
-
-- **Never cite a result whose `invariant_failures` is non-empty.** Every
-  `result.json` carries a verdict from `presley.invariants` recording whether
-  the run actually satisfies the methodology rules the paper's claims rest on —
-  a VBR degradation run, a bitrate that disagrees with the transmitted bytes, a
-  restoration that regressed. Check the field before writing a number down. If
-  a result carries no verdict at all, backfill it first
-  (`python -m presley.invariants results/`); a missing verdict reads as clean
-  and is the one state this rule cannot catch.
-- If a component's contract changed, update `ARCHITECTURE.md` in the same
-  session — CI checks it lists every module, but not that the prose is true.
-- No number without a `results/<hash>` path (or `results/_superseded/`,
-  explicitly flagged as superseded — see the log's registry before citing
-  anything old).
-- Never edit `archive/elvis-legacy.tex`; never strip `\rev{}`/`\del{}`
-  wrapping; markers are comments and never wrapped in `\rev{}`.
-- Camera-ready sweep rule: before final submission the discovery grep must
-  return only `CLAIM` lines.
+- **Paper repo:** `68e8b6bb11d0dd9e62a67aef/` (separate git repo, Overleaf
+  sync, own `CLAUDE.md`). Discovery grep:
+  `grep -n '^% *\(STATUS\|GOAL\|HOLE\|NOTE\|NEXT\|CLAIM\)(' main.tex sections/*.tex`.
+- **Citability backfill:** a result with no `invariant_failures` key predates
+  the check — run `python -m presley.invariants results/` before citing it.
+  A non-empty `invariant_failures` list makes the run uncitable regardless of
+  how good the numbers look.
+- **FG-citability rules:** cite `foreground.lpips_mean` (spatial-mode LPIPS
+  over the true UFO mask) and `foreground.dists_fg` (mask-weighted DISTS,
+  paired with `background.dists_bg`) — these are true region metrics.
+  `foreground.fid_fg_bbox` is a bbox crop, not a FG metric — cite only as a
+  corroborating signal, always by its full name. `foreground.vmaf_fg_bbox` /
+  `vmaf_neg_fg_bbox` and `foreground.fvmd` are **banned** for the FG claim
+  (bbox-crop based). Always compare on `actual_bitrate_bps`
+  (`transmitted_size_bytes` for presley_ai), never `file_size_bytes`.
+- **Quality-difference gating:** `presley-compare` (JND table in
+  `src/presley/compare.py`) decides whether a delta is real — within-JND is
+  "no perceptible difference," never a trend. Degradation comparisons must be
+  fixed-QP/CRF, never VBR (`rate_control` field).
+- **Revision tracking (presley IS a tracked revision):** reviewer-visible
+  text added/changed goes in `\rev{...}`; removals use `\del{\sout{...}}`.
+  Never silently strip existing `\rev{}`/`\del{}` wrapping. Comment markers
+  are never wrapped.
+- **Reviewer checklist:** `68e8b6bb11d0dd9e62a67aef/reviewers_comments.md` —
+  update Status/Resolution when an item advances; Done only when the text or
+  experiment is actually in place.
+- Never edit `archive/elvis-legacy.tex` (read-only reference).

@@ -5,32 +5,23 @@ tools: Bash, Read, Grep, Glob
 model: sonnet
 ---
 
-You run PRESLEY video-compression experiments and report results concisely.
-You do not have conversation history from the main session — the prompt you
-receive must already contain the exact experiment(s) to run or the
-`--filter` scope to use.
+Read `/home/itec/emanuele/.agent-rules/agents/gpu-job-runner.agent.md` and follow it.
 
-Ground rules (see the repo's CLAUDE.md and the `run-experiment` skill for
-full detail):
+## PRESLEY specifics
 
+- **Entry points:** `presley-run experiments.yaml [--filter component=X]
+  [--filter video=Y] [--dry-run]` and `presley-evaluate results/`. Always
+  `--dry-run` first when an experiment config is new or was just edited, and
+  check the printed config against what was intended before running for
+  real — GPU runs are slow (ProPainter/InstantIR can take hours) with no
+  cheap mid-run cancel.
 - Confirm the target video is present under `dataset/` before running.
-- Do a `--dry-run` first if the experiment config is new or was just edited,
-  and check the printed config against what was intended before proceeding.
-- Then run for real. These can be long — GPU in-painting/restoration jobs
-  especially, well past the 10-minute cap on a foreground `Bash` call. Launch
-  them with `run_in_background: true` and then **stop**: the harness re-invokes
-  you when the process exits and hands you its output-file path. Do not write
-  a wait loop (`until ! pgrep …; do sleep …; done`) — the harness runs your
-  command inside a shell whose own command line contains your pattern, so
-  `pgrep -f` matches the loop itself and it can never terminate. Do not
-  summarize partial or truncated stdout as if it were the final result, and do
-  not declare success off the first progress line — wait for the actual
-  completion notification.
-- After completion, read `results/<hash>/result.json` and, once evaluation
-  has appended `metrics`, report back only the relevant distilled numbers
-  (e.g. VMAF/LPIPS/DISTS mean, bitrate, timing) — never dump the full raw
-  JSON or model/library stdout into your final response.
-- If a run errors, report the actual error message and the last few
-  meaningful log lines, not a guess at what went wrong.
+- **Result location:** each experiment hashes into `results/<hash>/`; read
+  `result.json` once evaluation has appended `metrics` and report only the
+  distilled numbers — FG/BG/overall `psnr_mean`, `lpips_mean`, `dists_mean`,
+  `vmaf_mean`, `actual_bitrate_bps`, `encoding_time_seconds`,
+  `restoration_time_seconds`. Flag a non-empty `invariant_failures` on the
+  result rather than treating it as a normal metric.
 - Never delete or modify anything under `results/` beyond what the task
-  explicitly asks (e.g. removing one stale hash directory to force a re-run).
+  explicitly asks (e.g. removing one stale hash directory to force a
+  re-run) — the repo's `guard-rm.py` hook blocks a wholesale delete anyway.

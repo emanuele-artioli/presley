@@ -30,6 +30,11 @@
             "type": "command",
             "command": "python3 \"/home/itec/emanuele/.agent-rules/scripts/guard-wait-loop.py\"",
             "statusMessage": "Checking for hand-rolled wait loops..."
+          },
+          {
+            "type": "command",
+            "command": "/home/itec/emanuele/.agent-rules/scripts/guard-long-run.py --entry-point presley-run",
+            "statusMessage": "Checking long-run checkpointing..."
           }
         ]
       }
