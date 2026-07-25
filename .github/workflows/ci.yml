@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Agent rule files match CLAUDE.md
+      - name: Agent rule files match AGENTS.md
         run: |
           python3 tools/sync_agent_rules.py --check
 

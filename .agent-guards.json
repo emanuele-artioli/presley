@@ -1,0 +1,12 @@
+{
+  "_comment": "Per-project values for the host-wide shell guards in ~/.agent-rules/scripts/. Read by every agent's hook adapter; see .agent-rules/README.md.",
+  "protected": [
+    "results",
+    "dataset",
+    "cache"
+  ],
+  "detail": "experiment outputs / DAVIS symlinks / preprocessing cache",
+  "entry_points": [
+    "presley-run"
+  ]
+}
