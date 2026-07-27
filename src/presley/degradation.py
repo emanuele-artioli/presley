@@ -476,6 +476,12 @@ def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: 
     block mask, same contract as filter_frame_mean_fill. (Noise is a retired
     dead end -- worst of every degradation screened, +213...+334% bits at
     matched fixed QP -- but it keeps the selection contract uniform.)
+
+    Default selection (``sel is None``) matches blur/downsample:
+    ``round(score) > 0`` i.e. score >= 0.5. Strength still scales with
+    ``score * noise_variance``; do not threshold on ``round(score * variance)``,
+    which selected ~95% of blocks vs ~9-13% for blur at the same alpha/beta
+    (see ``NOISE_MODE_DECISION_REPORT.md``).
     """
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
@@ -485,13 +491,18 @@ def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: 
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
         sel = _pad_sel(sel, pad_y, pad_x)
     blocks = split_image_into_blocks(image, block_size)
+    # Selection must use the raw [0,1] score threshold (same as blur/downsample).
+    # Strength remains adaptive via score * noise_variance.
     # floor = 1.0, NOT noise_variance: removability scores are normalized to
-    # [0,1], so round(score*noise_variance) <= noise_variance always, and a
+    # [0,1], so score*noise_variance <= noise_variance always, and a
     # floor of noise_variance would clamp every selected block to exactly
     # noise_variance -- destroying the adaptive strength this map exists to
     # carry, and inflating the side channel from 1 bit-plane to 6. A floor of 1
     # only guarantees a selected block is actually noised.
-    noise_strengths = _apply_sel_to_map(np.round(frame_scores * noise_variance).astype(np.float32), sel, 1.0)
+    if sel is None:
+        sel = np.round(frame_scores) > 0
+    raw_strength = (frame_scores.astype(np.float32) * float(noise_variance))
+    noise_strengths = _apply_sel_to_map(raw_strength, sel, 1.0)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):

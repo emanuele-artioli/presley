@@ -193,12 +193,18 @@ versions here are pinned tightly on purpose (see pinned versions in
 `pyproject.toml`) because several forked third-party models
 (ProPainter/E2FGVI/Real-ESRGAN/InstantIR) are version-sensitive.
 
+**Exception — YOLOE masks:** `mask_source: yolo` needs `ultralytics` in the
+same `presley` env. Install only via the optional `[yolo]` extra with
+`--no-deps` control (see `pyproject.toml`) so torch/diffusers/transformers
+are not upgraded. Checkpoint: `/home/itec/emanuele/Models/YOLO/yoloe-11l-seg.pt`.
+Cache warmer: `conda run -n presley python tools/generate_yolo_masks.py`.
+
 **Host:** work runs on a shared remote Linux **GPU server, no root/sudo**.
 Never reach for `apt` or other system installs — install any extra tooling
 with conda (Miniconda is at `/usr/local/miniconda3`) into a *separate* env, not
-the pinned `presley` env. Home is `/home/itec/emanuele`. `git push` already
-works via a stored credential helper, so GitHub PRs/connectors/`gh` are not
-needed for this solo workflow.
+the pinned `presley` env (YOLO above is the documented exception). Home is
+`/home/itec/emanuele`. `git push` already works via a stored credential
+helper, so GitHub PRs/connectors/`gh` are not needed for this solo workflow.
 
 ## Testing — the suite is a scientific failsafe, not a compile check
 
@@ -471,5 +477,22 @@ from clobbering each other's changes.
 **How to apply:** worth it for genuinely multi-part, multi-file tasks where
 pieces are largely independent. Skip it for small or sequential tasks — one
 file, one clear order of steps — where waves are pure coordination overhead.
+If you skip, say so explicitly in the plan (“skipped: sequential/small”).
+
+### Knowledge loop — crossed axes
+
+Platforms and projects form a **grid**, not a stack: every platform can work
+on every project. Knowledge can surface on either axis independently into the
+central queue under `.agent-rules/candidates/` (write only when there is
+something to surface):
+
+- **Project axis** → `candidates/open/project/` — other projects may want this
+- **Platform axis** → `candidates/open/platform/` — other platforms may need this
+
+Use the `end-of-session` skill to close out (consider both axes, commit on
+invoke, ask before push). Use `evaluate-candidates` from a coding-agent-config
+session to apply or discard. Live platform configs and verification claims
+belong to that platform — cross-writes become `needs_verification` tickets
+under `candidates/pending-verification/`.
 
 <!-- host-rules:end -->

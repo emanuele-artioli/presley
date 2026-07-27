@@ -398,9 +398,8 @@ DEFAULT_YOLO_MODEL_PATH = "/home/itec/emanuele/Models/YOLO/yoloe-11l-seg.pt"
 # image-caption/grounding data (see the Ultralytics YOLOE docs' prompt
 # examples, which are all concrete nouns), so an abstract prompt sits far
 # from the training distribution and under-fires. This short list is a
-# judgment call, not a tuned result -- it has not been validated against
-# real detections (see the D3 report caveat: `ultralytics` isn't installed in
-# any environment on this host, so this path is untested end-to-end).
+# judgment call, not a tuned result -- validate detections before citing
+# mask_source:yolo paper claims.
 DEFAULT_YOLO_PROMPTS = ["person", "animal", "vehicle", "object"]
 
 
@@ -424,13 +423,11 @@ def get_yolo_masks(video_name: str, width: int, height: int, block_size: int,
     (thresholded at `conf`), matching UFO/GT's single "is there a foreground
     object here" semantic rather than per-instance segmentation.
 
-    Requires the `ultralytics` package (YOLOE support needs a version that
-    ships it, e.g. >=8.3), which is NOT installed in the `presley` conda env
-    on this host and must not be pip-installed into it (pinned research
-    env -- see CLAUDE.md's Environment section); install it into a separate
-    conda env or venv, the same pattern already used for `nrmetrics`
-    (`~/.venvs/nrmetrics`). This function has not been exercised end-to-end
-    on this host for exactly that reason -- see the D3 report caveat.
+    Requires `ultralytics` (YOLOE, e.g. >=8.3) in the `presley` conda env.
+    Install via the optional extra with dependency control so pip cannot
+    upgrade the pinned torch/diffusers stack -- see `pyproject.toml` `[yolo]`
+    and AGENTS.md Environment. Once `cache/<video>_<W>x<H>/yolo_masks/` is
+    populated, subsequent calls only read PNGs (no ultralytics import).
     """
     key_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}")
     yolo_masks_dir = os.path.join(key_dir, "yolo_masks")

@@ -37,6 +37,24 @@ def test_missing_metrics_are_reported():
     assert check_result(good_result(metrics={}))
 
 
+def test_sticky_pre_metrics_failure_clears_once_metrics_exist():
+    """Runner writes invariant_failures before evaluate_all fills metrics.
+
+    A result that was checked too early must become citable after metrics land
+    (the evaluation path re-runs check_result; this asserts the contract).
+    """
+    premature = good_result()
+    del premature["metrics"]
+    premature["invariant_failures"] = check_result(premature)
+    assert premature["invariant_failures"], "expected a metrics-missing failure"
+    assert any("metrics" in f for f in premature["invariant_failures"])
+
+    healed = dict(premature)
+    healed["metrics"] = good_result()["metrics"]
+    healed["invariant_failures"] = check_result(healed)
+    assert healed["invariant_failures"] == []
+
+
 def test_a_null_psnr_is_a_failure():
     """A null metric is a failed measurement wearing the shape of a result."""
     result = good_result()

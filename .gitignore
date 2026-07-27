@@ -170,7 +170,11 @@ experiment*/
 !.claude/skills/test-design/
 Real-ESRGAN/
 *.pt
+*.pth
 *.bin
+# Ultralytics / MobileCLIP side-downloads in the repo root
+mobileclip_blt.ts
+weights/
 *search_results*/
 68e8b6bb11d0dd9e62a67aef/
 dataset/

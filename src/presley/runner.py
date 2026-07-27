@@ -256,6 +256,15 @@ def main():
         # We lazily import evaluation
         from presley.components.evaluation import evaluate_all
         evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
-        
+        # Heal sticky pre-metrics invariant_failures on this tree (evaluate also
+        # refreshes per-result; force backfill covers any path that skipped).
+        from presley.invariants import backfill
+        offenders = backfill(args.results_dir, force=True)
+        if offenders:
+            print(f"{len(offenders)} result(s) still fail invariants after eval:",
+                  file=sys.stderr)
+            for exp_hash, fails in list(offenders.items())[:10]:
+                print(f"  {exp_hash}: {fails}", file=sys.stderr)
+
 if __name__ == '__main__':
     main()

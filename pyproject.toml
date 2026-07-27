@@ -55,6 +55,18 @@ test = [
   "pytest>=8,<9",
   "pytest-cov>=5,<7",
 ]
+# YOLOE open-vocab masks (`mask_source: yolo`). Install into the `presley`
+# conda env with dependency control — never let pip upgrade the pinned
+# torch/torchvision/diffusers/transformers stack:
+#   pip install 'ultralytics==8.4.104' --no-deps
+#   pip install ultralytics-thop polars 'nvidia-ml-py>=12'
+# See get_yolo_masks / AGENTS.md Environment.
+yolo = [
+  "ultralytics==8.4.104",
+  "ultralytics-thop",
+  "polars",
+  "nvidia-ml-py>=12",
+]
 
 [project.scripts]
 presley-run = "presley.runner:main"

@@ -37,6 +37,18 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     if "metrics" in data:
         if fast or not data["metrics"].get("fast_only"):
             print(f"Metrics already computed for {experiment_hash}")
+            # Still refresh citability: runner writes invariant_failures before
+            # metrics exist, which leaves a sticky "metrics block is missing"
+            # until something re-checks after evaluation.
+            from presley.invariants import check_result
+            failures = check_result(data)
+            if data.get("invariant_failures") != failures:
+                data["invariant_failures"] = failures
+                tmp_path = result_path + ".tmp"
+                with open(tmp_path, 'w') as f:
+                    json.dump(data, f, indent=2)
+                os.replace(tmp_path, result_path)
+                print(f"Refreshed invariant_failures for {experiment_hash}: {failures}")
             return
         print(f"Upgrading fast-only metrics to full for {experiment_hash}")
         
@@ -202,6 +214,11 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         }
 
     data["metrics"] = metrics
+    # Citability is checked again here: run_single_experiment writes
+    # invariant_failures before metrics exist, so a metrics-missing failure
+    # must be cleared once evaluation has populated the block.
+    from presley.invariants import check_result
+    data["invariant_failures"] = check_result(data)
     # Atomic write: a crash mid-rewrite would otherwise truncate result.json and
     # force a full re-run of a potentially hours-long experiment.
     tmp_path = result_path + ".tmp"
