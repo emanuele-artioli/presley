@@ -546,6 +546,36 @@ def _instantiate_bsrgan_upsampler(model_name: str, device: torch.device, *, tile
         if existing is None:
             raise RuntimeError(f"Unable to locate BSRGAN weights for model '{model_name}'.")
     resolved_model_path: str = str(existing)
+    # BSRGAN official checkpoints (KAIR release) are bare state dicts with the
+    # old KAIR key naming scheme.  RealESRGANer needs:
+    #   1. a {'params': <state_dict>} wrapper (it indexes by 'params'/'params_ema')
+    #   2. basicsr RRDBNet key names: body.*, conv_body, conv_up*, conv_hr
+    # The KAIR naming uses: RRDB_trunk.*.RDB*.conv*, trunk_conv, upconv*, HRconv.
+    # Build a normalised checkpoint alongside the original on first use.
+    loadnet = torch.load(resolved_model_path, map_location='cpu')
+    needs_wrap = not isinstance(loadnet, dict) or ('params' not in loadnet and 'params_ema' not in loadnet)
+    if needs_wrap:
+        raw_sd = loadnet
+    else:
+        raw_sd = loadnet.get('params_ema') or loadnet.get('params')
+    # Detect KAIR naming by presence of 'RRDB_trunk' or 'trunk_conv' keys.
+    first_keys = list(raw_sd.keys())[:5]
+    needs_remap = any('RRDB_trunk' in k or k == 'trunk_conv' for k in first_keys)
+    if needs_remap:
+        import re as _re
+        def _remap(k: str) -> str:
+            # RRDB_trunk.i.RDBj.convk  ->  body.i.rdbj.convk
+            k = _re.sub(r'^RRDB_trunk\.(\d+)\.RDB(\d+)\.(conv\d+)',
+                        lambda m: f'body.{m.group(1)}.rdb{m.group(2)}.{m.group(3)}', k)
+            k = k.replace('trunk_conv.', 'conv_body.')
+            k = _re.sub(r'^upconv(\d+)\.', lambda m: f'conv_up{m.group(1)}.', k)
+            k = k.replace('HRconv.', 'conv_hr.')
+            return k
+        raw_sd = {_remap(k): v for k, v in raw_sd.items()}
+    wrapped_path = Path(resolved_model_path).with_suffix('._wrapped.pth')
+    if needs_wrap or needs_remap:
+        torch.save({'params': raw_sd}, wrapped_path)
+        resolved_model_path = str(wrapped_path)
     half_precision = device.type == 'cuda' and (not fp32)
     upsampler = RealESRGANer(scale=netscale, model_path=resolved_model_path, dni_weight=None, model=model, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, half=half_precision, device=device)
     return upsampler
@@ -877,7 +907,7 @@ def restore_blur_opencv_unsharp_mask(blurred_image: np.ndarray, blur_maps: np.nd
                 restored_blocks[i, j] = block
     restored_image = combine_blocks_into_image(restored_blocks)
     return _crop_after_restoration(restored_image, pad_y, pad_x)
-def _instantir_chunk_worker(frames_dir: str, output_frames_dir: str, frame_names: Sequence[str], blur_maps: np.ndarray, block_size: int, weights_dir: str, cfg: float, creative_start: float, preview_start: float, batch_size: int, device_str: str, seed: Optional[int], chunk_index: int, total_chunks: int, global_start: int, global_end: int) -> None:
+def _instantir_chunk_worker(frames_dir: str, output_frames_dir: str, frame_names: Sequence[str], blur_maps: np.ndarray, block_size: int, weights_dir: str, cfg: float, creative_start: float, preview_start: float, batch_size: int, device_str: str, seed: Optional[int], chunk_index: int, total_chunks: int, global_start: int, global_end: int, num_inference_steps: int = 1) -> None:
     """Worker entry point that restores a contiguous frame chunk on a single device."""
     device = torch.device(device_str)
     if device.type == 'cuda':
@@ -939,7 +969,7 @@ def _instantir_chunk_worker(frames_dir: str, output_frames_dir: str, frame_names
                         frame_rgb = cv2.cvtColor(chunk_frames[local_idx], cv2.COLOR_BGR2RGB)
                         pil_batch.append(Image.fromarray(frame_rgb))
                     with _silence_console_output():
-                        restored_pils = restore_images_batch(runtime, pil_batch, num_inference_steps=1, cfg=cfg, preview_start=preview_start, creative_start=creative_start)
+                        restored_pils = restore_images_batch(runtime, pil_batch, num_inference_steps=num_inference_steps, cfg=cfg, preview_start=preview_start, creative_start=creative_start)
                     for (local_idx, restored_pil) in zip(batch_indices, restored_pils):
                         restored_bgr = cv2.cvtColor(np.array(restored_pil), cv2.COLOR_RGB2BGR)
                         restored_blocks = split_image_into_blocks(restored_bgr, block_size)
@@ -965,11 +995,19 @@ def _instantir_chunk_worker(frames_dir: str, output_frames_dir: str, frame_names
             except Exception:
                 pass
         gc.collect()
-def restore_with_instantir_adaptive(input_frames_dir: str, output_frames_dir: str, blur_maps: np.ndarray, block_size: int, cfg: float=7.0, creative_start: float=1.0, preview_start: float=0.0, seed: Optional[int]=42, devices: Optional[Sequence[Union[int, str, torch.device]]]=None, batch_size: int=4, parallel_chunk_length: Optional[int]=None) -> None:
-    """Apply adaptive InstantIR blind restoration with simple per-device chunking."""
+def restore_with_instantir_adaptive(input_frames_dir: str, output_frames_dir: str, blur_maps: np.ndarray, block_size: int, cfg: float=7.0, creative_start: float=1.0, preview_start: float=0.0, seed: Optional[int]=42, devices: Optional[Sequence[Union[int, str, torch.device]]]=None, batch_size: int=4, parallel_chunk_length: Optional[int]=None, num_inference_steps: int=1) -> None:
+    """Apply adaptive InstantIR blind restoration with simple per-device chunking.
+
+    Default ``num_inference_steps=1`` preserves the historical as-run CLAIM
+    hashes (which under-sample InstantIR). Corrected Goal-2 smokes should pass
+    20–30 via ``restorer_params.num_inference_steps`` — see
+    docs/EXPERIMENTS_QUEUED.md InstantIR misuse audit.
+    """
     _ = parallel_chunk_length
     if batch_size < 1:
         raise ValueError('`batch_size` must be at least 1.')
+    if num_inference_steps < 1:
+        raise ValueError('`num_inference_steps` must be at least 1.')
     _safe_print('  Preparing InstantIR workers...')
     weights_dir = Path('./weights/InstantIR/models').expanduser()
     weights_dir.mkdir(parents=True, exist_ok=True)
@@ -1029,13 +1067,13 @@ def restore_with_instantir_adaptive(input_frames_dir: str, output_frames_dir: st
     if total_chunks == 1:
         job = jobs[0]
         worker_seed = seed
-        _instantir_chunk_worker(input_frames_dir, output_frames_dir, job['frames'], job['blur'], block_size, str(weights_dir), cfg, creative_start, preview_start, batch_size, job['device_str'], worker_seed, job['chunk_index'], total_chunks, job['start'], job['end'])
+        _instantir_chunk_worker(input_frames_dir, output_frames_dir, job['frames'], job['blur'], block_size, str(weights_dir), cfg, creative_start, preview_start, batch_size, job['device_str'], worker_seed, job['chunk_index'], total_chunks, job['start'], job['end'], num_inference_steps)
     else:
         ctx = multiprocessing.get_context('spawn')
         processes: List[multiprocessing.Process] = []
         for job in jobs:
             worker_seed = seed + job['chunk_index'] if seed is not None else None
-            proc = ctx.Process(target=_instantir_chunk_worker, args=(input_frames_dir, output_frames_dir, job['frames'], job['blur'], block_size, str(weights_dir), cfg, creative_start, preview_start, batch_size, job['device_str'], worker_seed, job['chunk_index'], total_chunks, job['start'], job['end']))
+            proc = ctx.Process(target=_instantir_chunk_worker, args=(input_frames_dir, output_frames_dir, job['frames'], job['blur'], block_size, str(weights_dir), cfg, creative_start, preview_start, batch_size, job['device_str'], worker_seed, job['chunk_index'], total_chunks, job['start'], job['end'], num_inference_steps))
             proc.start()
             processes.append(proc)
         errors: List[int] = []
