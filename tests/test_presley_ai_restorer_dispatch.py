@@ -133,3 +133,25 @@ def test_stream_diffvsr_hole_degradations_use_binary_rounds():
     raw = np.array([[0, 5, 0, 9]])
     clamped = _restorer_strength_map(raw, "stream_diffvsr", "freeze", {"rounds": 2})
     np.testing.assert_array_equal(clamped, [[0, 2, 0, 2]])
+
+
+def test_dc_vsr_is_registered_alongside_realesrgan():
+    """Q8 diffusion VSR quality arm — same allowed degradations as SR GANs."""
+    assert "dc_vsr" in RESTORER_DEGRADATIONS
+    assert RESTORER_DEGRADATIONS["dc_vsr"] == ("downsample",) + INPAINT_DEGRADATIONS
+    assert RESTORER_DEGRADATIONS["dc_vsr"] == RESTORER_DEGRADATIONS["realesrgan"]
+
+
+def test_dc_vsr_rejects_blur():
+    assert "blur" not in RESTORER_DEGRADATIONS["dc_vsr"]
+    assert "noise" not in RESTORER_DEGRADATIONS["dc_vsr"]
+
+
+def test_dc_vsr_strength_map_clamped_like_realesrgan():
+    raw = np.array([[0, 1, 5, 10]])
+    clamped = _restorer_strength_map(raw, "dc_vsr", "downsample", {})
+    assert clamped.max() <= _STRENGTH_CLAMP["dc_vsr"]
+    np.testing.assert_array_equal(
+        clamped,
+        _restorer_strength_map(raw, "realesrgan", "downsample", {}),
+    )

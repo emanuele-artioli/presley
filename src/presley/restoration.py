@@ -1669,3 +1669,74 @@ def restore_with_nafnet_adaptive(
         torch.cuda.synchronize(device)
         torch.cuda.empty_cache()
     _safe_print(f'  NAFNet restoration complete. Frames saved to {output_frames_dir}')
+
+
+# ---------------------------------------------------------------------------
+# DC-VSR (Han et al., SIGGRAPH 2025 / arXiv 2502.03502) — Q8 quality arm.
+#
+# HF `Janghyeok/dc-vsr` (inspected 2026-07-28) ships ONLY the SVD-finetuned
+# UNet EMA weights (see ``presley.dc_vsr``). No README, no pipeline, no VAE,
+# no scheduler, and no public SAP/TAP/DSSAG sampling code. This wrapper
+# keeps the same directory I/O contract as Real-ESRGAN / Real-HAT-GAN and
+# raises via ``require_dc_vsr_inference_ready`` until inference lands.
+#
+# Weights: `hf download Janghyeok/dc-vsr --local-dir weights/dc-vsr`
+# (prefer a separate conda env for any future diffusers 0.29.2 pin — do not
+# upgrade the pinned `presley` env).
+#
+# fp16 policy: banned (fp32=True required), mirroring Real-HAT Softmax NaNs.
+# Re-evaluate on the 2× A6000 host only after a real forward pass exists.
+# ---------------------------------------------------------------------------
+
+
+def restore_downsampled_with_dc_vsr(
+    input_frames_dir: str,
+    output_frames_dir: str,
+    downscale_maps: np.ndarray,
+    block_size: int,
+    *,
+    weights_dir: Optional[Union[str, Path]] = None,
+    fp32: bool = True,
+    tile: int = 0,
+    num_frames: int = 14,
+    devices: Optional[Sequence[Union[int, str, torch.device]]] = None,
+) -> None:
+    """Restore downsample-degraded frames with DC-VSR (Q8 quality arm).
+
+    Same directory I/O contract as ``restore_downsampled_with_realesrgan`` /
+    ``restore_downsampled_with_real_hat_gan``: read PNGs from
+    ``input_frames_dir``, write restored PNGs to ``output_frames_dir``,
+    strength map = log2 downscale factor (clamped in ``presley_ai``).
+
+    **Honest stub (2026-07-28):** validates the frame/map contract and the
+    fp32 / weights gates, then raises ``RuntimeError`` because HF
+    ``Janghyeok/dc-vsr`` has no public inference entrypoint (UNet weights
+    only). ``tile`` / ``num_frames`` are accepted for forward-compat with the
+    paper's 512×512×14 tiled recipe but are unused until inference lands.
+    """
+    from presley.dc_vsr import require_dc_vsr_inference_ready
+
+    del devices  # reserved for multi-GPU tiling once inference exists
+    frame_paths = get_frame_paths(input_frames_dir)
+    if not frame_paths:
+        raise ValueError(f'No frames found in {input_frames_dir}')
+    downscale_maps = np.asarray(downscale_maps)
+    num = len(frame_paths)
+    if downscale_maps.shape[0] != num:
+        raise ValueError(
+            f'Downscale maps length ({downscale_maps.shape[0]}) does not match '
+            f'frame count ({num}).'
+        )
+    if block_size <= 0:
+        raise ValueError(f'block_size must be positive, got {block_size}')
+    if int(num_frames) <= 0:
+        raise ValueError(f'num_frames must be positive, got {num_frames}')
+    if tile is not None and int(tile) < 0:
+        raise ValueError(f'tile must be >= 0 (0 = full-frame), got {tile}')
+
+    _safe_print(
+        f'  DC-VSR: validating {num} frames | block_size={block_size} | '
+        f'num_frames={int(num_frames)} | tile={tile or "full"} | fp32'
+    )
+    # Never clears output_frames_dir: we fail closed before writing anything.
+    require_dc_vsr_inference_ready(fp32=fp32, weights_dir=weights_dir)

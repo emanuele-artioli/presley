@@ -23,9 +23,8 @@ commission VBR for these cells.
 | Blur diffusion (current) | **InstantIR** | Wired; **kill stands** | Corrected settings still lose to unsharp. |
 | Blur non-diffusion gauge | **NAFNet** | Wired (`restorer: nafnet`); weights on disk | CNN deblur. **fp32 only**. Q5: ties unsharp within JND. |
 | Second blur diffusion (conditional) | **DiffBIR** | Not integrated | Only with a new mechanism argument. |
-| Downsample diffusion (speed) | **Stream-DiffVSR** | Wired on `feat/q7-stream-diffvsr` (`restorer: stream_diffvsr`); Wave 2 GPU pending | Report §II; HF `Jamichsu/Stream-DiffVSR`. Isolated vendor env (do not pip into `presley`). Try fp16; reject on Softmax/LN NaNs. |
-| Downsample diffusion (quality) | **DC-VSR** | Not integrated | Report §II; HF `Janghyeok/dc-vsr`. Catalog. |
-| Cheap blur control | **unsharp** | Wired; already beats InstantIR as-run | Keep as baseline for blur Goal-2. |
+| Downsample diffusion (speed) | **Stream-DiffVSR** | Wired (`restorer: stream_diffvsr`); Wave 2 GPU pending vendor env | Report §II; HF `Jamichsu/Stream-DiffVSR`. Isolated vendor env (do not pip into `presley`). Try fp16; reject on Softmax/LN NaNs. |
+| Downsample diffusion (quality) | **DC-VSR** | Wired (`restorer: dc_vsr`); **inference blocked** | HF `Janghyeok/dc-vsr` is UNet-EMA weights only (no pipeline / SAP/TAP/DSSAG code). Stub raises `RuntimeError`. **fp32 only**. Weights: `hf download Janghyeok/dc-vsr --local-dir weights/dc-vsr` (isolate future deps — do not upgrade pinned `presley` env). || Cheap blur control | **unsharp** | Wired; already beats InstantIR as-run | Keep as baseline for blur Goal-2. |
 
 **Goal-1 transport fact (do not retire blur):** after the S1 budget fix,
 blur frees bits under fixed QP similarly to downsample (RESEARCH_LOG: bear
@@ -33,7 +32,7 @@ blur qp32 −26.9%, qp37 −15.4%; camel blur qp32 −10.0%; boundary camel qp37
 +8.4%). Noise costs bits. InstantIR Goal-2 failure ≠ blur method failure.
 
 ```text
-downsample → Real-ESRGAN (keep) | BSRGAN (few) | Real-HAT-GAN (done, twin) | Stream-DiffVSR (wired, Wave 2 GPU) | DC-VSR (catalog)
+downsample → Real-ESRGAN (keep) | BSRGAN (few) | Real-HAT-GAN (done, twin) | Stream-DiffVSR (wired, Wave 2 GPU) | DC-VSR (wired; inference blocked)
 blur       → InstantIR (kill stands) | NAFNet (gauge, ties unsharp) | DiffBIR (deferred) | unsharp (control)
 ```
 
@@ -49,10 +48,10 @@ blur       → InstantIR (kill stands) | NAFNet (gauge, ties unsharp) | DiffBIR 
 | **Q4** | Real-HAT-GAN vs Real-ESRGAN | **DONE** | Recent SR GAN |
 | **Q5** | NAFNet vs InstantIR/unsharp | **DONE** | Blur method vs model |
 | **Q6** | DiffBIR (conditional) | Only with new mechanism argument | Second diffusion deblur |
-| **Q7** | Stream-DiffVSR vs Real-ESRGAN | Wired on `feat/q7-stream-diffvsr` — GPU cells wait for Wave 2 | Report §II speed diffusion SR |
-| **Q8** | DC-VSR quality arm | downsample + `dc_vsr` once integrated | Report §II quality ceiling |
+| **Q7** | Stream-DiffVSR vs Real-ESRGAN | Wired — GPU cells wait for vendor env | Report §II speed diffusion SR |
+| **Q8** | DC-VSR quality arm | Wired stub — GPU blocked until upstream inference | Report §II quality ceiling |
 | **Q9** | Noise threshold rematch | yaml ready (merged) — Wave 2 GPU open | Cleaner dead-end number |
-| **Q10** | Mask dilate/erode/jitter | wired (merged) — yaml cells Wave 2 GPU open (`HOLE(sec:evaluation)`) | Referee mask half |
+| **Q10** | Mask dilate/erode/jitter | wired (merged) — Wave 2 GPU open (`HOLE(sec:evaluation)`) | Referee mask half |
 
 ### Write-up status (2026-07-28)
 
