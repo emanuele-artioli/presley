@@ -17,14 +17,14 @@ Q10 mask dilate/erode, and Q6 DiffBIR only with a new mechanism argument.
 
 ### Code repo `presley/`
 
-- `main` — host-rule sync (`AGENTS.md`, cursor-harness) + queue/HANDOFF docs.
+- `main` @ `981e277` (pushed) — host-rule sync + queue/HANDOFF docs.
 - Restorers: NAFNet + Real-HAT-GAN + BSRGAN + Real-ESRGAN + InstantIR + unsharp.
 - **Hard rules:** NAFNet and Real-HAT-GAN reject `fp32=False`.
 
 ### Paper repo `68e8b6bb11d0dd9e62a67aef/`
 
-- D6 tables + CLAIM markers in `sections/evaluation.tex`; RESEARCH_LOG and
-  reviewers_comments updated. Overleaf tip after push (this session).
+- Overleaf `200876f` — D6 tables + CLAIM markers in `sections/evaluation.tex`;
+  RESEARCH_LOG and reviewers_comments updated.
 
 ### Running now
 
@@ -159,3 +159,4 @@ Read docs/EXPERIMENTS_QUEUED.md. Filter tip: codec=svtav1. fp32 for NAFNet/HAT.
 | `src/presley/degradation.py` `filter_frame_noise` | Q9 |
 | Paper `HOLE(sec:evaluation)` | Q10 |
 | Real-ESRGAN hashes `e2cb6bed…` / `c29c94b5…` | Q7/Q8 comparators |
+| Paper Overleaf `200876f` / code `981e277` | Pushed landings |
