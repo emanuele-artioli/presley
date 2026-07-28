@@ -1084,3 +1084,166 @@ def restore_with_instantir_adaptive(input_frames_dir: str, output_frames_dir: st
         if errors:
             raise RuntimeError(f'InstantIR worker(s) exited with non-zero code(s): {errors}')
     _safe_print(f'  Adaptive InstantIR restoration complete. Frames saved to {output_frames_dir}')
+
+
+# ---------------------------------------------------------------------------
+# NAFNet (Chen et al. 2022) — CNN deblur gauge for blur transport (Q5).
+# Single full-frame forward; FG passthrough is handled by composite_passthrough
+# in presley_ai. InstantIR-shaped directory I/O.
+# ---------------------------------------------------------------------------
+_NAFNET_CACHE: Dict[str, Any] = {}
+_NAFNET_LOCK = threading.Lock()
+
+_DEFAULT_NAFNET_WEIGHTS = {
+    64: Path('weights/NAFNet-GoPro-width64.pth'),
+    32: Path('weights/NAFNet-GoPro-width32.pth'),
+}
+
+
+def _resolve_nafnet_weights(width: int, weights_path: Optional[Union[str, Path]] = None) -> Path:
+    if weights_path is not None:
+        path = Path(weights_path).expanduser()
+    else:
+        try:
+            path = _DEFAULT_NAFNET_WEIGHTS[width]
+        except KeyError as exc:
+            raise ValueError(f"No default NAFNet weights for width={width}; pass weights_path.") from exc
+        path = path.expanduser()
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"NAFNet weights not found at {path}. Download with e.g. "
+            f"`hf download mikestealth/nafnet-models NAFNet-GoPro-width{width}.pth --local-dir weights/`"
+        )
+    return path
+
+
+def get_nafnet(
+    device: torch.device,
+    *,
+    width: int = 64,
+    weights_path: Optional[Union[str, Path]] = None,
+    fp32: bool = True,
+    local: bool = True,
+) -> torch.nn.Module:
+    """Load (and cache) a GoPro NAFNet deblur model on ``device``.
+
+    Defaults match official megvii GoPro *test* inference: float32 + Local
+    (TLSC) convert. ``fp32=False`` (fp16) is rejected — LayerNorm2d / SCA
+    overflow and produce rainbow garbage on this arch (verified 2026-07-28).
+    """
+    from presley.nafnet_arch import build_gopro_nafnet
+
+    if not fp32:
+        raise ValueError(
+            "NAFNet must run in float32 (fp32=True). Half precision overflows "
+            "LayerNorm2d/SCA and destroys the frame; see tests/test_restoration_nafnet.py."
+        )
+    path = _resolve_nafnet_weights(width, weights_path)
+    key = f'nafnet_{device}_{width}_{path.resolve()}_fp32_local{local}'
+    with _NAFNET_LOCK:
+        model = _NAFNET_CACHE.get(key)
+        if model is None:
+            tag = 'Local' if local else 'global'
+            _safe_print(f'    -> Warming NAFNet GoPro-width{width} ({tag}, fp32) on {device}...')
+            ckpt = torch.load(str(path), map_location='cpu')
+            if not isinstance(ckpt, dict) or 'params' not in ckpt:
+                raise RuntimeError(f"NAFNet checkpoint at {path} must be a dict with a 'params' key.")
+            model = build_gopro_nafnet(width, local=local)
+            model.load_state_dict(ckpt['params'], strict=True)
+            model.eval()
+            model.to(device)
+            _NAFNET_CACHE[key] = model
+    return model
+
+
+def _nafnet_deblur_bgr(
+    model: torch.nn.Module,
+    frame_bgr: np.ndarray,
+    device: torch.device,
+    *,
+    fp32: bool = True,
+) -> np.ndarray:
+    """Run one NAFNet forward on a BGR uint8 frame; return same-shape BGR uint8.
+
+    Always float32 activations — see ``get_nafnet`` for why fp16 is banned.
+    """
+    if not fp32:
+        raise ValueError('NAFNet deblur requires fp32=True (fp16 overflows).')
+    if frame_bgr.ndim != 3 or frame_bgr.shape[2] != 3:
+        raise ValueError(f'NAFNet expects HxWx3 BGR, got shape {frame_bgr.shape}')
+    rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+    tensor = torch.from_numpy(rgb.transpose(2, 0, 1)).unsqueeze(0).to(device)
+    with torch.no_grad():
+        out = model(tensor)
+    out = out.float().clamp(0.0, 1.0).squeeze(0).cpu().numpy().transpose(1, 2, 0)
+    out_u8 = (out * 255.0 + 0.5).astype(np.uint8)
+    return cv2.cvtColor(out_u8, cv2.COLOR_RGB2BGR)
+
+
+def restore_with_nafnet_adaptive(
+    input_frames_dir: str,
+    output_frames_dir: str,
+    blur_maps: np.ndarray,
+    block_size: int,
+    *,
+    width: int = 64,
+    weights_path: Optional[Union[str, Path]] = None,
+    fp32: bool = True,
+    local: bool = True,
+    devices: Optional[Sequence[Union[int, str, torch.device]]] = None,
+) -> None:
+    """Single-pass NAFNet deblur over a frames directory (InstantIR-shaped I/O).
+
+    Blur transport is already one Gaussian, so unlike InstantIR this does **one
+    full-frame forward per frame** (no multi-round strength loop). Untouched
+    blocks (blur_map == 0) are pasted back from the transmitted frame — same
+    contract as InstantIR/unsharp — and FG is further protected by
+    ``composite_passthrough`` in ``presley_ai``.
+
+    Defaults: float32 + Local convert (official GoPro test path). fp16 is
+    rejected — it was the cause of the Q5 rainbow-artifact crater.
+    """
+    blur_maps = np.asarray(blur_maps)
+    frame_paths = get_frame_paths(input_frames_dir)
+    if not frame_paths:
+        raise ValueError(f'No frames found in {input_frames_dir}')
+    num_frames = len(frame_paths)
+    if blur_maps.shape[0] != num_frames:
+        raise ValueError(
+            f"Number of frames ({num_frames}) doesn't match blur_maps shape ({blur_maps.shape[0]})"
+        )
+    clear_directory(output_frames_dir)
+    os.makedirs(output_frames_dir, exist_ok=True)
+    if np.max(blur_maps) == 0:
+        _safe_print('  No blurring detected, copying frames through (NAFNet skip).')
+        for path in frame_paths:
+            frame = load_frame(str(path))
+            save_frame(frame, os.path.join(output_frames_dir, path.name))
+        return
+
+    resolved_devices = _resolve_device_list(devices, prefer_cuda=True, allow_cpu_fallback=True)
+    device = resolved_devices[0]
+    tag = 'Local' if local else 'global'
+    _safe_print(f'  Using NAFNet GoPro-width{width} ({tag}, fp32) on {device} | single-pass full-frame')
+    _safe_print(f'  Total frames: {num_frames}')
+    model = get_nafnet(device, width=width, weights_path=weights_path, fp32=fp32, local=local)
+    for (idx, path) in enumerate(frame_paths):
+        frame = load_frame(str(path))
+        if frame is None:
+            raise RuntimeError(f'Failed to load frame for NAFNet restoration: {path}')
+        frame_pad, maps_pad, pad_y, pad_x = _pad_for_restoration(frame, blur_maps[idx], block_size)
+        restored_pad = _nafnet_deblur_bgr(model, frame_pad, device, fp32=True)
+        # Paste back blocks the blur transport never touched (InstantIR/unsharp contract).
+        orig_blocks = split_image_into_blocks(frame_pad, block_size)
+        restored_blocks = split_image_into_blocks(restored_pad, block_size)
+        untouched = maps_pad <= 0
+        if np.any(untouched):
+            restored_blocks[untouched] = orig_blocks[untouched]
+        restored = _crop_after_restoration(combine_blocks_into_image(restored_blocks), pad_y, pad_x)
+        save_frame(restored, os.path.join(output_frames_dir, path.name))
+        if (idx + 1) % 10 == 0 or (idx + 1) == num_frames:
+            _safe_print(f'    -> NAFNet frames {idx + 1}/{num_frames}')
+    if device.type == 'cuda':
+        torch.cuda.synchronize(device)
+        torch.cuda.empty_cache()
+    _safe_print(f'  NAFNet restoration complete. Frames saved to {output_frames_dir}')

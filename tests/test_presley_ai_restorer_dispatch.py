@@ -58,3 +58,28 @@ def test_bsrgan_hole_degradations_use_the_binary_rounds_recipe():
     raw = np.array([[0, 5, 0, 9]])  # freeze/mean_fill maps are binary in practice
     clamped = _restorer_strength_map(raw, "bsrgan", "freeze", {"rounds": 2})
     np.testing.assert_array_equal(clamped, [[0, 2, 0, 2]])
+
+
+def test_nafnet_is_registered_alongside_instantir():
+    """CNN deblur gauge for blur transport (Q5) — same allowed degradations
+    as InstantIR (blur + hole fills)."""
+    assert "nafnet" in RESTORER_DEGRADATIONS
+    assert RESTORER_DEGRADATIONS["nafnet"] == ("blur",) + INPAINT_DEGRADATIONS
+    assert RESTORER_DEGRADATIONS["nafnet"] == RESTORER_DEGRADATIONS["instantir"]
+
+
+def test_nafnet_rejects_downsample():
+    """NAFNet is a deblur network; its strength map is blur rounds, not
+    log2 downscale factors."""
+    assert "downsample" not in RESTORER_DEGRADATIONS["nafnet"]
+    assert "noise" not in RESTORER_DEGRADATIONS["nafnet"]
+
+
+def test_nafnet_strength_map_clamped_like_instantir():
+    raw = np.array([[0, 1, 5, 10]])
+    clamped = _restorer_strength_map(raw, "nafnet", "blur", {})
+    assert clamped.max() <= _STRENGTH_CLAMP["nafnet"]
+    np.testing.assert_array_equal(
+        clamped,
+        _restorer_strength_map(raw, "instantir", "blur", {}),
+    )

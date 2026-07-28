@@ -58,6 +58,9 @@ RESTORER_DEGRADATIONS = {
     'bsrgan':     ('downsample',) + INPAINT_DEGRADATIONS,
     # map = number of restoration rounds
     'instantir':  ('blur',) + INPAINT_DEGRADATIONS,
+    # CNN deblur gauge (Chen et al. 2022); same blur (+ hole) set as InstantIR.
+    # Single full-frame forward — see restore_with_nafnet_adaptive.
+    'nafnet':     ('blur',) + INPAINT_DEGRADATIONS,
     # map = sharpening rounds; downsample is also a low-pass, so unsharp is a
     # meaningful no-ML benchmark for it too.
     'unsharp':    ('blur', 'downsample') + INPAINT_DEGRADATIONS,
@@ -70,7 +73,7 @@ RESTORER_DEGRADATIONS = {
 # degradation, not a benchmark. `unsharp` is the correct no-ML control.
 
 # Per-restorer clamps for the converted strength map: (max_value, dtype).
-_STRENGTH_CLAMP = {'realesrgan': 3, 'bsrgan': 3, 'instantir': 8, 'unsharp': 8}
+_STRENGTH_CLAMP = {'realesrgan': 3, 'bsrgan': 3, 'instantir': 8, 'nafnet': 8, 'unsharp': 8}
 
 
 def _restorer_strength_map(smap_arr, restorer: str, degradation: str, restorer_params: Dict[str, Any]):
@@ -280,6 +283,17 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                 # smokes pass 20–30 (docs/EXPERIMENTS_QUEUED.md InstantIR audit).
                 num_inference_steps=int(restorer_params.get('num_inference_steps', 1)),
                 batch_size=restorer_params.get('batch_size', 4))
+        elif restorer == 'nafnet':
+            from presley.restoration import restore_with_nafnet_adaptive
+            # CNN deblur gauge for blur transport (Q5 / HOLE(tab:instantir-kill)).
+            # Single full-frame pass; FG via composite_passthrough below.
+            restore_with_nafnet_adaptive(
+                temp_frames_dir, restored_frames_dir, smap_r, block_size,
+                width=int(restorer_params.get('width', 64)),
+                weights_path=restorer_params.get('weights_path'),
+                # fp32 default True — fp16 overflows NAFNet (rainbow artifacts).
+                fp32=bool(restorer_params.get('fp32', True)),
+                local=bool(restorer_params.get('local', True)))
         elif restorer == 'unsharp':
             # No-ML conditioned benchmark: a generative restorer has to beat
             # this before its cost is justified. Not a formality -- on freeze

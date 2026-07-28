@@ -7917,3 +7917,47 @@ experiments:
     preset: "8"
   restorer_params:
     tile: 400
+# ---------------------------------------------------------------------------
+# Q5 NAFNet blur gauge (2026-07-28) — docs/EXPERIMENTS_QUEUED.md / HANDOFF Wave 1
+# Same recipe as InstantIR CLAIM / Q2 corrected: blur, sa=0.25, fg_protect,
+# starved SVT-AV1 fixed QP. Compare to unsharp + InstantIR-corrected hashes;
+# fill HOLE(tab:instantir-kill). Single-pass GoPro-width64.
+# ---------------------------------------------------------------------------
+# hash: 93fcdf516cf7e363
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: nafnet
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 51
+    preset: "8"
+  restorer_params:
+    width: 64
+# hash: 8d2316a5e2d6128f
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: nafnet
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 50
+    preset: "8"
+  restorer_params:
+    width: 64
