@@ -469,9 +469,97 @@ def get_yolo_masks(video_name: str, width: int, height: int, block_size: int,
     return np.array(masks)
 
 
+# Controlled mask morphology (Q10): orthogonal to mask_source. Applied to the
+# full-resolution binary FG mask *after* resolve_masks selects the base source.
+# Radius is in *pixels* (not blocks). Default / absent = no-op so every
+# pre-existing experiment hash and cache path stays unchanged.
+_MASK_MORPHOLOGY_OPS = frozenset({"none", "dilate", "erode", "jitter"})
+
+
+def normalize_mask_morphology(op=None, radius=0, seed=0):
+    """Normalize experiment morphology knobs to ``(op, radius, seed)``.
+
+    Contract:
+      - ``op``: ``none`` | ``dilate`` | ``erode`` | ``jitter`` (case-insensitive)
+      - ``radius``: non-negative int, **pixels** on the full-res mask
+      - ``seed``: int RNG seed used only by ``jitter`` (ignored otherwise)
+    """
+    if op is None or op == "":
+        op = "none"
+    op = str(op).lower()
+    if op not in _MASK_MORPHOLOGY_OPS:
+        raise ValueError(
+            f"Unknown mask_morphology: {op!r} (expected 'none', 'dilate', 'erode', or 'jitter')"
+        )
+    radius = int(radius)
+    if radius < 0:
+        raise ValueError(f"mask_morphology_radius must be >= 0, got {radius}")
+    return op, radius, int(seed)
+
+
+def morphology_cache_suffix(op=None, radius=0, seed=0) -> str:
+    """Filename suffix isolating morphology params from the base-mask cache.
+
+    Empty string for the no-op (``none`` / radius 0) so existing
+    ``removability_*.npy`` paths stay byte-identical. Mirrors the
+    ``_mask-{source}`` isolation pattern for ``mask_source``.
+    """
+    op, radius, seed = normalize_mask_morphology(op, radius, seed)
+    if op == "none" or radius == 0:
+        return ""
+    if op == "jitter":
+        return f"_morph-{op}-r{radius}-s{seed}"
+    return f"_morph-{op}-r{radius}"
+
+
+def apply_mask_morphology(masks: np.ndarray, op=None, radius=0, seed=0) -> np.ndarray:
+    """Apply dilate / erode / jitter to a (F, H, W) uint8 FG mask stack.
+
+    - ``dilate`` / ``erode``: elliptical structuring element of diameter
+      ``2*radius+1`` pixels (OpenCV ``MORPH_ELLIPSE``).
+    - ``jitter``: per-frame integer translation uniformly sampled from
+      ``[-radius, radius]`` on each axis, seeded so the same
+      ``(seed, frame_index)`` always yields the same shift.
+    - ``none`` or ``radius==0``: return a copy unchanged.
+    """
+    op, radius, seed = normalize_mask_morphology(op, radius, seed)
+    if op == "none" or radius == 0:
+        return np.array(masks, copy=True)
+
+    out = np.empty_like(masks)
+    if op in ("dilate", "erode"):
+        k = 2 * radius + 1
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
+        morph_fn = cv2.dilate if op == "dilate" else cv2.erode
+        for i in range(len(masks)):
+            out[i] = morph_fn(masks[i], kernel)
+        return out
+
+    # jitter: seeded per-frame spatial shift
+    for i in range(len(masks)):
+        rng = np.random.default_rng(seed + i)
+        dx, dy = (int(x) for x in rng.integers(-radius, radius + 1, size=2))
+        if dx == 0 and dy == 0:
+            out[i] = masks[i]
+        else:
+            m = cv2.warpAffine(
+                masks[i],
+                np.float32([[1, 0, dx], [0, 1, dy]]),
+                (masks.shape[2], masks.shape[1]),
+                flags=cv2.INTER_NEAREST,
+                borderMode=cv2.BORDER_CONSTANT,
+                borderValue=0,
+            )
+            out[i] = m
+    return out
+
+
 def resolve_masks(mask_source: str, video_name: str, width: int, height: int, block_size: int,
                   reference_frames_dir: str, cache_dir: str, dataset_dir: str,
-                  temporal_pool: bool = False):
+                  temporal_pool: bool = False,
+                  mask_morphology: str = "none",
+                  mask_morphology_radius: int = 0,
+                  mask_morphology_seed: int = 0):
     """
     Single dispatch point for 'ufo' / 'gt' / 'yolo' mask_source, shared by
     `get_removability_scores` and every component's direct fg_protect mask
@@ -486,29 +574,41 @@ def resolve_masks(mask_source: str, video_name: str, width: int, height: int, bl
     (see `get_gt_masks`). `mask_source='yolo'` runs `get_yolo_masks` with its
     defaults. Both apply `temporal_pool` afterwards (max-pool across frames,
     matching what `get_ufo_masks` does internally for that branch).
+
+    Optional morphology (``mask_morphology`` / ``_radius`` / ``_seed``) is an
+    orthogonal axis applied *after* the base source is resolved -- see
+    ``apply_mask_morphology``. Defaults leave every pre-existing call site
+    unchanged.
     """
     mask_source = mask_source.lower()
     if mask_source == 'ufo':
-        return get_ufo_masks(video_name, width, height, block_size, reference_frames_dir, cache_dir,
-                             temporal_pool=temporal_pool)
+        # get_ufo_masks already applies temporal_pool internally.
+        masks = get_ufo_masks(video_name, width, height, block_size, reference_frames_dir, cache_dir,
+                              temporal_pool=temporal_pool)
     elif mask_source == 'gt':
         annotations_dir = os.path.join(dataset_dir, "annotations")
         masks = get_gt_masks(video_name, width, height, block_size, reference_frames_dir, cache_dir,
                              annotations_dir)
+        if temporal_pool and len(masks) > 0:
+            pooled = np.max(masks, axis=0)
+            masks = np.repeat(pooled[None, ...], len(masks), axis=0)
     elif mask_source == 'yolo':
         masks = get_yolo_masks(video_name, width, height, block_size, reference_frames_dir, cache_dir)
+        if temporal_pool and len(masks) > 0:
+            pooled = np.max(masks, axis=0)
+            masks = np.repeat(pooled[None, ...], len(masks), axis=0)
     else:
         raise ValueError(f"Unknown mask_source: {mask_source!r} (expected 'ufo', 'gt', or 'yolo')")
 
-    if temporal_pool and len(masks) > 0:
-        pooled = np.max(masks, axis=0)
-        masks = np.repeat(pooled[None, ...], len(masks), axis=0)
-    return masks
+    return apply_mask_morphology(masks, mask_morphology, mask_morphology_radius, mask_morphology_seed)
 
 
 def get_removability_scores(video_name: str, width: int, height: int, block_size: int,
                             alpha: float, beta: float, dataset_dir: str, cache_dir: str,
-                            mask_source: str = 'ufo'):
+                            mask_source: str = 'ufo',
+                            mask_morphology: str = 'none',
+                            mask_morphology_radius: int = 0,
+                            mask_morphology_seed: int = 0):
     """
     Returns combined removability scores (F, BY, BX). Caches to disk.
 
@@ -516,6 +616,10 @@ def get_removability_scores(video_name: str, width: int, height: int, block_size
     below: 'ufo' (default, preserves all pre-existing cached scores and
     results exactly), 'gt' (ground-truth annotations), or 'yolo' (open-vocab
     YOLOE detections) -- see `resolve_masks`.
+
+    Morphology knobs (``mask_morphology`` / radius / seed) are orthogonal to
+    ``mask_source`` and append a ``_morph-...`` cache suffix so a dilate/erode
+    /jitter run can never silently reuse the pristine-mask scores.
     """
     key_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}_bs{block_size}")
     os.makedirs(key_dir, exist_ok=True)
@@ -524,9 +628,14 @@ def get_removability_scores(video_name: str, width: int, height: int, block_size
     # mask_source can never silently return another source's stale cached
     # scores -- the 'ufo' filename is left exactly as before so every
     # existing cache entry (and every existing results/<hash>/ that depended
-    # on it) stays valid.
+    # on it) stays valid. Morphology gets the same treatment via
+    # morphology_cache_suffix (empty for the no-op).
     mask_suffix = "" if mask_source == "ufo" else f"_mask-{mask_source}"
-    score_path = os.path.join(key_dir, f"removability_a{alpha:.2f}_b{beta:.2f}{mask_suffix}.npy")
+    morph_suffix = morphology_cache_suffix(mask_morphology, mask_morphology_radius,
+                                           mask_morphology_seed)
+    score_path = os.path.join(
+        key_dir, f"removability_a{alpha:.2f}_b{beta:.2f}{mask_suffix}{morph_suffix}.npy"
+    )
 
     if os.path.exists(score_path):
         return np.load(score_path)
@@ -535,7 +644,12 @@ def get_removability_scores(video_name: str, width: int, height: int, block_size
     ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
 
     temporal_3d, spatial_3d = get_evca_scores(video_name, width, height, block_size, raw_yuv_path, ref_frames_dir, cache_dir)
-    ufo_masks = resolve_masks(mask_source, video_name, width, height, block_size, ref_frames_dir, cache_dir, dataset_dir)
+    ufo_masks = resolve_masks(
+        mask_source, video_name, width, height, block_size, ref_frames_dir, cache_dir, dataset_dir,
+        mask_morphology=mask_morphology,
+        mask_morphology_radius=mask_morphology_radius,
+        mask_morphology_seed=mask_morphology_seed,
+    )
 
     removability_scores = np.zeros_like(spatial_3d)
     removability_scores[:-1] = alpha * spatial_3d[:-1] + (1 - alpha) * temporal_3d[1:]

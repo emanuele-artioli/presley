@@ -23,12 +23,21 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
     # existing behavior), 'gt' (ground-truth annotations), or 'yolo' (open-vocab
     # YOLOE). See preprocessing.resolve_masks.
     mask_source = experiment.get('mask_source', 'ufo').lower()
+    mask_morphology = experiment.get('mask_morphology', 'none')
+    mask_morphology_radius = int(experiment.get('mask_morphology_radius', 0))
+    mask_morphology_seed = int(experiment.get('mask_morphology_seed', 0))
 
     # Get reference frames and removability scores
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_pattern = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames", "%05d.png")
 
-    removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir, mask_source=mask_source)
+    removability_scores = get_removability_scores(
+        video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir,
+        mask_source=mask_source,
+        mask_morphology=mask_morphology,
+        mask_morphology_radius=mask_morphology_radius,
+        mask_morphology_seed=mask_morphology_seed,
+    )
     
     output_video = os.path.join(results_dir, "encoded.mp4")
     

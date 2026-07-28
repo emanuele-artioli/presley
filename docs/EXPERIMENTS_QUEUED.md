@@ -52,7 +52,7 @@ blur       → InstantIR (kill stands) | NAFNet (gauge, ties unsharp) | DiffBIR 
 | **Q7** | Stream-DiffVSR vs Real-ESRGAN | downsample + `stream_diffvsr` | Report §II speed diffusion SR |
 | **Q8** | DC-VSR quality arm | downsample + `dc_vsr` once integrated | Report §II quality ceiling |
 | **Q9** | Noise threshold rematch | Matched-budget noise vs blur/downsample | Cleaner dead-end number |
-| **Q10** | Mask dilate/erode/jitter | UFO mask noise arm, 2 DAVIS — still missing from yaml (`HOLE(sec:evaluation)`) | Referee mask half |
+| **Q10** | Mask dilate/erode/jitter | **Wired on `feat/q10-mask-noise`** — yaml cells (elvis × bear/camel × dilate/erode/jitter, x265 qp34, `fg_protect`); Wave 2 GPU still open (`HOLE(sec:evaluation)`) | Referee mask half |
 
 ### Write-up status (2026-07-28)
 
