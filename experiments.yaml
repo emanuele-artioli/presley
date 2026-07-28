@@ -8007,3 +8007,248 @@ experiments:
   restorer_params:
     tile: 400
     tile_pad: 32
+# ---------------------------------------------------------------------------
+# Q9 Noise threshold rematch (2026-07-28) — docs/EXPERIMENTS_QUEUED.md / HANDOFF
+# Wave 1-D. Matched-budget Goal-1 screen: noise vs downsample/blur under the
+# S1 contract (shrink_amount: 0.25 + fg_protect → clustered top-k sel), not the
+# old unbudgeted threshold screen.
+#
+# Prior unbudgeted noise (x265, NO sa/fg_protect — unmatched budget vs blur/
+# downsample; dead-end +213…+334% bits) — DO NOT re-run; keep for contrast:
+#   bear qp32 5f0c9dae74977e05 | bear qp37 4855a706d4961adf
+#   camel qp32 9cef0d4ad4fc74ad | camel qp37 45114e6ca4f604ed
+#
+# Existing budgeted downsample/blur AT SAME codec/QP but with restorers
+# (transmitted bitrate is restorer-independent; cite for transport parity):
+#   bear qp51 blur+instantir-corr 36fb007975de0593 | blur+nafnet 93fcdf516cf7e363
+#   bear qp51 downsample+bsrgan 432569abedc41fca | downsample+hat 661d092654b4e18d
+#   camel qp50 blur+instantir-corr afd6dc1e5fa2ebe1 | blur+nafnet 8d2316a5e2d6128f
+#   camel qp50 downsample+bsrgan e437776f348cadbe | downsample+hat 4ec11482c4cfc93e
+#
+# Baselines already in yaml (do not duplicate):
+#   bear qp51 21e85db5dd1062ea | bear qp58 2214e6bfcaab7878
+#   camel qp50 83cb00c94850f2e1 | camel qp58 a2cd5ebc19a3b5db
+#
+# Budgeted restorer:none downsample/blur under svtav1 did NOT exist — added
+# below as Goal-1 comparators. Expectation: noise still costs bits even at
+# matched budget (cleaner dead-end number). Wave 2 filter: codec=svtav1.
+# ---------------------------------------------------------------------------
+# --- Q9 noise (matched budget) ---
+# hash: f27b0f17d4192d37
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: noise
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 51
+    preset: "8"
+# hash: 4e2d1e221284c843
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: noise
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: "8"
+# hash: d1e32185eb7b57e3
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: noise
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 50
+    preset: "8"
+# hash: 65c5aae4318036c0
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: noise
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: "8"
+# --- Q9 comparator: budgeted downsample restorer:none (same codec/QP grid) ---
+# hash: 0dab871ff58ae1f2
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 51
+    preset: "8"
+# hash: 911bc54a2c6596da
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: "8"
+# hash: 9a0b221f0f7b6c76
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 50
+    preset: "8"
+# hash: 3b8befe17cdfff80
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: "8"
+# --- Q9 comparator: budgeted blur restorer:none (same codec/QP grid) ---
+# hash: ae7b954c11b36de2
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 51
+    preset: "8"
+# hash: 63b733c93c575aa1
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: "8"
+# hash: 820f87b367b60a21
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 50
+    preset: "8"
+# hash: 69d73ef1eafbf9fa
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 58
+    preset: "8"
