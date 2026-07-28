@@ -7961,3 +7961,49 @@ experiments:
     preset: "8"
   restorer_params:
     width: 64
+# ---------------------------------------------------------------------------
+# Q4 Real-HAT-GAN vs Real-ESRGAN (2026-07-28) — docs/EXPERIMENTS_QUEUED.md
+# Same recipe as CLAIM(tab:conditioned) Real-ESRGAN cells
+# (e2cb6bed165d69b1 / c29c94b5c290f208): downsample, sa=0.25, fg_protect,
+# starved SVT-AV1 fixed QP. Ignore older VBR yaml entries. fp32 only.
+# ---------------------------------------------------------------------------
+# hash: 661d092654b4e18d
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: real_hat_gan
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 51
+    preset: "8"
+  restorer_params:
+    tile: 400
+    tile_pad: 32
+# hash: 4ec11482c4cfc93e
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: real_hat_gan
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 50
+    preset: "8"
+  restorer_params:
+    tile: 400
+    tile_pad: 32

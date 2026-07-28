@@ -56,6 +56,9 @@ RESTORER_DEGRADATIONS = {
     # GAN/CNN super-resolver for the restoration-comparison ablation; see
     # `restore_downsampled_with_bsrgan` in presley.restoration.)
     'bsrgan':     ('downsample',) + INPAINT_DEGRADATIONS,
+    # Recent SR GAN (Chen et al. / XPixelGroup HAT). Same log2-downscale map
+    # as realesrgan/bsrgan; fp32 only — see restore_downsampled_with_real_hat_gan.
+    'real_hat_gan': ('downsample',) + INPAINT_DEGRADATIONS,
     # map = number of restoration rounds
     'instantir':  ('blur',) + INPAINT_DEGRADATIONS,
     # CNN deblur gauge (Chen et al. 2022); same blur (+ hole) set as InstantIR.
@@ -73,7 +76,10 @@ RESTORER_DEGRADATIONS = {
 # degradation, not a benchmark. `unsharp` is the correct no-ML control.
 
 # Per-restorer clamps for the converted strength map: (max_value, dtype).
-_STRENGTH_CLAMP = {'realesrgan': 3, 'bsrgan': 3, 'instantir': 8, 'nafnet': 8, 'unsharp': 8}
+_STRENGTH_CLAMP = {
+    'realesrgan': 3, 'bsrgan': 3, 'real_hat_gan': 3,
+    'instantir': 8, 'nafnet': 8, 'unsharp': 8,
+}
 
 
 def _restorer_strength_map(smap_arr, restorer: str, degradation: str, restorer_params: Dict[str, Any]):
@@ -269,6 +275,17 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                 tile=restorer_params.get('tile', 0),
                 tile_pad=restorer_params.get('tile_pad', 10),
                 fp32=restorer_params.get('fp32', False))
+
+        elif restorer == 'real_hat_gan':
+            from presley.restoration import restore_downsampled_with_real_hat_gan
+            # Recent HAT-based real-world SR GAN (Q4). Same adaptive pyramid
+            # as realesrgan/bsrgan. Default fp32=True — half precision NaNs.
+            restore_downsampled_with_real_hat_gan(
+                temp_frames_dir, restored_frames_dir, smap_r, block_size,
+                weights_path=restorer_params.get('weights_path'),
+                tile=restorer_params.get('tile', 0),
+                tile_pad=restorer_params.get('tile_pad', 32),
+                fp32=bool(restorer_params.get('fp32', True)))
 
         elif restorer == 'instantir':
             from presley.restoration import restore_with_instantir_adaptive

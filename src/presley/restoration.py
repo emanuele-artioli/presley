@@ -810,6 +810,236 @@ def restore_downsampled_with_bsrgan(input_frames_dir: str, output_frames_dir: st
     for (idx, restored_frame) in enumerate(all_restored):
         output_path = os.path.join(output_frames_dir, frame_paths[idx].name)
         save_frame(restored_frame, output_path)
+
+
+# ---------------------------------------------------------------------------
+# Real-HAT-GAN (XPixelGroup/HAT) — recent conditioned SR GAN for Q4.
+# Same adaptive pyramid contract as Real-ESRGAN/BSRGAN; different backbone.
+# Half precision is banned: stock HAT attn masks + Softmax produce NaNs under
+# fp16 on torch 2.1.2 (verified 2026-07-28) — same class of silent crater as
+# NAFNet LayerNorm overflow.
+# ---------------------------------------------------------------------------
+
+_DEFAULT_REAL_HAT_GAN_WEIGHTS = Path('weights') / 'Real_HAT_GAN_sharper.pth'
+
+
+class _HATWindowPad(torch.nn.Module):
+    """Pad activations to a multiple of HAT's window_size, then crop.
+
+    RealESRGANer's tile/mod pads are tuned for RRDBNet (scale 2/4), not
+    Swin-style window attention. Without this, non-multiple H/W (or
+    irregular edge tiles) raise inside ``window_partition``.
+    """
+
+    def __init__(self, model: torch.nn.Module, window_size: int, scale: int):
+        super().__init__()
+        self.model = model
+        self.window_size = int(window_size)
+        self.scale = int(scale)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        _, _, h, w = x.shape
+        ws = self.window_size
+        pad_h = (ws - h % ws) % ws
+        pad_w = (ws - w % ws) % ws
+        if pad_h or pad_w:
+            x = torch.nn.functional.pad(x, (0, pad_w, 0, pad_h), mode='reflect')
+        out = self.model(x)
+        if pad_h or pad_w:
+            out = out[:, :, : h * self.scale, : w * self.scale]
+        return out
+
+
+def _resolve_real_hat_gan_weights(weights_path: Optional[Union[str, Path]] = None) -> Path:
+    path = Path(weights_path).expanduser() if weights_path is not None else _DEFAULT_REAL_HAT_GAN_WEIGHTS.expanduser()
+    if not path.is_file():
+        # Also accept a bare cwd-relative miss when the runner's cwd is elsewhere.
+        alt = Path.cwd() / 'weights' / 'Real_HAT_GAN_sharper.pth'
+        if weights_path is None and alt.is_file():
+            return alt
+        raise FileNotFoundError(
+            f"Real-HAT-GAN weights not found at {path}. Download with e.g. "
+            "`hf download Acly/hat Real_HAT_GAN_sharper.pth --local-dir weights/` "
+            "(unset http(s)_proxy if the Hub 403s)."
+        )
+    return path
+
+
+def _instantiate_real_hat_gan_upsampler(
+    device: torch.device,
+    *,
+    weights_path: Optional[Union[str, Path]] = None,
+    tile: int = 0,
+    tile_pad: int = 32,
+    pre_pad: int = 0,
+    fp32: bool = True,
+) -> 'RealESRGANer':
+    """Create a Real-HAT-GAN upsampler via the shared RealESRGANer tile wrapper.
+
+    Architecture is HAT (not RRDBNet); weights are the Acly/hat HF mirror of
+    ``Real_HAT_GAN_SRx4_sharper``. ``fp32`` must stay True — half precision
+    NaNs the Softmax path (see module comment above).
+    """
+    if not fp32:
+        raise ValueError(
+            "Real-HAT-GAN must run in float32 (fp32=True). Half precision "
+            "produces NaN activations in window attention Softmax on this "
+            "stack (torch 2.1.2); see tests/test_restoration_real_hat_gan.py."
+        )
+    try:
+        from realesrgan.utils import RealESRGANer
+    except ImportError as exc:
+        raise RuntimeError(
+            'Real-ESRGAN python package is required to run Real-HAT-GAN through '
+            'the shared RealESRGANer tiling wrapper. Install with `pip install realesrgan`.'
+        ) from exc
+    from presley.hat_arch import build_real_hat_gan_srx4
+
+    resolved = _resolve_real_hat_gan_weights(weights_path)
+    model = build_real_hat_gan_srx4()
+    netscale = 4
+    # RealESRGANer prefers params_ema when present — our checkpoint has both.
+    upsampler = RealESRGANer(
+        scale=netscale,
+        model_path=str(resolved),
+        dni_weight=None,
+        model=model,
+        tile=tile,
+        tile_pad=tile_pad,
+        pre_pad=pre_pad,
+        half=False,
+        device=device,
+    )
+    upsampler.model = _HATWindowPad(upsampler.model, window_size=16, scale=netscale)
+    return upsampler
+
+
+def get_real_hat_gan_upsampler(
+    device: torch.device,
+    *,
+    weights_path: Optional[Union[str, Path]] = None,
+    tile: int = 0,
+    tile_pad: int = 32,
+    pre_pad: int = 0,
+    fp32: bool = True,
+) -> 'RealESRGANer':
+    """Get or create a cached Real-HAT-GAN upsampler for the given device."""
+    resolved = _resolve_real_hat_gan_weights(weights_path)
+    key = f'real_hat_gan_{device}_{resolved.resolve()}_{tile}_{tile_pad}_{pre_pad}_fp32'
+    with _REALESRGAN_UPSAMPLER_LOCK:
+        upsampler = _REALESRGAN_UPSAMPLER_CACHE.get(key)
+        if upsampler is None:
+            _safe_print(f'    -> Warming Real-HAT-GAN runtime on {device} (fp32)...')
+            upsampler = _instantiate_real_hat_gan_upsampler(
+                device, weights_path=resolved, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, fp32=fp32
+            )
+            _REALESRGAN_UPSAMPLER_CACHE[key] = upsampler
+    return upsampler
+
+
+def upscale_real_hat_gan_adaptive(
+    downsampled_image: np.ndarray,
+    downscale_maps: np.ndarray,
+    block_size: int,
+    *,
+    upsample_fn: Callable[[np.ndarray], np.ndarray],
+) -> np.ndarray:
+    """Adaptive pyramid restoration with Real-HAT-GAN as the 2x step.
+
+    Same contract as ``upscale_bsrgan_adaptive`` / ``upscale_realesrgan_adaptive``.
+    """
+    return _adaptive_block_pyramid_upscale(downsampled_image, downscale_maps, block_size, upsample_fn)
+
+
+def restore_frames_real_hat_gan(
+    frames: List[np.ndarray],
+    downscale_maps: np.ndarray,
+    block_size: int,
+    device: torch.device,
+    *,
+    weights_path: Optional[Union[str, Path]] = None,
+    tile: int = 0,
+    tile_pad: int = 32,
+    pre_pad: int = 0,
+    fp32: bool = True,
+) -> List[np.ndarray]:
+    """Pure restoration: Real-HAT-GAN conditioned on per-block downscale maps."""
+    upsampler = get_real_hat_gan_upsampler(
+        device, weights_path=weights_path, tile=tile, tile_pad=tile_pad, pre_pad=pre_pad, fp32=fp32
+    )
+
+    def _enhance_once(img: np.ndarray) -> np.ndarray:
+        return _upsample_with_realesrgan(upsampler, img, device_obj=device, outscale=2.0)
+
+    restored_frames = []
+    for (idx, frame) in enumerate(frames):
+        restored = upscale_real_hat_gan_adaptive(
+            frame, downscale_maps[idx], block_size, upsample_fn=_enhance_once
+        )
+        restored_frames.append(restored)
+    return restored_frames
+
+
+def restore_downsampled_with_real_hat_gan(
+    input_frames_dir: str,
+    output_frames_dir: str,
+    downscale_maps: np.ndarray,
+    block_size: int,
+    *,
+    weights_path: Optional[Union[str, Path]] = None,
+    tile: int = 0,
+    tile_pad: int = 32,
+    pre_pad: int = 0,
+    fp32: bool = True,
+    devices: Optional[Sequence[Union[int, str, torch.device]]] = None,
+    parallel_chunk_length: Optional[int] = None,
+    per_device_workers: int = 1,
+) -> None:
+    """Parallel adaptive Real-HAT-GAN restoration over a directory of frames.
+
+    Drop-in alternative to ``restore_downsampled_with_realesrgan`` /
+    ``restore_downsampled_with_bsrgan`` for the ``downsample`` degradation.
+    """
+    frame_paths = get_frame_paths(input_frames_dir)
+    if not frame_paths:
+        raise ValueError(f'No frames found in {input_frames_dir}')
+    downscale_maps = np.asarray(downscale_maps)
+    num_frames = len(frame_paths)
+    if downscale_maps.shape[0] != num_frames:
+        raise ValueError(
+            f'Downscale maps length ({downscale_maps.shape[0]}) does not match frame count ({num_frames}).'
+        )
+    clear_directory(output_frames_dir)
+    os.makedirs(output_frames_dir, exist_ok=True)
+    resolved_devices = _resolve_device_list(devices, prefer_cuda=True, allow_cpu_fallback=True)
+    device_summary = ', '.join(str(dev) for dev in resolved_devices)
+    tile_desc = str(tile) if tile and tile > 0 else 'full-frame'
+    _safe_print(f'  Using Real-HAT-GAN on devices: {device_summary} | tile: {tile_desc} | fp32')
+    _safe_print(f'  Total frames: {num_frames}')
+
+    chunks = chunk_for_devices(num_frames, resolved_devices)
+    all_restored: List[np.ndarray] = []
+    for chunk in chunks:
+        chunk_frames = [load_frame(str(frame_paths[i])) for i in range(chunk.start, chunk.end)]
+        chunk_maps = downscale_maps[chunk.start:chunk.end]
+        _safe_print(f'    -> Real-HAT-GAN frames {chunk.start + 1}-{chunk.end} on {chunk.device}')
+        restored = restore_frames_real_hat_gan(
+            chunk_frames,
+            chunk_maps,
+            block_size,
+            chunk.device,
+            weights_path=weights_path,
+            tile=tile,
+            tile_pad=tile_pad,
+            pre_pad=pre_pad,
+            fp32=fp32,
+        )
+        all_restored.extend(restored)
+    for (idx, restored_frame) in enumerate(all_restored):
+        output_path = os.path.join(output_frames_dir, frame_paths[idx].name)
+        save_frame(restored_frame, output_path)
+
+
 def _pad_for_restoration(image: np.ndarray, maps: np.ndarray, block_size: int):
     (h_orig, w_orig, _) = image.shape
     pad_y = (block_size - h_orig % block_size) % block_size

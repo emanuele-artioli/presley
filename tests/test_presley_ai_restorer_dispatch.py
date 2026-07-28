@@ -83,3 +83,25 @@ def test_nafnet_strength_map_clamped_like_instantir():
         clamped,
         _restorer_strength_map(raw, "instantir", "blur", {}),
     )
+
+
+def test_real_hat_gan_is_registered_alongside_realesrgan():
+    """Q4 recent SR GAN — same allowed-degradation set as realesrgan/bsrgan."""
+    assert "real_hat_gan" in RESTORER_DEGRADATIONS
+    assert RESTORER_DEGRADATIONS["real_hat_gan"] == ("downsample",) + INPAINT_DEGRADATIONS
+    assert RESTORER_DEGRADATIONS["real_hat_gan"] == RESTORER_DEGRADATIONS["realesrgan"]
+
+
+def test_real_hat_gan_rejects_blur():
+    assert "blur" not in RESTORER_DEGRADATIONS["real_hat_gan"]
+    assert "noise" not in RESTORER_DEGRADATIONS["real_hat_gan"]
+
+
+def test_real_hat_gan_strength_map_clamped_like_realesrgan():
+    raw = np.array([[0, 1, 5, 10]])
+    clamped = _restorer_strength_map(raw, "real_hat_gan", "downsample", {})
+    assert clamped.max() <= _STRENGTH_CLAMP["real_hat_gan"]
+    np.testing.assert_array_equal(
+        clamped,
+        _restorer_strength_map(raw, "realesrgan", "downsample", {}),
+    )
