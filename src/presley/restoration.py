@@ -1054,6 +1054,198 @@ def _pad_for_restoration(image: np.ndarray, maps: np.ndarray, block_size: int):
             maps = np.pad(maps, ((0, max(0, pad_h)), (0, max(0, pad_w))), mode='constant', constant_values=0)
     return image, maps, pad_y, pad_x
 
+
+# ---------------------------------------------------------------------------
+# Stream-DiffVSR (Shiu et al.) — 4× auto-regressive diffusion VSR for Q7.
+# Same conditioned-SR role as Real-ESRGAN / Real-HAT on the downsample path.
+# Temporal model → sequence LR@1/4 via subprocess (isolated vendor env), then
+# paste map==0 blocks. Adaptive pyramid helpers mirror Real-HAT for stub tests.
+# fp16: try on CUDA (fp32=False); reject if Softmax/LN NaNs — see stream_diffvsr.py.
+# ---------------------------------------------------------------------------
+
+
+def upscale_stream_diffvsr_adaptive(
+    downsampled_image: np.ndarray,
+    downscale_maps: np.ndarray,
+    block_size: int,
+    *,
+    upsample_fn: Callable[[np.ndarray], np.ndarray],
+) -> np.ndarray:
+    """Adaptive pyramid restoration with Stream-DiffVSR as the 2× step.
+
+    Same contract as ``upscale_real_hat_gan_adaptive`` / ``upscale_realesrgan_adaptive``.
+    Real sequence inference uses ``restore_downsampled_with_stream_diffvsr``
+    (temporal 4×); this entry point exists so unit tests can stub ``upsample_fn``.
+    """
+    return _adaptive_block_pyramid_upscale(downsampled_image, downscale_maps, block_size, upsample_fn)
+
+
+def _paste_stream_diffvsr_untouched(
+    original_bgr: np.ndarray,
+    restored_bgr: np.ndarray,
+    downscale_map: np.ndarray,
+    block_size: int,
+) -> np.ndarray:
+    """Keep transmitted pixels where the strength map is 0 (InstantIR/NAFNet contract)."""
+    if restored_bgr.shape[:2] != original_bgr.shape[:2]:
+        restored_bgr = cv2.resize(
+            restored_bgr,
+            (original_bgr.shape[1], original_bgr.shape[0]),
+            interpolation=cv2.INTER_LANCZOS4,
+        )
+    frame_pad, maps_pad, pad_y, pad_x = _pad_for_restoration(
+        original_bgr, np.asarray(downscale_map), block_size
+    )
+    restored_pad = restored_bgr
+    if restored_pad.shape[:2] != frame_pad.shape[:2]:
+        # Match pad geometry without re-deriving map pads from the restored frame.
+        rh, rw = restored_pad.shape[:2]
+        py = frame_pad.shape[0] - rh
+        px = frame_pad.shape[1] - rw
+        if py > 0 or px > 0:
+            restored_pad = np.pad(
+                restored_pad,
+                ((0, max(0, py)), (0, max(0, px)), (0, 0)),
+                mode='edge',
+            )
+        restored_pad = restored_pad[: frame_pad.shape[0], : frame_pad.shape[1]]
+    orig_blocks = split_image_into_blocks(frame_pad, block_size)
+    restored_blocks = split_image_into_blocks(restored_pad, block_size)
+    untouched = maps_pad <= 0
+    if np.any(untouched):
+        restored_blocks[untouched] = orig_blocks[untouched]
+    return _crop_after_restoration(combine_blocks_into_image(restored_blocks), pad_y, pad_x)
+
+
+def restore_frames_stream_diffvsr(
+    frames: List[np.ndarray],
+    downscale_maps: np.ndarray,
+    block_size: int,
+    *,
+    upsample_fn: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+) -> List[np.ndarray]:
+    """Pure restoration: Stream-DiffVSR conditioned on per-block downscale maps.
+
+    When ``upsample_fn`` is provided, uses the Real-ESRGAN adaptive pyramid
+    (one 2× call per stage). Without it, callers should use the directory
+    entry point that runs the temporal 4× upstream once over the sequence.
+    """
+    if upsample_fn is None:
+        raise TypeError(
+            "restore_frames_stream_diffvsr requires upsample_fn for the adaptive "
+            "pyramid path; use restore_downsampled_with_stream_diffvsr for the "
+            "temporal 4× subprocess path."
+        )
+    downscale_maps = np.asarray(downscale_maps)
+    restored_frames = []
+    for (idx, frame) in enumerate(frames):
+        restored = upscale_stream_diffvsr_adaptive(
+            frame, downscale_maps[idx], block_size, upsample_fn=upsample_fn
+        )
+        restored_frames.append(restored)
+    return restored_frames
+
+
+def restore_downsampled_with_stream_diffvsr(
+    input_frames_dir: str,
+    output_frames_dir: str,
+    downscale_maps: np.ndarray,
+    block_size: int,
+    *,
+    model_id: str = 'Jamichsu/Stream-DiffVSR',
+    num_inference_steps: int = 4,
+    fp32: bool = False,
+    vendor_dir: Optional[Union[str, Path]] = None,
+    python_executable: Optional[Union[str, Path]] = None,
+    cache_dir: Optional[Union[str, Path]] = None,
+    upsample_fn: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+    devices: Optional[Sequence[Union[int, str, torch.device]]] = None,
+) -> None:
+    """Adaptive / sequence Stream-DiffVSR restoration over a frames directory.
+
+    Drop-in alternative to ``restore_downsampled_with_realesrgan`` /
+    ``restore_downsampled_with_real_hat_gan`` for the ``downsample`` degradation.
+
+    Default path (no ``upsample_fn``): area-downsample each frame by 4, stage
+    under ``in_path/seq/frame_*.png``, run upstream ``inference.py`` in an
+    isolated vendor env, resize HR back to the transmitted resolution, paste
+    ``map==0`` blocks. Do **not** pip-install Stream-DiffVSR into the pinned
+    ``presley`` env — see ``presley.stream_diffvsr`` module docstring.
+
+    fp16 policy: ``fp32=False`` tries half on CUDA (via ``STREAM_DIFFVSR_FP16``);
+    non-finite outputs raise and demand ``fp32=True``. If Wave 2 finds systemic
+    Softmax/LN NaNs, flip ``_STREAM_DIFFVSR_FP16_UNSAFE`` in stream_diffvsr.py.
+    """
+    from presley import stream_diffvsr as sdv
+
+    _ = devices  # reserved for future multi-GPU chunking; upstream is single-GPU
+    sdv.validate_fp32_policy(fp32)
+    frame_paths = get_frame_paths(input_frames_dir)
+    if not frame_paths:
+        raise ValueError(f'No frames found in {input_frames_dir}')
+    downscale_maps = np.asarray(downscale_maps)
+    num_frames = len(frame_paths)
+    if downscale_maps.shape[0] != num_frames:
+        raise ValueError(
+            f'Downscale maps length ({downscale_maps.shape[0]}) does not match frame count ({num_frames}).'
+        )
+    clear_directory(output_frames_dir)
+    os.makedirs(output_frames_dir, exist_ok=True)
+    if int(np.max(downscale_maps)) == 0:
+        _safe_print('  No downsampling detected, copying frames through (Stream-DiffVSR skip).')
+        for path in frame_paths:
+            frame = load_frame(str(path))
+            save_frame(frame, os.path.join(output_frames_dir, path.name))
+        return
+
+    if upsample_fn is not None:
+        # Stub / pyramid path (unit tests, or a custom 2× backend).
+        frames = [load_frame(str(p)) for p in frame_paths]
+        restored = restore_frames_stream_diffvsr(
+            frames, downscale_maps, block_size, upsample_fn=upsample_fn
+        )
+        for (idx, restored_frame) in enumerate(restored):
+            save_frame(restored_frame, os.path.join(output_frames_dir, frame_paths[idx].name))
+        return
+
+    dtype_tag = 'fp32' if fp32 else 'fp16-try'
+    _safe_print(
+        f'  Using Stream-DiffVSR ({model_id}, steps={num_inference_steps}, {dtype_tag}) '
+        f'| temporal 4× sequence + map paste'
+    )
+    _safe_print(f'  Total frames: {num_frames}')
+
+    with tempfile.TemporaryDirectory(prefix='presley_stream_diffvsr_') as tmp:
+        tmp_path = Path(tmp)
+        in_path = sdv.build_seq_layout(frame_paths, tmp_path, seq_name='seq', scale=sdv.STREAM_DIFFVSR_SCALE)
+        out_path = tmp_path / 'out'
+        hr_dir = sdv.run_stream_diffvsr_inference(
+            in_path,
+            out_path,
+            model_id=model_id,
+            num_inference_steps=num_inference_steps,
+            fp32=fp32,
+            vendor_dir=vendor_dir,
+            python_executable=python_executable,
+            cache_dir=cache_dir,
+        )
+        hr_files = sorted(hr_dir.glob('*.png')) + sorted(hr_dir.glob('*.jpg'))
+        if len(hr_files) != num_frames:
+            raise RuntimeError(
+                f'Stream-DiffVSR returned {len(hr_files)} frames, expected {num_frames} under {hr_dir}'
+            )
+        for (idx, (src_path, hr_path)) in enumerate(zip(frame_paths, hr_files)):
+            original = load_frame(str(src_path))
+            restored = load_frame(str(hr_path))
+            if restored is None:
+                raise RuntimeError(f'Failed to load Stream-DiffVSR output: {hr_path}')
+            sdv.assert_finite_bgr(restored, context='Stream-DiffVSR')
+            merged = _paste_stream_diffvsr_untouched(
+                original, restored, downscale_maps[idx], block_size
+            )
+            save_frame(merged, os.path.join(output_frames_dir, src_path.name))
+    _safe_print(f'  Stream-DiffVSR restoration complete. Frames saved to {output_frames_dir}')
+
 def _crop_after_restoration(image: np.ndarray, pad_y: int, pad_x: int):
     if pad_y > 0:
         image = image[:-pad_y, :, :]
