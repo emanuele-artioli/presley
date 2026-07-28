@@ -8007,3 +8007,52 @@ experiments:
   restorer_params:
     tile: 400
     tile_pad: 32
+# ---------------------------------------------------------------------------
+# Q7 Stream-DiffVSR vs Real-ESRGAN — docs/EXPERIMENTS_QUEUED.md
+# Same recipe as CLAIM(tab:conditioned) Real-ESRGAN cells
+# (e2cb6bed165d69b1 / c29c94b5c290f208): downsample, sa=0.25, fg_protect,
+# starved SVT-AV1 fixed QP. Wired on feat/q7-stream-diffvsr; GPU cells wait
+# for Wave 2 (needs vendor/stream-diffvsr + isolated conda env — do not pip
+# into pinned `presley`). restorer: stream_diffvsr; steps=4; try fp16.
+# ---------------------------------------------------------------------------
+# hash: 85d92dabda4b9907
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: stream_diffvsr
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 51
+    preset: "8"
+  restorer_params:
+    model_id: Jamichsu/Stream-DiffVSR
+    num_inference_steps: 4
+    # fp32: false  # try fp16 on CUDA; set true if Softmax/LN NaNs appear
+# hash: 0bcc99560e456dba
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: stream_diffvsr
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 50
+    preset: "8"
+  restorer_params:
+    model_id: Jamichsu/Stream-DiffVSR
+    num_inference_steps: 4

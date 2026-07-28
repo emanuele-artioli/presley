@@ -59,6 +59,11 @@ RESTORER_DEGRADATIONS = {
     # Recent SR GAN (Chen et al. / XPixelGroup HAT). Same log2-downscale map
     # as realesrgan/bsrgan; fp32 only — see restore_downsampled_with_real_hat_gan.
     'real_hat_gan': ('downsample',) + INPAINT_DEGRADATIONS,
+    # 4× auto-regressive diffusion VSR (Shiu et al. / Stream-DiffVSR). Same
+    # log2-downscale map units; temporal sequence path — see
+    # restore_downsampled_with_stream_diffvsr. Isolated vendor env (do not
+    # pip into pinned `presley`). fp16: try on CUDA; reject on Softmax/LN NaNs.
+    'stream_diffvsr': ('downsample',) + INPAINT_DEGRADATIONS,
     # map = number of restoration rounds
     'instantir':  ('blur',) + INPAINT_DEGRADATIONS,
     # CNN deblur gauge (Chen et al. 2022); same blur (+ hole) set as InstantIR.
@@ -77,7 +82,7 @@ RESTORER_DEGRADATIONS = {
 
 # Per-restorer clamps for the converted strength map: (max_value, dtype).
 _STRENGTH_CLAMP = {
-    'realesrgan': 3, 'bsrgan': 3, 'real_hat_gan': 3,
+    'realesrgan': 3, 'bsrgan': 3, 'real_hat_gan': 3, 'stream_diffvsr': 3,
     'instantir': 8, 'nafnet': 8, 'unsharp': 8,
 }
 
@@ -286,6 +291,20 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                 tile=restorer_params.get('tile', 0),
                 tile_pad=restorer_params.get('tile_pad', 32),
                 fp32=bool(restorer_params.get('fp32', True)))
+
+        elif restorer == 'stream_diffvsr':
+            from presley.restoration import restore_downsampled_with_stream_diffvsr
+            # Q7 diffusion VSR vs Real-ESRGAN. Isolated vendor env + HF
+            # Jamichsu/Stream-DiffVSR. Default fp32=False (try fp16 on CUDA);
+            # non-finite outputs / known Softmax NaNs demand fp32=True.
+            restore_downsampled_with_stream_diffvsr(
+                temp_frames_dir, restored_frames_dir, smap_r, block_size,
+                model_id=restorer_params.get('model_id', 'Jamichsu/Stream-DiffVSR'),
+                num_inference_steps=int(restorer_params.get('num_inference_steps', 4)),
+                fp32=bool(restorer_params.get('fp32', False)),
+                vendor_dir=restorer_params.get('vendor_dir'),
+                python_executable=restorer_params.get('python'),
+                cache_dir=restorer_params.get('cache_dir') or restorer_params.get('weights_path'))
 
         elif restorer == 'instantir':
             from presley.restoration import restore_with_instantir_adaptive
