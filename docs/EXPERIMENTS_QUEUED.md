@@ -1,7 +1,10 @@
 # Experiment queue — restorers, InstantIR audit, D6 upgrades
 
-**Status:** catalog only. Do **not** treat this file as authorization to start
-GPU runs — launch from a fresh session after reading HANDOFF.md and grepping
+**Status:** Q1 done 2026-07-27. Q2/Q3 in flight (fixed-QP only — filter with
+`codec=svtav1`, never bare `restorer=instantir` alone or incomplete VBR cells
+rerun). InstantIR `num_inference_steps` is now configurable (default 1).
+NAFNet / Real-HAT-GAN integrations still pending. Do **not** treat older rows
+as authorization to start GPU runs without reading HANDOFF.md and grepping
 paper `HOLE()` markers. All degradations here are **fixed-QP/CRF only**
 (AGENTS.md hard rule). Never commission VBR for these cells.
 
@@ -20,7 +23,7 @@ paper `HOLE()` markers. All degradations here are **fixed-QP/CRF only**
 | Light GAN twin | **BSRGAN** | Wired; weights downloadable | Few selected fixed-QP cells only (same era as Real-ESRGAN). |
 | Recent SR GAN | **Real-HAT-GAN** (`Real_HAT_GAN_SRx4_sharper`) | Not integrated | XPixelGroup/HAT; HF mirror `Acly/hat`. Prefer over expanding BSRGAN. |
 | Blur diffusion (current) | **InstantIR** | Wired; **likely misconfigured** | See audit below before citing the kill. |
-| Blur non-diffusion gauge | **NAFNet** | Not integrated | CNN deblur (not a GAN — modern deblur SOTA rarely is). HF: `opencv/deblurring_nafnet`, `mikestealth/nafnet-models`. |
+| Blur non-diffusion gauge | **NAFNet** | Not integrated | CNN deblur (not a GAN). **Plan (2026-07-28):** vendor `nafnet_arch.py` (LayerNorm2d+NAFNet); InstantIR-shaped single-pass restore; register like InstantIR; weights `NAFNet-GoPro-width64.pth` from HF `mikestealth/nafnet-models` (or nyanko7 twin). Avoid OpenCV ONNX and megvii basicsr fork. No weights on disk yet. |
 | Second blur diffusion (conditional) | **DiffBIR** | Not integrated | Only if corrected InstantIR still loses to NAFNet/unsharp. |
 | Downsample diffusion (speed) | **Stream-DiffVSR** | Not integrated | Report §II; HF `Jamichsu/Stream-DiffVSR`. Catalog. |
 | Downsample diffusion (quality) | **DC-VSR** | Not integrated | Report §II; HF `Janghyeok/dc-vsr`. Catalog. |
@@ -63,11 +66,11 @@ same blur transport + starved QP as the original cell, bear first.
 
 | ID | Purpose | Sketch | Paper target |
 |---|---|---|---|
-| **Q1** | LPIPS upgrade | `presley-evaluate results/ --backfill-lpips` on 9 `fast_only` D6 hashes: yolo `bb665875e6e1552c`, `03f9308cf6a2c628`, `11756585ed472839`, `859af0848b792c98`, `c00f85574d84b59e`, `faf4decac7e0927f`, `e82612a5be69eeed`; fii86rku elvis `1e0586074c131092`, `b2d4411804b29e69` | D6 citability |
-| **Q2** | InstantIR corrected settings | `degradation: blur`, `restorer: instantir`, hyperparams above; bear (+ camel) starved fixed QP, sa=0.25, fg_protect | Validate InstantIR kill |
-| **Q3** | BSRGAN few cells | `degradation: downsample`, `restorer: bsrgan`, fixed-QP; bear+camel @ 1–2 starved QPs. **Ignore** existing VBR BSRGAN yaml entries | Light GAN twin |
+| **Q1** | LPIPS upgrade | **DONE 2026-07-27** — backfilled FG/BG/OV LPIPS on all 9 hashes (still tagged `fast_only` for other deferred metrics). Hashes: yolo `bb665875e6e1552c`, `03f9308cf6a2c628`, `11756585ed472839`, `859af0848b792c98`, `c00f85574d84b59e`, `faf4decac7e0927f`, `e82612a5be69eeed`; fii86rku elvis `1e0586074c131092`, `b2d4411804b29e69` | D6 citability |
+| **Q2** | InstantIR corrected settings | **DONE bear+camel.** Hashes `36fb007975de0593` / `afd6dc1e5fa2ebe1` (steps=20, creative=0.7, preview=0.2). BG-LPIPS still loses to unsharp (bear 0.387 vs 0.352; camel 0.328 vs 0.304) — within LPIPS JND but worse; BG-PSNR crater ~2 dB (3.6–4.8×JND). Corrected ≈ as-run on LPIPS. **InstantIR kill stands**; proceed to NAFNet (Q5). Filter tip: `codec=svtav1`. | Validate InstantIR kill |
+| **Q3** | BSRGAN few cells | **DONE** bear `432569abedc41fca` / camel `e437776f348cadbe`. vs Real-ESRGAN at matched bitrate: FG/BG indistinguishable (BG-LPIPS within JND); Real-ESRGAN still slightly better numerically. Both beat `none` on BG-LPIPS (bear BSRGAN 0.243 vs none 0.294, ~1.0×JND). Keep Real-ESRGAN; BSRGAN = light twin only. | Light GAN twin |
 | **Q4** | Real-HAT-GAN vs Real-ESRGAN | Integrate `restorer: real_hat_gan`; same recipe as `tab:conditioned` | Recent SR GAN |
-| **Q5** | NAFNet vs InstantIR/unsharp | Integrate `restorer: nafnet` on blur; compare to existing blur+instantir / blur+unsharp | Blur method vs model |
+| **Q5** | NAFNet vs InstantIR/unsharp | Integrate `restorer: nafnet` on blur (vendor `nafnet_arch.py`, GoPro width64 from HF, single-pass). Compare to `36fb007975de0593` / `afd6dc1e5fa2ebe1` and unsharp; extend `HOLE(tab:instantir-kill)`. See HANDOFF.md Wave 1. | Blur method vs model |
 | **Q6** | DiffBIR (conditional) | Only if Q2+Q5 still damn InstantIR; blur+diffbir | Second diffusion deblur |
 | **Q7** | Stream-DiffVSR vs Real-ESRGAN | downsample + `stream_diffvsr` | Report §II speed diffusion SR |
 | **Q8** | DC-VSR quality arm | downsample + `dc_vsr` once integrated | Report §II quality ceiling |

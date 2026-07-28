@@ -276,6 +276,9 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                 cfg=restorer_params.get('cfg', 7.0),
                 creative_start=restorer_params.get('creative_start', 1.0),
                 preview_start=restorer_params.get('preview_start', 0.0),
+                # Default 1 preserves historical CLAIM hashes; Q2 corrected
+                # smokes pass 20–30 (docs/EXPERIMENTS_QUEUED.md InstantIR audit).
+                num_inference_steps=int(restorer_params.get('num_inference_steps', 1)),
                 batch_size=restorer_params.get('batch_size', 4))
         elif restorer == 'unsharp':
             # No-ML conditioned benchmark: a generative restorer has to beat

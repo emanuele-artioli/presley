@@ -7823,3 +7823,97 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# ---------------------------------------------------------------------------
+# Q2 InstantIR corrected smoke (2026-07-27) — docs/EXPERIMENTS_QUEUED.md
+# Same transport as CLAIM(tab:conditioned) blur cells, but restorer knobs
+# match InstantX tips (steps 20, creative_start 0.7, preview_start 0.2).
+# Existing CLAIM hashes (steps=1) stay as-run; do not delete them.
+# ---------------------------------------------------------------------------
+# hash: 36fb007975de0593
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: instantir
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 51
+    preset: "8"
+  restorer_params:
+    cfg: 7.0
+    creative_start: 0.7
+    preview_start: 0.2
+    num_inference_steps: 20
+    batch_size: 2
+# hash: afd6dc1e5fa2ebe1
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: blur
+  restorer: instantir
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 50
+    preset: "8"
+  restorer_params:
+    cfg: 7.0
+    creative_start: 0.7
+    preview_start: 0.2
+    num_inference_steps: 20
+    batch_size: 2
+# ---------------------------------------------------------------------------
+# Q3 BSRGAN few cells (2026-07-27) — fixed-QP twin of CLAIM Real-ESRGAN cells.
+# Ignore older VBR BSRGAN yaml entries.
+# ---------------------------------------------------------------------------
+# hash: 432569abedc41fca
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: bsrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 51
+    preset: "8"
+  restorer_params:
+    tile: 400
+# hash: e437776f348cadbe
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: bsrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 50
+    preset: "8"
+  restorer_params:
+    tile: 400
