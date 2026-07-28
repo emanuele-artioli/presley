@@ -59,6 +59,11 @@ RESTORER_DEGRADATIONS = {
     # Recent SR GAN (Chen et al. / XPixelGroup HAT). Same log2-downscale map
     # as realesrgan/bsrgan; fp32 only — see restore_downsampled_with_real_hat_gan.
     'real_hat_gan': ('downsample',) + INPAINT_DEGRADATIONS,
+    # Diffusion VSR quality arm (Han et al. SIGGRAPH 2025 / DC-VSR). Same
+    # log2-downscale map as the SR GANs. Dispatch is wired; inference is
+    # blocked until upstream publishes a usable entrypoint — see
+    # restore_downsampled_with_dc_vsr. fp32 only.
+    'dc_vsr':      ('downsample',) + INPAINT_DEGRADATIONS,
     # map = number of restoration rounds
     'instantir':  ('blur',) + INPAINT_DEGRADATIONS,
     # CNN deblur gauge (Chen et al. 2022); same blur (+ hole) set as InstantIR.
@@ -77,7 +82,7 @@ RESTORER_DEGRADATIONS = {
 
 # Per-restorer clamps for the converted strength map: (max_value, dtype).
 _STRENGTH_CLAMP = {
-    'realesrgan': 3, 'bsrgan': 3, 'real_hat_gan': 3,
+    'realesrgan': 3, 'bsrgan': 3, 'real_hat_gan': 3, 'dc_vsr': 3,
     'instantir': 8, 'nafnet': 8, 'unsharp': 8,
 }
 
@@ -286,6 +291,18 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                 tile=restorer_params.get('tile', 0),
                 tile_pad=restorer_params.get('tile_pad', 32),
                 fp32=bool(restorer_params.get('fp32', True)))
+
+        elif restorer == 'dc_vsr':
+            from presley.restoration import restore_downsampled_with_dc_vsr
+            # Q8 diffusion VSR quality arm. Dispatch + weight layout are real;
+            # restore_downsampled_with_dc_vsr raises RuntimeError until HF
+            # publishes inference (SAP/TAP/DSSAG + VAE/scheduler). fp32 only.
+            restore_downsampled_with_dc_vsr(
+                temp_frames_dir, restored_frames_dir, smap_r, block_size,
+                weights_dir=restorer_params.get('weights_dir'),
+                fp32=bool(restorer_params.get('fp32', True)),
+                tile=restorer_params.get('tile', 0),
+                num_frames=restorer_params.get('num_frames', 14))
 
         elif restorer == 'instantir':
             from presley.restoration import restore_with_instantir_adaptive

@@ -8007,3 +8007,52 @@ experiments:
   restorer_params:
     tile: 400
     tile_pad: 32
+# ---------------------------------------------------------------------------
+# Q8 DC-VSR quality arm (2026-07-28) — docs/EXPERIMENTS_QUEUED.md
+# Same recipe as Q4 Real-HAT / CLAIM(tab:conditioned) Real-ESRGAN cells
+# (e2cb6bed165d69b1 / c29c94b5c290f208): downsample, sa=0.25, fg_protect,
+# starved SVT-AV1 fixed QP. restorer: dc_vsr is DISPATCH-WIRED but inference
+# raises RuntimeError until HF Janghyeok/dc-vsr publishes a pipeline
+# (weights-only today). fp32 only. Do NOT run GPU Wave 2 until unlocked.
+# Weights: hf download Janghyeok/dc-vsr --local-dir weights/dc-vsr
+# ---------------------------------------------------------------------------
+# hash: c50f1c39cb2814c1
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: dc_vsr
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 51
+    preset: "8"
+  restorer_params:
+    fp32: true
+    num_frames: 14
+# hash: a2fd6657af0d2ec9
+- component: presley_ai
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: dc_vsr
+  shrink_amount: 0.25
+  fg_protect: true
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 50
+    preset: "8"
+  restorer_params:
+    fp32: true
+    num_frames: 14
