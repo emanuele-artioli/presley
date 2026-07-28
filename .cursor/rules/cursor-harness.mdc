@@ -100,6 +100,23 @@ real under `.claude/agents/` with `.cursor/agents` → symlink (same pattern as
 `.agents/agents`). Claude-oriented `tools:` frontmatter on those files is
 ignored here — Cursor uses its own tool set; keep the prompt body tool-agnostic.
 
+## Model family
+
+Prefer **omitting `model` on `Task`** so the subagent inherits the parent
+session (this host’s in-house Cursor models: Grok / Composer). Do not pin
+versioned slugs in prompts — they go stale. If you must pass a model, use
+only the Grok or Composer family.
+
+Never pass Claude / GPT (or other off-family) models because a skill table
+said so. The Cursor marketplace **pstack** plugin’s multi-family defaults
+(`/setup-pstack`, arena / interrogate panels) ignore which IDE you are on
+and are **untrusted** here — do not follow them. `before-task.py` on
+`preToolUse`/`Task` and `subagentStart` hard-denies off-family spawns.
+
+If in-house models are clearly struggling, ask the user; prefer switching
+platform/session over silently crossing family. Settings hygiene: Explore
+subagent model → inherit or in-house; Fast mode can force cheaper variants.
+
 ## Slash commands
 
 Plain markdown under `~/.cursor/commands/<name>.md` (global) or
