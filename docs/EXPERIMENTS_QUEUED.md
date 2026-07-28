@@ -51,7 +51,7 @@ blur       → InstantIR (kill stands) | NAFNet (gauge, ties unsharp) | DiffBIR 
 | **Q6** | DiffBIR (conditional) | Only with new mechanism argument | Second diffusion deblur |
 | **Q7** | Stream-DiffVSR vs Real-ESRGAN | downsample + `stream_diffvsr` | Report §II speed diffusion SR |
 | **Q8** | DC-VSR quality arm | downsample + `dc_vsr` once integrated | Report §II quality ceiling |
-| **Q9** | Noise threshold rematch | Matched-budget noise vs blur/downsample | Cleaner dead-end number |
+| **Q9** | Noise threshold rematch | yaml ready on `exp/q9-noise-rematch` | Cleaner dead-end number |
 | **Q10** | Mask dilate/erode/jitter | UFO mask noise arm, 2 DAVIS — still missing from yaml (`HOLE(sec:evaluation)`) | Referee mask half |
 
 ### Write-up status (2026-07-28)
