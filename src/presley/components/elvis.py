@@ -45,6 +45,11 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # 'ufo' (default, existing behavior), 'gt' (ground-truth annotations), or
     # 'yolo' (open-vocab YOLOE). See preprocessing.resolve_masks.
     mask_source = experiment.get('mask_source', 'ufo').lower()
+    # Orthogonal mask-noise axis (Q10): dilate|erode|jitter|none after the
+    # base source. Radius is pixels on the full-res mask; seed is jitter-only.
+    mask_morphology = experiment.get('mask_morphology', 'none')
+    mask_morphology_radius = int(experiment.get('mask_morphology_radius', 0))
+    mask_morphology_seed = int(experiment.get('mask_morphology_seed', 0))
 
     codec = experiment['codec'].lower()
     target_bitrate = experiment['target_bitrate']
@@ -54,7 +59,13 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
 
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
-    removability_scores = get_removability_scores(video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir, mask_source=mask_source)
+    removability_scores = get_removability_scores(
+        video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir,
+        mask_source=mask_source,
+        mask_morphology=mask_morphology,
+        mask_morphology_radius=mask_morphology_radius,
+        mask_morphology_seed=mask_morphology_seed,
+    )
     
     start_time = time.time()
 
@@ -70,8 +81,13 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     if fg_protect and removal_mode in ('blackout', 'freeze'):
         from presley.preprocessing import resolve_masks
         ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
-        ufo = resolve_masks(mask_source, video_name, width, height, block_size, ref_frames_dir, cache_dir,
-                            dataset_dir, temporal_pool=temporal_pool_masks)
+        ufo = resolve_masks(
+            mask_source, video_name, width, height, block_size, ref_frames_dir, cache_dir,
+            dataset_dir, temporal_pool=temporal_pool_masks,
+            mask_morphology=mask_morphology,
+            mask_morphology_radius=mask_morphology_radius,
+            mask_morphology_seed=mask_morphology_seed,
+        )
         nby, nbx = height // block_size, width // block_size
         fg_block_masks = []
         for m in ufo:

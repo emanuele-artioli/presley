@@ -8252,3 +8252,155 @@ experiments:
   codec_params:
     qp: 58
     preset: "8"
+
+# --- Q10: controlled UFO mask dilate / erode / jitter (HOLE(sec:evaluation)) ---
+# Wave 2 GPU arm. Same recipe as D6.1 tab:mask-sens (elvis blackout, x265 qp34,
+# fg_protect) so cells are comparable to the existing bear/camel gt arms
+# (hashes c0cc5f978dc4c99f / 8911d2e29a111443). mask_source stays ufo (default);
+# morphology is the orthogonal axis.
+#
+# Contract (see preprocessing.apply_mask_morphology):
+#   mask_morphology: none|dilate|erode|jitter
+#   mask_morphology_radius: pixels on the full-res mask (elliptical kernel
+#     diameter = 2*r+1 for dilate/erode; max |shift| for jitter)
+#   mask_morphology_seed: jitter RNG seed only (seed + frame_index)
+#
+# Erosion is the failure-mode arm: it shrinks FG so fg_protect covers less of
+# the true object (defeats hard FG protection). Dilate is the conservative
+# over-protect arm. Jitter is seeded spatial translation noise.
+# hash: pending
+# hash: 08cf9e58a63d55f1
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  mask_source: ufo
+  mask_morphology: dilate
+  mask_morphology_radius: 4
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+# hash: pending
+# hash: e802ae0a0a8b475d
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  mask_source: ufo
+  # Failure-mode arm: erosion defeats fg_protect by shrinking the protected FG.
+  mask_morphology: erode
+  mask_morphology_radius: 4
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+# hash: pending
+# hash: 61ef4d765a5e8353
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  mask_source: ufo
+  mask_morphology: jitter
+  mask_morphology_radius: 4
+  mask_morphology_seed: 0
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+# hash: pending
+# hash: 754b7d6ef0998f81
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  mask_source: ufo
+  mask_morphology: dilate
+  mask_morphology_radius: 4
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+# hash: pending
+# hash: 9d995b6c60062556
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  mask_source: ufo
+  # Failure-mode arm: erosion defeats fg_protect by shrinking the protected FG.
+  mask_morphology: erode
+  mask_morphology_radius: 4
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+# hash: pending
+# hash: bee9c70ae6dd9c95
+- component: elvis
+  video: camel
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  mask_source: ufo
+  mask_morphology: jitter
+  mask_morphology_radius: 4
+  mask_morphology_seed: 0
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34

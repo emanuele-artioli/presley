@@ -12,6 +12,10 @@ Covers:
   - `get_removability_scores`' mask_source-keyed cache filename, which is
     the mechanism that stops a non-'ufo' mask_source from silently
     returning another source's stale cached scores.
+  - Q10 mask morphology (`dilate`/`erode`/`jitter`): coverage contracts,
+    seeded jitter determinism, unknown-op raise, and morph-keyed cache
+    isolation (same lesson as mask_source — never silently reuse the
+    pristine-mask score path).
 
 Everything here is synthetic and CPU-only: no dataset/, no GPU, no UFO/YOLO
 model weights.
@@ -25,8 +29,10 @@ import pytest
 from PIL import Image
 
 from presley.preprocessing import (
+    apply_mask_morphology,
     get_gt_masks,
     get_removability_scores,
+    morphology_cache_suffix,
     probe_framerate,
     resolve_masks,
 )
@@ -363,3 +369,120 @@ def test_removability_scores_cache_path_differs_by_mask_source(tmp_path, monkeyp
     assert (key_dir / "removability_a0.50_b1.00_mask-gt.npy").exists()  # 'gt' gets its own file
     # different masks (all-BG-boosted vs all-FG) must not collapse to identical scores
     assert not np.array_equal(ufo_scores, gt_scores)
+
+
+# --- mask morphology (Q10) ---------------------------------------------------
+
+
+def _square_fg_mask(h=32, w=32, box=(8, 24, 8, 24)):
+    """Single-frame uint8 mask with a solid FG square; returns (1, H, W)."""
+    m = np.zeros((1, h, w), dtype=np.uint8)
+    y0, y1, x0, x1 = box
+    m[0, y0:y1, x0:x1] = 255
+    return m
+
+
+def test_dilate_expands_fg_coverage():
+    base = _square_fg_mask()
+    dilated = apply_mask_morphology(base, "dilate", radius=2)
+    assert (dilated > 0).sum() > (base > 0).sum()
+
+
+def test_erode_shrinks_fg_coverage():
+    """Erosion is the dangerous fg_protect defeat mode: FG shrinks so hard
+    protection covers less of the true object."""
+    base = _square_fg_mask()
+    eroded = apply_mask_morphology(base, "erode", radius=2)
+    assert (eroded > 0).sum() < (base > 0).sum()
+
+
+def test_jitter_is_deterministic_given_seed():
+    base = _square_fg_mask()
+    a = apply_mask_morphology(base, "jitter", radius=3, seed=42)
+    b = apply_mask_morphology(base, "jitter", radius=3, seed=42)
+    c = apply_mask_morphology(base, "jitter", radius=3, seed=99)
+    assert np.array_equal(a, b)
+    assert not np.array_equal(a, c)
+
+
+def test_unknown_morphology_op_raises():
+    with pytest.raises(ValueError, match="Unknown mask_morphology"):
+        apply_mask_morphology(_square_fg_mask(), "warp", radius=1)
+
+
+def test_morphology_none_and_radius_zero_are_identity():
+    base = _square_fg_mask()
+    assert np.array_equal(apply_mask_morphology(base, "none", radius=5), base)
+    assert np.array_equal(apply_mask_morphology(base, "dilate", radius=0), base)
+    assert morphology_cache_suffix("none", 5) == ""
+    assert morphology_cache_suffix("dilate", 0) == ""
+
+
+def test_morphology_cache_suffix_encodes_params():
+    assert morphology_cache_suffix("dilate", 4) == "_morph-dilate-r4"
+    assert morphology_cache_suffix("erode", 2) == "_morph-erode-r2"
+    assert morphology_cache_suffix("jitter", 3, seed=7) == "_morph-jitter-r3-s7"
+
+
+def test_removability_scores_cache_path_differs_by_morphology(tmp_path, monkeypatch):
+    """Morphology must never silently reuse the pristine-mask score cache —
+    same lesson as mask_source isolation."""
+    import presley.preprocessing as pp
+
+    def fake_reference_frames(video_name, width, height, dataset_dir, cache_dir):
+        return "fake.yuv", [np.zeros((height, width, 3), dtype=np.uint8)], 24.0
+
+    def fake_evca_scores(video_name, width, height, block_size, raw_yuv_path, reference_frames_dir, cache_dir):
+        nb = height // block_size, width // block_size
+        base = np.ones((1, *nb)) * 0.5
+        return base, base
+
+    def fake_resolve_masks(mask_source, *a, **kw):
+        # Honour morphology so dilate vs none actually differ in scores.
+        masks = np.zeros((1, 8, 8), dtype=np.uint8)
+        masks[0, 2:6, 2:6] = 255
+        return apply_mask_morphology(
+            masks,
+            kw.get("mask_morphology", "none"),
+            kw.get("mask_morphology_radius", 0),
+            kw.get("mask_morphology_seed", 0),
+        )
+
+    monkeypatch.setattr(pp, "get_reference_frames", fake_reference_frames)
+    monkeypatch.setattr(pp, "get_evca_scores", fake_evca_scores)
+    monkeypatch.setattr(pp, "resolve_masks", fake_resolve_masks)
+
+    cache_dir = str(tmp_path / "cache")
+    get_removability_scores("v", 8, 8, 4, 0.5, 1.0, str(tmp_path / "dataset"), cache_dir,
+                            mask_source="ufo")
+    get_removability_scores("v", 8, 8, 4, 0.5, 1.0, str(tmp_path / "dataset"), cache_dir,
+                            mask_source="ufo", mask_morphology="dilate",
+                            mask_morphology_radius=2)
+    get_removability_scores("v", 8, 8, 4, 0.5, 1.0, str(tmp_path / "dataset"), cache_dir,
+                            mask_source="ufo", mask_morphology="erode",
+                            mask_morphology_radius=2)
+    get_removability_scores("v", 8, 8, 4, 0.5, 1.0, str(tmp_path / "dataset"), cache_dir,
+                            mask_source="ufo", mask_morphology="jitter",
+                            mask_morphology_radius=2, mask_morphology_seed=0)
+
+    key_dir = tmp_path / "cache" / "v_8x8_bs4"
+    assert (key_dir / "removability_a0.50_b1.00.npy").exists()
+    assert (key_dir / "removability_a0.50_b1.00_morph-dilate-r2.npy").exists()
+    assert (key_dir / "removability_a0.50_b1.00_morph-erode-r2.npy").exists()
+    assert (key_dir / "removability_a0.50_b1.00_morph-jitter-r2-s0.npy").exists()
+
+
+def test_resolve_masks_applies_morphology_after_source(tmp_path, monkeypatch):
+    import presley.preprocessing as pp
+
+    base = _square_fg_mask(h=16, w=16, box=(4, 12, 4, 12))
+
+    def fake_ufo(*a, **kw):
+        return base.copy()
+
+    monkeypatch.setattr(pp, "get_ufo_masks", fake_ufo)
+    plain = resolve_masks("ufo", "v", 16, 16, 8, "ref", "cache", "ds")
+    dilated = resolve_masks("ufo", "v", 16, 16, 8, "ref", "cache", "ds",
+                            mask_morphology="dilate", mask_morphology_radius=2)
+    assert np.array_equal(plain, base)
+    assert (dilated > 0).sum() > (plain > 0).sum()
