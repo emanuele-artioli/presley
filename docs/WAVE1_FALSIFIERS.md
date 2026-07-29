@@ -20,7 +20,7 @@ never a trend, never a win.**
 | **F1** | **1** | **All-intra leave-one-SB-out bit map vs EVCA** | **DONE — direction CLOSED, EVCA already captures 93-99%** |
 | F2 | 1 | 64x64-snapped vs scattered 16x16 selection | todo |
 | **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed; `sub_jnd_significant` at n=7 (p=0.0156)** |
-| F4 | 2 | `--film-grain` on/off, selective | todo |
+| F4 | 2 | `--film-grain` strength sweep, denoise+synthesize | bounds registered, suite running |
 | **F5** | **2** | **Transform-aligned AC truncation vs Gaussian blur** | **DONE — my stated mechanism REFUTED; metrics disagree, no win claimed** |
 | **F6** | **3** | **Encoder-side FG gate: does restoring FG clear JND?** | **DONE — gate mechanism validated, but no FG restorer worth gating yet** |
 | F7 | 2 | Chroma-first degradation probe | todo |
@@ -104,6 +104,82 @@ callers (baselines, elvis, presley_ai), defaulting to omitted so output stays
 bit-exact and all 694 existing result hashes remain valid. The point is
 reproducibility -- the paper should be able to state the tuning it used rather
 than inherit an invisible default.
+
+---
+
+## F4 — SVT-AV1 film grain: denoise server-side, synthesize client-side
+
+**Question.** AV1 film-grain synthesis is PRESLEY's own thesis already shipped
+in a codec: strip a texture server-side because it is expensive to code, and
+regenerate it client-side from parameters. If the codec's built-in version of
+that already captures the available win on natural video, the Goal-2 operator
+family has to beat it rather than merely beat plain encoding -- and if it does
+not fire at all on this content, that is worth knowing before building
+operators premised on the same idea.
+
+**Mechanism check (run before the suite, and it changed the design).**
+SVT-AV1 v1.8.0 takes `film-grain=N` (N=1..50) plus `film-grain-denoise=1` via
+`-svtav1-params`. `N` is a *denoising strength*, not a cosmetic grain amount,
+and it dominates the result:
+
+- **`film-grain=1` is a literal no-op** -- same byte size as grain-off (71719 B)
+  and a bitwise-identical decode.
+- **`film-grain=8` cost +2.7% bits** on bear rather than saving any.
+- **`film-grain=50` saved 18.7% bits** (58287 B vs 71719 B).
+
+So a single-strength on/off test would have measured whichever arbitrary point
+was picked. **F4 sweeps strength**, which is the same correction F5 earned the
+hard way.
+
+**The decode is verified, because this is where the measurement could have
+died silently.** The bitstream does carry grain (`trace_headers`:
+`film_grain_params_present=1`, `apply_grain=1`, fresh `grain_seed` per frame),
+but that only proves the encoder wrote it. dav1d 1.5.3 (`--filmgrain 0/1`,
+installed in the separate `av1tools` conda env) gives the controlled A/B on one
+identical file: high-frequency energy **17.49 grain-suppressed vs 19.33
+grain-applied**. ffmpeg's libaom-av1 decode of the same file scores **19.34**,
+matching the grain-applied case, so **ffmpeg does synthesize the grain** and the
+normal decode path is sound.
+
+Worth recording because the intuitive check gives the wrong answer:
+`film-grain=50` decodes *smoother* than grain-off (19.33 vs 21.19) even with
+grain correctly applied, because the denoiser removes more texture than the
+synthesizer puts back. Reading that as "the decoder is dropping the grain" is
+wrong; only the fg0-vs-fg1 comparison on one file settles it. Compare
+strength levels against each other, never a grain arm against a grain-off arm,
+when asking whether synthesis happened.
+
+**Suite: n=8, pre-registered.** `tools/select_probe_videos.py -k 8` verbatim --
+motorbike, drift-straight, drift-turn, color-run, dancing, dogs-jump,
+bike-packing, bear. n=8 is chosen so the exact two-tailed sign test can reach
+p=2/2^8=0.0078 and survive Holm correction over the 3 strength levels; the k=4
+probe set would floor at 0.125 and could not have been significant at all. Note
+this set swaps camel for bear, which W0.3 showed are interchangeable (0.92 sd
+apart). 640x360, preset 8, fixed QP 43, `tune` omitted -- the same operating
+point as F3, so the arms differ only in the grain flags.
+
+**Two measurements, kept separate.** (a) bits at matched QP -- what the operator
+saves; (b) quality at matched rate, with the grain arm's QP re-searched to land
+nearest the control's byte size, exactly as F3 did, since comparing quality at
+equal QP would flatter whichever arm spends more bits.
+
+**Bounds, stated before reading any number.**
+
+- *Bits at matched QP.* Level 50: saves 5-30%, larger on textured clips. Level
+  8: -5% to +5%, i.e. plausibly costs bits (bear did). **Alarm if** any level
+  saves >50%, or if level 50 costs bits on a majority of the suite.
+- *Quality at matched rate, level 50 vs off.* PSNR **-0.3 to -2.5 dB** --
+  synthesized grain is uncorrelated with the source, so a PSNR loss is expected
+  and is not by itself evidence of harm. LPIPS and DISTS **-0.04 to +0.01**.
+  **Alarm if** PSNR drops >4 dB (grain far too strong, or a rate-match failure),
+  or if LPIPS improves by >0.05, which would clear JND -- too large for a codec
+  flag on 640x360 content, and more likely a decode or pairing bug than a win.
+- *Expected shape.* Bit saving tracks `bg_texture`; DAVIS clips are mostly
+  clean digital video with little real grain, so the honest prior is **a small
+  saving on a minority of clips and near-nothing on the rest**, which would
+  close the direction rather than open it.
+
+**Status: bounds registered, suite not yet run.**
 
 ---
 
