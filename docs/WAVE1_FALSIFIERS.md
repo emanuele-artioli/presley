@@ -22,7 +22,7 @@ never a trend, never a win.**
 | **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed, effect sub-JND** |
 | F4 | 2 | `--film-grain` on/off, selective | todo |
 | F5 | 2 | Transform-aligned AC truncation vs Gaussian blur | todo |
-| F6 | 3 | Encoder-side FG gate: does restoring FG clear JND? | **needs GPU — cannot be answered from existing runs (see below)** |
+| **F6** | **3** | **Encoder-side FG gate: does restoring FG clear JND?** | **DONE — gate mechanism validated, but no FG restorer worth gating yet** |
 | F7 | 2 | Chroma-first degradation probe | todo |
 
 ---
@@ -129,3 +129,52 @@ downscale/SR pairing used for BG.
 redundant -- the restorer already passes non-degraded blocks through untouched.
 It still matters for in-painters (ProPainter/E2FGVI), which regenerate whole
 frames and discard the transmitted prior.
+
+### F6, part 2 — the real experiment (NAFNet on codec-damaged FG)
+
+**Bounds, stated before measuring.** NAFNet is a GoPro *motion-deblur* model,
+out-of-domain for codec artifacts, so expect PSNR -1.0 to +0.5 dB (most likely
+slightly negative), LPIPS -0.02 to +0.05, and 10-40% of FG superblocks favouring
+restoration. Alarm at >+3 dB (too good for an out-of-domain model) or another
+0%/100% fraction.
+
+**Method.** Five runs spanning the FG-damage range, 24 frames each. NAFNet
+(width 64, fp32) applied to the *transmitted* frames; measured on protected FG
+pixels only (FG mask AND NOT degraded). `FG_gated` applies the encoder-side
+gate: per 64x64 block, keep whichever of transmitted/restored is closer to the
+reference.
+
+| video | qp | FG_tx | FG_nafnet | delta | blocks won | FG_gated | gate gain |
+|---|---|---|---|---|---|---|---|
+| tennis | 62 | 18.38 | 18.35 | -0.03 | 35.1% | 18.41 | +0.03 |
+| tennis | 58 | 21.38 | 21.28 | -0.10 | 25.3% | 21.39 | +0.01 |
+| bear | 51 | 26.12 | 26.08 | -0.04 | 27.1% | 26.13 | +0.01 |
+| camel | 62 | 24.62 | 24.53 | -0.09 | 40.5% | 24.67 | +0.05 |
+| pigs | 43 | 33.29 | 33.16 | -0.12 | 24.7% | 33.30 | +0.01 |
+
+**Verdict — three separate conclusions, and they point different ways.**
+
+1. **NAFNet is the wrong FG restorer.** Net loss on all five runs (-0.03 to
+   -0.12 dB). Unsurprising: it was trained to remove motion blur, and what
+   damages protected FG is codec quantization.
+2. **The gate mechanism is validated.** It turns a net-losing restorer into a
+   net gain (+0.01 to +0.05 dB) *by construction* -- FG is never worse than
+   transmitted, exactly the guarantee claimed for it. That property held on
+   every run, as it must.
+3. **But there is nothing here worth gating.** The gain is 10-50x below the
+   0.5 dB JND. "Restore FG too" is **not** worth pursuing with any restorer
+   currently wired.
+
+**What is not killed.** 24.7-40.5% of FG blocks are ones where *some* restorer
+beat the transmitted pixels -- so the headroom is not zero, the model is just
+wrong. And the class of model that would fit is precisely the
+**codec-conditioned** one (MoE-DiffIR et al.) from Goal 3, since codec artifacts
+are exactly what it is trained on. F6 and the Q6 mechanism argument therefore
+converge on the same recommendation. Revisit FG gating *only* after a
+codec-conditioned restorer is wired; the gate itself needs no further work.
+
+**Limitation.** Measured on mask-weighted PSNR over 24 frames/run, not on
+`foreground.lpips_mean` / `dists_fg`. Under the hard rules that makes this a
+screen, **not a citable FG claim**. It is sufficient for the negative
+conclusion (the magnitudes are far below any JND), but a positive FG result
+would have to be re-measured with the sanctioned metrics.
