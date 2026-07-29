@@ -23,7 +23,7 @@ never a trend, never a win.**
 | **F4** | **2** | **`--film-grain` strength sweep, denoise+synthesize** | **DONE — direction CLOSED for this content; -12.8% bits at a perceptible quality cost** |
 | **F5** | **2** | **Transform-aligned AC truncation vs Gaussian blur** | **DONE — my stated mechanism REFUTED; metrics disagree, no win claimed** |
 | **F6** | **3** | **Encoder-side FG gate: does restoring FG clear JND?** | **DONE — gate mechanism validated, but no FG restorer worth gating yet** |
-| F7 | 2 | Chroma-first degradation probe | todo |
+| F7 | 2 | Chroma-first degradation: oracle-colorization ceiling | bounds registered, suite running |
 
 ---
 
@@ -248,6 +248,63 @@ not help on the content PRESLEY actually evaluates on. The useful transfer to
 Goal 2 is narrower and sharper: a restoration prior that is *statistical* rather
 than *conditioned on the source* loses at matched rate here, which is an
 argument for content-conditioned restorers over parametric resynthesis.
+
+---
+
+## F7 — chroma-first degradation: is there enough chroma to be worth taking?
+
+**Question.** O3 is the only axis orthogonal to everything tried -- every
+operator to date is luma-structure focused. The premise is that chroma acuity is
+far below luma acuity, chroma is a non-trivial share of the bitstream, and
+colorization conditioned on preserved luma is well-posed. The premise that can
+be falsified cheaply is the middle one.
+
+**Why this can be settled without building a colorizer.** The best a
+colorization prior can ever do is return the *original* chroma. So the ceiling
+of O3 is exactly: flatten chroma, spend the freed bits on luma, then reinstate
+ground-truth chroma at the decoder. That oracle is free to compute -- take the
+decoded luma plane from the degraded arm and the chroma planes from the
+reference. **If a perfect colorizer does not beat the control, no real one
+will**, and O3 dies without a single model being trained.
+
+**Method.** Same n=8 pre-registered probe suite, 640x360, preset 8, fixed QP 43,
+`tune` omitted -- identical to F3 and F4 so the arms differ only in chroma.
+Three arms:
+
+- **control** -- normal encode at q43.
+- **flat, unrestored (floor)** -- chroma set to neutral (`lutyuv=u=128:v=128`)
+  before encoding, then rate-matched back to the control's byte size by lowering
+  QP, so the freed bits are actually spent on luma rather than banked. This is
+  the outcome with *no* restoration.
+- **flat + oracle chroma (ceiling)** -- the same bitstream, decoded, with the
+  reference's U and V planes substituted back in. Simulates a perfect
+  colorization prior.
+
+Whole-frame rather than BG-only on purpose: whole-frame is the **upper bound**
+on the available saving, and an upper bound is what kills or spares a
+workstream. A BG-only version can only save less.
+
+**Bounds, stated before reading any number.**
+
+- *Bit saving from flattening chroma at matched QP.* AV1 is already 4:2:0, so
+  chroma is subsampled before we touch it; expect **8-25%**. **Alarm if <2%**
+  (would mean the flatten did not reach the encoder) **or >45%** (too large for
+  two already-subsampled planes on natural content).
+- *Oracle ceiling vs control at matched rate.* The freed bits go to luma, so
+  expect PSNR **+0.2 to +1.5 dB better** and LPIPS **-0.03 to +0.01**. **Alarm
+  if the oracle is worse than control on PSNR** -- at equal bits with identical
+  chroma that should not happen, and would indicate a rate-match or
+  plane-recombination bug rather than a finding. **Alarm if better by >3 dB.**
+- *Unrestored floor.* Expected to be badly worse (a desaturated frame); it is
+  recorded to bracket the gap the colorizer would have to close, not as a
+  candidate result.
+
+**Decision rule, fixed in advance.** O3 survives **only** if the oracle ceiling
+clears JND against the control on the primary metric. A sub-JND ceiling means
+the entire workstream is competing for an imperceptible prize, which hard rule
+2b forbids reporting as a win no matter how consistent it is.
+
+**Status: bounds registered, suite not yet run.**
 
 ---
 
