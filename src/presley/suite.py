@@ -86,6 +86,12 @@ WORDING = {
         "consistent across the suite, statistically significant, and above the "
         "perceptual threshold -- may be worded as an improvement"
     ),
+    "perceptual_loss": (
+        "consistent across the suite, statistically significant, and above the "
+        "perceptual threshold, but in the WORSE direction -- this is a "
+        "perceptible degradation; word it as a cost or a regression, never as a "
+        "win, and never report the arm as preferable on this metric"
+    ),
     "sub_jnd_significant": (
         "consistent and statistically significant across the suite but BELOW the "
         "perceptual threshold -- report as a small, reproducible, imperceptible "
@@ -518,7 +524,8 @@ def assess_metric(pairs: List[PairedDelta], metric: str, region: str,
       min_attainable_p > alpha           -> underpowered
       corrected p > alpha                -> consistent_not_significant
       corrected p <= alpha, sub-JND      -> sub_jnd_significant
-      corrected p <= alpha, clears JND   -> perceptual_win
+      corrected p <= alpha, clears JND   -> perceptual_win  (direction better)
+                                         -> perceptual_loss (direction worse)
 
     "Clears JND" deliberately requires BOTH |mean delta| >= JND and a majority
     of individual pairs clearing it, so one large video cannot carry a suite of
@@ -600,7 +607,14 @@ def assess_metric(pairs: List[PairedDelta], metric: str, region: str,
     elif not out.significant:
         out.verdict = "consistent_not_significant"
     elif out.clears_jnd:
-        out.verdict = "perceptual_win"
+        # Direction decides which of the two above-JND verdicts applies. Judging
+        # on clears_jnd alone labelled a consistent, significant, perceptible
+        # DEGRADATION a "perceptual_win" and handed back wording that said it
+        # "may be worded as an improvement" -- the mirror image of the
+        # dressed-up-delta failure the hard rules exist to prevent. F4
+        # (film-grain=50: PSNR -2.01 dB, LPIPS +0.0675, unanimous 8/8 worse) is
+        # the first suite to reach this branch in the worse direction.
+        out.verdict = "perceptual_loss" if out.direction == "worse" else "perceptual_win"
     else:
         out.verdict = "sub_jnd_significant"
 
@@ -610,7 +624,7 @@ def assess_metric(pairs: List[PairedDelta], metric: str, region: str,
             "includes 0 -- the direction is consistent, the magnitude is not "
             "pinned down; state the CI, do not state the mean alone"
         )
-    if out.verdict == "perceptual_win" and not is_primary:
+    if out.verdict in ("perceptual_win", "perceptual_loss") and not is_primary:
         out.warnings.append(
             f"{metric} is not the primary metric for region={region} "
             f"({PRIMARY_METRIC.get(region)}); corroborating metrics do not carry claims "

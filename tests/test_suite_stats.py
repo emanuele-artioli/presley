@@ -112,6 +112,36 @@ def test_perceptual_win_needs_magnitude_on_a_majority_of_pairs():
     assert genuine.verdict == "perceptual_win"
 
 
+def test_above_jnd_degradation_is_a_loss_not_a_win():
+    """A consistent, significant, above-JND move in the WORSE direction must not
+    borrow the win verdict. It did: the branch keyed on clears_jnd alone, so
+    F4's film-grain=50 arm (unanimous 8/8 worse, LPIPS +0.0675) came back as
+    `perceptual_win` carrying wording that said it 'may be worded as an
+    improvement' -- the mirror image of the dressed-up-delta failure.
+    """
+    result = assess_metric(pairs_from([+0.09] * 8), "lpips", "foreground", is_primary=True)
+    assert result.direction == "worse"
+    assert result.clears_jnd is True
+    assert result.significant is True
+    assert result.verdict == "perceptual_loss"
+    assert "degradation" in result.wording
+    assert "improvement" not in result.wording
+
+    # The mirror case must be untouched.
+    win = assess_metric(pairs_from([-0.09] * 8), "lpips", "foreground", is_primary=True)
+    assert win.direction == "better"
+    assert win.verdict == "perceptual_win"
+
+
+def test_degradation_on_a_corroborating_metric_still_carries_the_hard_rule_3_caveat():
+    """The primary-metric warning attaches to both above-JND verdicts; a loss
+    read off a non-primary metric is as unciteable as a win read off one."""
+    result = assess_metric(pairs_from([-1.0] * 8, metric="psnr"), "psnr", "foreground",
+                           is_primary=False)
+    assert result.verdict == "perceptual_loss"
+    assert any("not the primary metric" in w for w in result.warnings)
+
+
 def test_mixed_direction_never_produces_a_claim():
     result = assess_metric(pairs_from([-0.02, 0.02, -0.02, 0.02, -0.02, 0.02, -0.02]),
                            "lpips", "foreground", is_primary=True)
