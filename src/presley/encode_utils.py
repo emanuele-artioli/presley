@@ -402,8 +402,29 @@ def decode_video(video_path: str, output_dir: str, framerate: float = None, star
     return True
 
 
-def encode_video_svtav1_qp(input_video_or_pattern: str, output_video: str, framerate: float, qp: int, preset: str = "8") -> None:
+def encode_video_svtav1_qp(input_video_or_pattern: str, output_video: str, framerate: float, qp: int, preset: str = "8", tune: int | None = None) -> None:
+    """Fixed-QP SVT-AV1 encode.
+
+    ``tune`` selects SVT-AV1's RDO objective: 0=VQ, 1=PSNR, 2=SSIM. **The
+    encoder's own default is 1 (PSNR)**, verified empirically -- omitting the
+    parameter produces a byte-identical file to passing ``tune=1``. So every
+    PRESLEY encode predating this parameter was PSNR-tuned, while the paper's
+    claims are perceptual.
+
+    Measured on camel + the four probe medoids at 640x360, rate-matched: VQ
+    improves LPIPS by 0.015-0.031 and DISTS by 0.010-0.015, and costs 0.11-0.36
+    dB PSNR. Consistent in direction 5/5, but **every delta is below the JND
+    thresholds in compare.py** (0.05 / 0.05 / 0.5), so this is not a perceptible
+    win and the historical PSNR tuning did not invalidate past comparisons.
+
+    Left as ``None`` (omit the flag) by default: that keeps output bit-exact
+    with every existing result, and compute_experiment_hash only sees keys that
+    are actually present, so no cached run is invalidated.
+    """
+    params = f'rc=0:q={qp}'
+    if tune is not None:
+        params += f':tune={int(tune)}'
     input_args = ['-i', input_video_or_pattern] if '%' not in input_video_or_pattern else ['-framerate', str(framerate), '-i', input_video_or_pattern]
     subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
-                    '-c:v', 'libsvtav1', '-preset', preset, '-svtav1-params', f'rc=0:q={qp}', output_video], check=True)
+                    '-c:v', 'libsvtav1', '-preset', preset, '-svtav1-params', params, output_video], check=True)
 
