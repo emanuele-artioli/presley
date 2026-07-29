@@ -21,7 +21,7 @@ no public inference), and paper HOLEs av1/goal2/priced-trade n>2.
 
 ### Code repo `presley/`
 
-- `main` @ *(this handoff commit)* — Wave 1 merges (Q7/Q8/Q9/Q10) + queue/
+- `main` @ `d46449b` (pushed) — Wave 1 merges (Q7/Q8/Q9/Q10) + queue/
   HANDOFF refresh; `vendor/` gitignored.
 - Restorers wired: realesrgan, bsrgan, real_hat_gan, stream_diffvsr, dc_vsr
   (stub), instantir, nafnet, unsharp, inpainters.
