@@ -6,8 +6,9 @@ Context (referee-response item, TOMM revision): PRESLEY's Gaussian-noise
 degradation (paired with the ``instantir`` restorer, see
 ``RESTORER_DEGRADATIONS`` in ``src/presley/components/presley_ai.py``) is
 already a confirmed dead end on rate grounds -- a fixed-QP screen documented
-in the paper's RESEARCH_LOG showed noise costs +213% to +334% more bits than
-the pristine baseline at matched QP, the worst of every degradation measured.
+in the paper's research-log/dead-ends.md showed noise costs +213% to +334%
+more bits than the pristine baseline at matched QP, the worst of every
+degradation measured.
 A referee asked *why*, specifically in terms of encoder mode decisions and
 rate allocation, not just the bitrate outcome. This script measures that
 mechanism directly with x265's own per-frame analysis log (``--csv`` /

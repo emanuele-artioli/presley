@@ -53,5 +53,5 @@ Read `/home/itec/emanuele/.agent-rules/skills/results-report/SKILL.md` and follo
   that baseline **including the losers**. Never quote a one-tailed p (5/5 is
   0.0625, not 0.031). For "X has no effect" claims use
   `suite.equivalence_tost` — failing a difference test is not evidence of no
-  difference. Background: RESEARCH_LOG hard rule 2b,
+  difference. Background: `research-log/hard-rules.md` rule 2b,
   `docs/SIGNIFICANCE_AUDIT.md`.
