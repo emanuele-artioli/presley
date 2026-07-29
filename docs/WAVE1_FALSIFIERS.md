@@ -20,7 +20,7 @@ never a trend, never a win.**
 | **F1** | **1** | **All-intra leave-one-SB-out bit map vs EVCA** | **DONE — direction CLOSED, EVCA already captures 93-99%** |
 | F2 | 1 | 64x64-snapped vs scattered 16x16 selection | todo |
 | **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed; `sub_jnd_significant` at n=7 (p=0.0156)** |
-| F4 | 2 | `--film-grain` strength sweep, denoise+synthesize | bounds registered, suite running |
+| **F4** | **2** | **`--film-grain` strength sweep, denoise+synthesize** | **DONE — direction CLOSED for this content; -12.8% bits at a perceptible quality cost** |
 | **F5** | **2** | **Transform-aligned AC truncation vs Gaussian blur** | **DONE — my stated mechanism REFUTED; metrics disagree, no win claimed** |
 | **F6** | **3** | **Encoder-side FG gate: does restoring FG clear JND?** | **DONE — gate mechanism validated, but no FG restorer worth gating yet** |
 | F7 | 2 | Chroma-first degradation probe | todo |
@@ -179,7 +179,75 @@ equal QP would flatter whichever arm spends more bits.
   saving on a minority of clips and near-nothing on the rest**, which would
   close the direction rather than open it.
 
-**Status: bounds registered, suite not yet run.**
+**Result 1 — bits at matched QP (q=43), grain arm vs control.**
+
+| video | L=8 | L=25 | L=50 |
+|---|---|---|---|
+| bear | +3.7% | -5.7% | -19.2% |
+| bike-packing | +3.2% | -4.5% | -14.8% |
+| color-run | +4.1% | +0.0% | -5.7% |
+| dancing | +1.2% | -3.4% | -10.9% |
+| dogs-jump | +8.3% | -1.8% | -13.9% |
+| drift-straight | +2.1% | -0.7% | -7.3% |
+| drift-turn | +2.7% | -3.9% | -14.7% |
+| motorbike | +3.7% | -4.4% | -15.8% |
+| **mean** | **+3.6%** | **-3.0%** | **-12.8%** |
+
+**Level 8 costs bits on 8/8 videos.** The grain parameters are not free, and at
+low strength the denoise saves less than they cost. Only level 50 saves on the
+whole suite. Rate-matching then landed within 3.1% of the control's byte size
+on every arm (mean 1.1-2.0%), so the quality comparison below is at equal spend.
+
+**Result 2 — quality at matched rate. It is a perceptible degradation.**
+Via `assess_metric`, family_size=3 (the three strength levels), n=8:
+
+| level | dPSNR | dSSIM | dLPIPS | dDISTS | LPIPS verdict |
+|---|---|---|---|---|---|
+| 8 | -0.43 | -0.0087 | +0.0044 (5+/3-) | +0.0000 | `no_consistent_direction` |
+| 25 | -1.00 | -0.0291 | +0.0222 (7+/1-) | +0.0147 | `no_consistent_direction` |
+| 50 | **-2.01** | **-0.0663** | **+0.0675 (8/8 worse)** | +0.0427 | **`perceptual_loss`** |
+
+(Positive dLPIPS/dDISTS = worse.) At level 50 the sign test is unanimous 8/8 on
+every metric, p=0.0078, Holm-corrected 0.0234, and PSNR, SSIM and LPIPS all
+clear JND **in the worse direction**. Mandated wording:
+
+> consistent across the suite, statistically significant, and above the
+> perceptual threshold, but in the WORSE direction -- this is a perceptible
+> degradation; word it as a cost or a regression, never as a win
+
+**This surfaced a defect in the suite layer itself**, now fixed: `assess_metric`
+picked between its two above-JND verdicts on `clears_jnd` alone, so this arm
+first came back as `perceptual_win` with wording saying it "may be worded as an
+improvement". F4 is the first suite to reach that branch in the worse direction.
+No landed verdict changed. See the `perceptual_loss` verdict in `suite.py`.
+
+**Alarm raised and closed.** dLPIPS +0.0675 breached the registered bound
+(-0.04 to +0.01) and dogs-jump's -3.48 dB PSNR breached the -2.5 dB floor. Both
+breaches are in the *harmful* direction, so they inflate no claim, but they were
+investigated before being reported. Closed on four checks: the rate match is
+tight (<=3.1%); grain synthesis is verified applied (see the mechanism check);
+the effect is **monotone in strength on all 8 videos with no exceptions**, a
+dose-response a pairing or decode bug does not produce; and the sign is what the
+content predicts. The bound was simply set too generously -- the pre-registered
+prior said "near-nothing", and the honest answer is "actively harmful".
+
+**Verdict: direction CLOSED for this content.** AV1's own
+degrade-server-side/restore-client-side is a real bit saving (-12.8% at level
+50) that is **not free**: at matched rate, plain encoding at a finer QP beats
+denoise-plus-synthesize on every video in the suite. There is no operating point
+in 1..50 that both saves bits and holds quality -- low strength costs bits for
+nothing, high strength buys bits with perceptible damage.
+
+**Limitation, and it bounds the claim tightly.** DAVIS is clean digital video
+with little real grain, so the denoiser removes genuine detail and the
+synthesizer replaces it with noise uncorrelated with the source. This closes
+film-grain synthesis **on this dataset**, not on grainy cinematic source, where
+the mechanism is designed to pay off. Do not generalize this to "parametric
+texture regeneration does not work" -- it says the codec's built-in version does
+not help on the content PRESLEY actually evaluates on. The useful transfer to
+Goal 2 is narrower and sharper: a restoration prior that is *statistical* rather
+than *conditioned on the source* loses at matched rate here, which is an
+argument for content-conditioned restorers over parametric resynthesis.
 
 ---
 
