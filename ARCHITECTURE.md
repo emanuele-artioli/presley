@@ -56,6 +56,10 @@ evaluation/  ──►  metrics per region  ──►  invariants.check_result
 | `io.py` | Frame and mask loading, directory hygiene. |
 | `utils.py` | Small shared helpers. |
 | `hnerv_arch.py`, `hnerv_utils.py` | HNeRV learned-codec baseline. |
+| `hat_arch.py` | Vendored HAT architecture (XPixelGroup/HAT), inference only, float32 — backs the Real-HAT-GAN restorer. |
+| `nafnet_arch.py` | Vendored NAFNet architecture (megvii-research/NAFNet), inference only. |
+| `stream_diffvsr.py` | Stream-DiffVSR glue: subprocess inference against an isolated vendor checkout and env. |
+| `dc_vsr.py` | DC-VSR weight layout plus the gate that refuses inference (HF repo ships UNet EMA weights only). |
 
 ### Evaluation
 | Module | Responsibility |
