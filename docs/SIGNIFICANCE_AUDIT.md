@@ -1,6 +1,6 @@
 # Significance audit — re-examining "within JND, therefore a tie"
 
-Companion to the hard-rule 2b amendment (`RESEARCH_LOG.md`) and
+Companion to the hard-rule 2b amendment (`research-log/hard-rules.md`) and
 `src/presley/suite.py`. Re-runs every landed claim currently worded as a
 within-JND tie through the suite layer, to answer one question: **does any of
 them now read differently?**
