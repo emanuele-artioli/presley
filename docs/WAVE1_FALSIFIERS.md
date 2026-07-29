@@ -21,7 +21,7 @@ never a trend, never a win.**
 | F2 | 1 | 64x64-snapped vs scattered 16x16 selection | todo |
 | **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed, effect sub-JND** |
 | F4 | 2 | `--film-grain` on/off, selective | todo |
-| F5 | 2 | Transform-aligned AC truncation vs Gaussian blur | todo |
+| **F5** | **2** | **Transform-aligned AC truncation vs Gaussian blur** | **DONE — my stated mechanism REFUTED; metrics disagree, no win claimed** |
 | **F6** | **3** | **Encoder-side FG gate: does restoring FG clear JND?** | **DONE — gate mechanism validated, but no FG restorer worth gating yet** |
 | F7 | 2 | Chroma-first degradation probe | todo |
 
@@ -231,3 +231,68 @@ denominator (damage after restoration) varies by **6.2 dB within a single run**.
 The entire opportunity is in the denominator. This is the strongest single
 argument for the plan's reframing, and it now rests on two independent
 measurements rather than one.
+
+---
+
+## F5 — transform-aligned AC truncation vs Gaussian blur
+
+**Prediction under test (O2).** Gaussian blur is a pixel-domain kernel that
+straddles transform block boundaries, producing ringing the codec must still
+encode; AC truncation writes exact zeros in the codec's own basis. So AC
+truncation should be **cheaper in bits** at equal perceptual loss, i.e. it
+should strictly dominate blur.
+
+**Bounds, stated before measuring.** AC truncation better on LPIPS by 0.00-0.05
+at matched rate, and/or 5-25% fewer bits at matched quality. Alarm if AC is
+*worse* by >0.05 LPIPS (refutes the mechanism) or bits differ by >50%.
+
+**Method.** camel, 30 frames, 640x360. Same 25% superblock selection (top-k by
+EVCA) fed to both operators. Blur: `cv2.GaussianBlur` k=15. AC truncation:
+per-channel DCT in YCrCb on the codec's own 8x8 grid, keeping only the top-left
+2x2 coefficients. Both encoded SVT-AV1 preset 8 across QP 39/41/43/45/47, then
+compared on a common bitrate axis by log-rate interpolation over the
+**overlapping** rate range -- not at hand-picked matched pairs.
+
+**Result 1 — the mechanism prediction is REFUTED.** AC truncation costs
+**+36% MORE bits than blur at equal QP** (154,488 vs 113,441 at QP 39; 88,741
+vs 66,762 at QP 47). "Codec-aligned zeros are cheaper" did not hold. The
+straightforward reason: keeping 2x2 of 8x8 coefficients still preserves
+substantial content, while a 15-tap blur removes far more information. The two
+operators were never matched in degradation strength, and the bit ordering is
+dominated by that, not by transform alignment.
+
+**Result 2 — at matched rate the metrics disagree, systematically.**
+
+| arm | QP | bytes | LPIPS | DISTS |
+|---|---|---|---|---|
+| blur | 39 | 113,441 | 0.3029 | 0.1576 |
+| blur | 43 | 86,223 | 0.3212 | 0.1668 |
+| blur | 47 | 66,762 | 0.3384 | 0.1750 |
+| actr | 39 | 154,488 | 0.2235 | 0.1568 |
+| actr | 43 | 115,141 | 0.2445 | 0.1662 |
+| actr | 47 | 88,741 | 0.2666 | 0.1756 |
+
+Interpolated over the overlapping rate range [88,741, 113,441]:
+- **LPIPS: AC better by -0.0530, at 100% of rate points** -- clears the 0.05 JND.
+- **DISTS: AC worse by +0.0095, at 0% of rate points** -- sub-JND, but perfectly
+  consistent in direction.
+
+**Verdict — no win claimed.** The project's rules require LPIPS *and* DISTS for
+a quality claim, and here they conflict in sign at every rate point. That is a
+systematic disagreement, not noise, so cherry-picking LPIPS would be exactly the
+failure the hard rules exist to prevent. Plausible reading: at matched rate AC
+truncation preserves edge structure that LPIPS's AlexNet features reward, while
+introducing 8x8 blocking that DISTS's texture term penalises -- but that is a
+hypothesis, not a measurement.
+
+**What this does and does not kill.** It kills *my stated mechanism* for O2
+(codec-aligned zeros are not cheaper). It does not kill AC truncation as an
+operator: a 0.053 LPIPS advantage holding at 100% of rate points is a real
+signal worth understanding. The next step is not more blur-vs-AC at these
+settings but (a) sweeping operator strength rather than only QP, so the two are
+matched in degradation rather than only in rate, and (b) measuring
+**post-restoration**, since the Goal-2 family is defined as (operator, prior)
+pairs and this comparison is entirely pre-restoration.
+
+**Limitations.** One video, 30 frames, one arbitrary strength setting per
+operator (keep=2, k=15), pre-restoration, and no FG/BG split.
