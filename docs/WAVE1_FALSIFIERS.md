@@ -23,7 +23,7 @@ never a trend, never a win.**
 | **F4** | **2** | **`--film-grain` strength sweep, denoise+synthesize** | **DONE — direction CLOSED for this content; -12.8% bits at a perceptible quality cost** |
 | **F5** | **2** | **Transform-aligned AC truncation vs Gaussian blur** | **DONE — my stated mechanism REFUTED; metrics disagree, no win claimed** |
 | **F6** | **3** | **Encoder-side FG gate: does restoring FG clear JND?** | **DONE — gate mechanism validated, but no FG restorer worth gating yet** |
-| F7 | 2 | Chroma-first degradation: oracle-colorization ceiling | bounds registered, suite running |
+| **F7** | **2** | **Chroma-first degradation: oracle-colorization ceiling** | **DONE — O3 CLOSED; only 5% of bits are chroma, and a perfect colorizer wins sub-JND** |
 
 ---
 
@@ -304,7 +304,68 @@ clears JND against the control on the primary metric. A sub-JND ceiling means
 the entire workstream is competing for an imperceptible prize, which hard rule
 2b forbids reporting as a win no matter how consistent it is.
 
-**Status: bounds registered, suite not yet run.**
+**Result 1 — there is barely any chroma to take.** Bits freed by removing
+**all** chroma information at matched QP:
+
+| video | dBits | | video | dBits |
+|---|---|---|---|---|
+| color-run | **-12.59%** | | drift-turn | -4.97% |
+| drift-straight | -6.47% | | bike-packing | -3.72% |
+| dancing | -5.02% | | motorbike | -3.16% |
+| dogs-jump | -3.06% | | bear | -1.59% |
+
+**Mean -5.07%**, and that is the *upper bound*: whole-frame, total chroma
+destruction, with no restoration cost counted. A BG-only operator can only save
+less. (color-run is aptly named -- it is the one genuinely chroma-heavy clip in
+the suite, and even it gives up only 12.6%.)
+
+**Alarm raised and closed.** The registered bound was 8-25% with an explicit
+alarm below 2%; bear came in at 1.59% and 7/8 videos fell under the bound. This
+was checked before being reported, because "the filter never reached the
+encoder" produces exactly this signature. It did reach it: the flat arm's
+decoded chroma deviates from neutral by **exactly 0.000** and its mean HSV
+saturation is **exactly 0**, against 5.007 and 55.1 for the control. The chroma
+really is gone, and it really was only worth ~5%. The bound was set from
+general-video intuition and was simply too optimistic for this operating point.
+
+**Result 2 — even a perfect colorizer wins only an imperceptible amount.**
+At matched rate (within 3.2%), n=8, family_size=1:
+
+| arm | dPSNR | dSSIM | dLPIPS | dDISTS | LPIPS verdict |
+|---|---|---|---|---|---|
+| **ceiling** (oracle chroma) | +0.65 | +0.0031 | **-0.0305** (8/8 better) | -0.0225 | **`sub_jnd_significant`** |
+| floor (no restoration) | -4.82 | +0.0034 | +0.1435 (8/8 worse) | +0.0986 | `perceptual_loss` |
+
+The ceiling is unanimous 8/8 better on LPIPS and DISTS (Holm p=0.0078) but
+**-0.0305 against a 0.05 JND -- it does not clear it**. PSNR does clear JND
+(+0.65 vs 0.5) and comes back `perceptual_win`, but PSNR is a corroborating
+metric and `assess_metric` attaches the hard rule 3 caveat to it automatically;
+it cannot carry this claim.
+
+**Verdict: O3 CLOSED, on the pre-registered decision rule.** The rule fixed in
+advance was that O3 survives only if the oracle ceiling clears JND on the
+primary metric. It does not. The full shape of the trade is worse than that
+single line suggests:
+
+- the prize is **5% of the bitstream** and a **sub-JND** quality change;
+- to collect it, a colorization prior would have to close the floor-to-ceiling
+  gap of **0.174 LPIPS** (from +0.1435 to -0.0305) **perfectly**;
+- any real colorizer lands strictly between those two numbers, and the entire
+  span between "perfect" and "useful" is smaller than the JND it is trying to
+  win.
+
+So the premise fails at its middle claim. Chroma acuity being low and
+colorization being well-posed are both true and both irrelevant, because chroma
+is **not** a non-trivial share of this bitstream. No colorization model needs to
+be built to know this.
+
+**Scope.** Measured at fixed QP 43 -- the starved operating point where hard
+rule 8 says generative methods can pay off at all, and the one the paper's
+claims live at. AV1 is already 4:2:0 before we touch it, and at coarse QP the
+chroma planes are cheap to code (the control's own decoded chroma deviates from
+neutral by only 5.007). At a much finer QP chroma would be a larger share, but
+that is not a regime where the rest of the approach applies. This closes O3 for
+PRESLEY's operating point, which is what the falsifier was for.
 
 ---
 
