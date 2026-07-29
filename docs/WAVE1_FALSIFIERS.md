@@ -22,7 +22,7 @@ never a trend, never a win.**
 | **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed, effect sub-JND** |
 | F4 | 2 | `--film-grain` on/off, selective | todo |
 | F5 | 2 | Transform-aligned AC truncation vs Gaussian blur | todo |
-| F6 | 3 | Encoder-side FG gate: does restoring FG clear JND? | todo |
+| F6 | 3 | Encoder-side FG gate: does restoring FG clear JND? | **needs GPU — cannot be answered from existing runs (see below)** |
 | F7 | 2 | Chroma-first degradation probe | todo |
 
 ---
@@ -81,3 +81,51 @@ callers (baselines, elvis, presley_ai), defaulting to omitted so output stays
 bit-exact and all 694 existing result hashes remain valid. The point is
 reproducibility -- the paper should be able to state the tuning it used rather
 than inherit an invisible default.
+
+---
+
+## F6 — encoder-side FG gate (blocked on GPU; the cheap version is a tautology)
+
+**Question.** FG is protected, so `composite_passthrough` reproduces transmitted
+FG pixels bit-exact and the restorer's FG output is discarded. Would using the
+restored FG ever be better? If so, an encoder-side per-block gate (~1 bit/block
+through the existing side channel) could take the better of the two, giving FG
+a construction-level guarantee of never being worse than transmitted.
+
+**Bounds, stated before measuring.** Real-ESRGAN runs over the whole frame
+including FG, which was never degraded; SR on undegraded content usually adds
+artifacts, so expect restored FG *worse* by 0.5-5 dB PSNR, LPIPS ambiguous, and
+5-35% of FG superblocks favouring restoration. **Alarm if** restoration wins
+globally by >2 dB (would contradict fg_protect) **or the favoured fraction is
+exactly 0% or 100%** (misalignment bug).
+
+**Result: the alarm fired, and it was correct.** Across all 24 clean 640-wide
+Real-ESRGAN runs (35,612 FG superblocks): delta exactly **+0.00 dB** and
+**0.0%** of blocks favoured restoration, on every single run.
+
+**Diagnosis.** `_adaptive_block_pyramid_upscale` (`restoration.py:624`) writes
+**only blocks with strength > 0**. Verified on `e2cb6bed165d69b1` frame 0:
+57,582 pixels differ between restored and transmitted, **all of them inside the
+degraded region, zero outside**. So `restored_frames/*.png` is bit-identical to
+the transmitted frame on every protected FG pixel.
+
+The measurement was therefore comparing a frame against itself. It carries no
+information about restoring FG, and **must not** be read as "restoration never
+helps FG" -- that conclusion would be flatly wrong and would kill a workstream
+for a non-reason. This is the bound-before-believing rule paying for itself.
+
+**What F6 actually requires.** New GPU work: run a restorer over the protected
+FG region and compare against the transmitted FG. Note the target is real --
+protected FG is *not* pristine, it is codec-damaged at starved QP. Measured
+transmitted FG-PSNR across those 24 runs spans **18.80 dB (tennis, qp62) to
+32.89 dB (pigs, qp43)**, so at the starved end there is substantial headroom for
+a restorer to clean up codec artifacts.
+
+Because FG is never deliberately degraded, the matched operator here is a
+same-resolution restoration prior (NAFNet, or an SR model at scale 1), not the
+downscale/SR pairing used for BG.
+
+**Corollary worth noting.** For Real-ESRGAN, `composite_passthrough` is
+redundant -- the restorer already passes non-degraded blocks through untouched.
+It still matters for in-painters (ProPainter/E2FGVI), which regenerate whole
+frames and discard the transmitted prior.
