@@ -43,6 +43,14 @@ jobs:
           python-version: "3.10"
           cache: "pip"
 
+      # This project is ffmpeg-centric and the hosted runner ships without it.
+      # Without this the ffprobe test skips itself rather than failing, so CI
+      # would stay green while silently losing the only measured framerate case.
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
       # The runtime deps in pyproject are pinned around a CUDA build and several
       # forked model repos, none of which the fast tier touches. CI installs CPU
       # torch plus only what the tested modules import, so the suite stays a few
