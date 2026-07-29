@@ -17,7 +17,7 @@ never a trend, never a win.**
 
 | ID | Goal | Test | Status |
 |---|---|---|---|
-| F1 | 1 | All-intra leave-one-SB-out bit map vs EVCA | todo |
+| **F1** | **1** | **All-intra leave-one-SB-out bit map vs EVCA** | **DONE — direction CLOSED, EVCA already captures 93-99%** |
 | F2 | 1 | 64x64-snapped vs scattered 16x16 selection | todo |
 | **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed, effect sub-JND** |
 | F4 | 2 | `--film-grain` on/off, selective | todo |
@@ -178,3 +178,56 @@ codec-conditioned restorer is wired; the gate itself needs no further work.
 screen, **not a citable FG claim**. It is sufficient for the negative
 conclusion (the magnitudes are far below any JND), but a positive FG result
 would have to be re-measured with the sanctioned metrics.
+
+---
+
+## F1 — is a true per-superblock bit map better than the EVCA proxy?
+
+**Question.** The selection score uses EVCA complexity as a stand-in for "how
+many bits this block costs". If the true marginal bit cost ranks blocks
+differently, a measured bit map would beat the proxy and Question A (build
+`bitcost.py`) is worth days of work. If not, the numerator of the objective is
+already solved and the direction closes.
+
+**Bounds, stated before measuring.** Spearman rho between EVCA SC and true
+marginal bits: 0.4-0.8 (EVCA is *designed* as a bitrate predictor). Selecting by
+true bits should beat EVCA by 0-15% of bits at matched 25% budget. Alarm at
+rho < 0 (anti-correlation would mean a bug) or >30% difference.
+
+**Method.** Exact leave-one-superblock-out, all-intra so each measurement is
+independent and no additivity assumption is needed. For each frame: encode it
+(SVT-AV1, preset 8, QP 43, single frame), then re-encode 60 times with one 64x64
+superblock mean-filled; the size difference is that superblock's exact marginal
+bit cost. Compare the resulting map against EVCA SC pooled to the same grid.
+
+**Result.**
+
+| video | frames | rho | EVCA captures |
+|---|---|---|---|
+| camel | 8 | +0.938 (p=1.3e-221, n=480) | 99.4% |
+| dancing | 3 | +0.958 | 99.1% |
+| motorbike | 3 | +0.754 | 93.0% |
+
+"EVCA captures" = bits freed by selecting the top-25% of superblocks by EVCA SC,
+as a fraction of the bits freed by selecting the top-25% by *true* marginal cost.
+
+**Verdict — direction CLOSED.** EVCA already recovers 93-99% of the achievable
+bit saving. A perfect bit oracle would add at most 1-7%, and only two of the
+three videos leave even that much on the table. **Do not build `bitcost.py`.**
+That is days of work saved by an afternoon of encoding.
+
+Two of three rho values landed *above* the predicted 0.4-0.8 band. That is not
+an alarm but it does need explaining: the all-intra design measures *intra* cost,
+and EVCA SC is a spatial-complexity measure, so in this regime the two are close
+to measuring the same thing. The honest reading is that 93-99% is likely an
+**upper** bound on EVCA's skill -- under inter coding, where temporal prediction
+dominates and EVCA's TC term would carry the load, the proxy could rank less
+well. The conclusion still holds for the intra-dominated starved-QP regime the
+paper operates in, but a reviewer could fairly ask about inter, and the answer
+is that this experiment does not cover it.
+
+**Where this leaves Goal 1.** The numerator (bits) is solved; W0.2 showed the
+denominator (damage after restoration) varies by **6.2 dB within a single run**.
+The entire opportunity is in the denominator. This is the strongest single
+argument for the plan's reframing, and it now rests on two independent
+measurements rather than one.
