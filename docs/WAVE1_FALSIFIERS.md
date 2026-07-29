@@ -18,7 +18,7 @@ never a trend, never a win.**
 | ID | Goal | Test | Status |
 |---|---|---|---|
 | **F1** | **1** | **All-intra leave-one-SB-out bit map vs EVCA** | **DONE — direction CLOSED, EVCA already captures 93-99%** |
-| F2 | 1 | 64x64-snapped vs scattered 16x16 selection | todo |
+| F2 | 1 | 64x64-snapped vs scattered 16x16 at matched area | bounds registered, suite running |
 | **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed; `sub_jnd_significant` at n=7 (p=0.0156)** |
 | **F4** | **2** | **`--film-grain` strength sweep, denoise+synthesize** | **DONE — direction CLOSED for this content; -12.8% bits at a perceptible quality cost** |
 | **F5** | **2** | **Transform-aligned AC truncation vs Gaussian blur** | **DONE — my stated mechanism REFUTED; metrics disagree, no win claimed** |
@@ -248,6 +248,78 @@ not help on the content PRESLEY actually evaluates on. The useful transfer to
 Goal 2 is narrower and sharper: a restoration prior that is *statistical* rather
 than *conditioned on the source* loses at matched rate here, which is an
 argument for content-conditioned restorers over parametric resynthesis.
+
+---
+
+## F2 — is the block-size penalty about signaling, or about which pixels?
+
+**Question.** The existing ablation says small blocks cost bits. Pulled from the
+results index at matched video / resolution / degradation / component / QP,
+varying only `block_size`:
+
+| run | bs8 | bs16 | bs24 | bs32 |
+|---|---|---|---|---|
+| bear 1920 downsample (high rate) | 1695556 | 1549119 | 1534283 | 1538121 |
+| bear 1920 downsample (**starved**) | 571279 | 447603 | **428253** | 431274 |
+| camel 1920 downsample (high rate) | 1675033 | 1483127 | 1456313 | 1451829 |
+| camel 1920 downsample (**starved**) | 586483 | 446677 | 423451 | **421026** |
+
+bs8 costs **+9-15% at high rate and +27-39% starved** — and starved is the
+regime hard rule 8 says matters. That is a large effect sitting in data already
+on disk.
+
+**But it does not isolate the mechanism.** Changing `block_size` changes two
+things at once: the granularity of the *signal*, and *which pixels get
+degraded* (a finer grid tracks the score field better and selects a different,
+more scattered set). The bits could be going to partition signaling and broken
+prediction, or simply to a more fragmented degradation pattern. The plan's
+choice of a 64x64 measurement grid rests on the first reading.
+
+**The isolating test.** Hold the degraded **area exactly constant** and vary
+only alignment:
+
+- **scattered** — pick the top-N 16x16 blocks by removability score.
+- **snapped** — score each 64x64 superblock as the mean of its sixteen 16x16
+  members, then take whole superblocks until **exactly the same number of
+  16x16 blocks** is degraded.
+
+Same operator, same count of degraded blocks, same QP; the only difference is
+whether the degraded region is superblock-aligned or fragmented. Area is matched
+*by construction* rather than approximately: the snapped arm is chosen first,
+its exact block count is read off, and the scattered arm is given that count.
+
+**Method.** The n=8 probe suite at 640x360, `shrink_amount` 0.25 (the dominant
+operating point — 430 of the indexed runs), operator `downsample` scale 0.5 via
+`filter_frame_downsample` with an explicit `sel` mask, so this is the pipeline's
+real operator and not a reimplementation. Scores are the cached
+`removability_a0.50_b0.50.npy` at bs16, so both arms rank pixels with the same
+score field. Fixed QP 43, preset 8, `tune` omitted — same as F3/F4/F7. The
+64x64 superblock is a 4x4 group of 16x16 blocks; the two leftover block rows
+(22 = 5*4 + 2) are handled as partial edge superblocks, exactly as AV1 pads and
+crops internally.
+
+**Bounds, stated before reading any number.**
+
+- *Bits, snapped vs scattered, at matched area and QP.* Snapping should **save
+  3-20%**. **Alarm if snapping COSTS more than 5%** (would invert the
+  hypothesis) **or saves more than 40%** (too large to be signaling alone at
+  equal degraded area, and more likely an area-match bug).
+- *Quality.* Snapping should be **slightly worse**: it is forced to degrade
+  whole superblocks, so it spends its area budget on lower-scoring pixels the
+  scattered arm would have skipped. Expect dPSNR **-0.1 to -1.5 dB** and dLPIPS
+  **+0.000 to +0.030**. **Alarm if snapping is better on bits AND better on
+  LPIPS by enough to clear JND** — a free lunch on both axes at equal area
+  means the selection or the area match is broken, not that we found something.
+- *Area.* Identical by construction; asserted, not hoped for.
+
+**Decision rule, fixed in advance.** The signaling-overhead reading survives
+only if snapping saves bits with a significant sign test at n=8. If it does not,
+the bs8 penalty is about *which pixels get degraded*, not about superblock
+alignment, and the 64x64 grid loses this particular justification (it would
+still keep the two independent ones: kvazaar's per-CTU stats being the only
+per-block bit source here, and LPIPS's validated 64x64 patch size).
+
+**Status: bounds registered, suite not yet run.**
 
 ---
 
