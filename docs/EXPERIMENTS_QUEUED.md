@@ -62,7 +62,11 @@ blur       → InstantIR (kill stands) | NAFNet (gauge, ties unsharp) | DiffBIR 
 
 **Still open (need data or a gate):**
 - `HOLE(tab:av1)` n>2; `HOLE(tab:goal2/conditioned)` n>2; `HOLE(tab:priced-trade)` shrink_amount
-- **Q8** upstream DC-VSR inference
+- **Q8** upstream DC-VSR inference — **re-probed 2026-07-29: still unavailable.**
+  HF `Janghyeok/dc-vsr` holds only `unet_ema/` + `.gitattributes` (no
+  `model_index.json`, no VAE, no scheduler, no pipeline code); the project page
+  (`daramgc.github.io/docs/Publications/dc-vsr`) links arXiv/YouTube only, no
+  code repo; no official GitHub release found. Stub `RuntimeError` stands.
 - **Q6** DiffBIR — human-gated mechanism argument only
 
 See `HANDOFF.md` for the next-session pickup prompt.
