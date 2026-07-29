@@ -19,7 +19,7 @@ never a trend, never a win.**
 |---|---|---|---|
 | **F1** | **1** | **All-intra leave-one-SB-out bit map vs EVCA** | **DONE — direction CLOSED, EVCA already captures 93-99%** |
 | F2 | 1 | 64x64-snapped vs scattered 16x16 selection | todo |
-| **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed, effect sub-JND** |
+| **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed; `sub_jnd_significant` at n=7 (p=0.0156)** |
 | F4 | 2 | `--film-grain` on/off, selective | todo |
 | **F5** | **2** | **Transform-aligned AC truncation vs Gaussian blur** | **DONE — my stated mechanism REFUTED; metrics disagree, no win claimed** |
 | **F6** | **3** | **Encoder-side FG gate: does restoring FG clear JND?** | **DONE — gate mechanism validated, but no FG restorer worth gating yet** |
@@ -64,11 +64,34 @@ which silently produces NaN metrics.
 
 (Negative = VQ better on LPIPS/DISTS, worse on PSNR.)
 
-**Verdict.** Direction is consistent 5/5, so it is not video-determined, and it
-is exactly what theory predicts: a perceptually-tuned RDO trades a little PSNR
-for a little perceptual quality. But the largest LPIPS delta (0.0305) is well
-under the 0.05 JND, DISTS never exceeds 0.0148, and the PSNR cost stays inside
-its own 0.5 dB JND.
+**Verdict (revised 2026-07-29 under hard rule 2b).** The original write-up said
+"consistent 5/5, so not video-determined". That was an over-claim: the exact
+two-tailed sign test floors at 2/2^n, so **n=5 floors at p=0.0625 and can never
+reach alpha=0.05**. At n=5 this was `underpowered`, not significant. (An earlier
+draft of the spawned-chip brief also quoted p=0.031 for 5/5 -- that is the
+ONE-tailed value and is invalid here, because the direction was read off the
+data first. Never quote 0.031 for 5/5.)
+
+**Extended to n=7** by adding tennis (cluster 1) and india (cluster 3), chosen
+because the original five over-represented cluster 4 (camel + elephant):
+
+| video | dLPIPS | dDISTS |
+|---|---|---|
+| tennis | -0.0160 | -0.0059 |
+| india | -0.0140 | -0.0059 |
+
+Unanimous **7/7 on both LPIPS and DISTS**, exact two-tailed sign p = **0.0156**
+(family size 1 -- this is a single comparison, not one of a candidate family, so
+no Holm correction applies). Mean dLPIPS -0.0196, mean dDISTS -0.0097, max |d|
+0.0305 -- all below the 0.05 JND.
+
+`presley-compare`'s suite layer returns **`sub_jnd_significant`** for both
+metrics. Mandated wording, which is the only phrasing allowed:
+
+> consistent and statistically significant across the suite but BELOW the
+> perceptual threshold -- report as a small, reproducible, imperceptible
+> effect; never as a perceptual win, a quality improvement, or a 'better'
+> result.
 
 So: **the confound is real but benign.** Past restorer comparisons are not
 invalidated by having run PSNR-tuned, because switching the objective does not
