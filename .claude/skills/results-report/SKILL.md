@@ -40,3 +40,18 @@ Read `/home/itec/emanuele/.agent-rules/skills/results-report/SKILL.md` and follo
   respects all rules above) for JND-gated comparisons and its group-scan mode
   (`--group-by component,video,codec_params.qp --baseline-component
   baselines`) for matched-QP sweeps, instead of hand-rolling deltas.
+- **Comparing two arms across several videos?** JND alone is too blunt for a
+  suite: a sub-JND effect that reproduces on every video is real (though still
+  imperceptible). Add `presley-compare results/ --suite --arm-key restorer
+  --arm-a <baseline> --arm-b <candidate> --pair-by video --candidates-tried
+  <k>` (`src/presley/suite.py`). Read the verdict, not the mean:
+  `underpowered` means the suite is **too small for any test to reach α**
+  (n≤5 can never do it; n=2 floors at p=0.5) — an unfinished experiment, not a
+  negative result, and the required n prints with it. The strongest a sub-JND
+  effect can earn is `sub_jnd_significant`, which is **never** worded as a win
+  or an improvement. `--candidates-tried` counts every candidate tried against
+  that baseline **including the losers**. Never quote a one-tailed p (5/5 is
+  0.0625, not 0.031). For "X has no effect" claims use
+  `suite.equivalence_tost` — failing a difference test is not evidence of no
+  difference. Background: RESEARCH_LOG hard rule 2b,
+  `docs/SIGNIFICANCE_AUDIT.md`.
