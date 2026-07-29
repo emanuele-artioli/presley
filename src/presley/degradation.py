@@ -474,8 +474,9 @@ def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: 
 
     ``sel`` overrides the default threshold selection with an explicit boolean
     block mask, same contract as filter_frame_mean_fill. (Noise is a retired
-    dead end -- worst of every degradation screened, +213...+334% bits at
-    matched fixed QP -- but it keeps the selection contract uniform.)
+    dead end -- worst of every degradation screened, +76.5...+83.0% bits under
+    matched budget (Q9, 2026-07-29; supersedes the unbudgeted +213...+334%
+    screen) -- but it keeps the selection contract uniform.)
 
     Default selection (``sel is None``) matches blur/downsample:
     ``round(score) > 0`` i.e. score >= 0.5. Strength still scales with
