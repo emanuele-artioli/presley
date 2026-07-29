@@ -7,9 +7,9 @@ QP-mapping, measured on the same video at the same nominal QP, does produce a
 real FG/BG quality differential (+2.56 dB FG over BG, vs addroi's -0.43 dB in
 both its "hinted" and control encodes — i.e., no differentiation at all).
 
-This replaces the RESEARCH_LOG dead-end entry's documentation-based claim
+This replaces the research-log/dead-ends.md entry's documentation-based claim
 ("addroi side data is never read by libx265... AQ is variance-based and
-mask-agnostic (control condition ≈ baseline)", `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md`
+mask-agnostic (control condition ≈ baseline)", `68e8b6bb11d0dd9e62a67aef/research-log/dead-ends.md`
 lines ~628-631) with an actual measurement. `grep -rn addroi` across the repo
 previously found only that prose claim plus the `NotImplementedError` stub in
 `src/presley/components/roi.py:95-96` — addroi had never been invoked.

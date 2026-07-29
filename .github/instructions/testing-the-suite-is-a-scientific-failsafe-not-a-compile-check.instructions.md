@@ -44,7 +44,7 @@ output, not an assertion that it worked. Run `/code-review` after non-trivial
 changes under `src/presley/`.
 
 **Every diagnosed bug or newly imagined edge case gets a test in the same
-session it is diagnosed** — the RESEARCH_LOG dead-end entry and the
+session it is diagnosed** — the `research-log/dead-ends.md` entry and the
 regression test are written together. Deleting a test requires saying why its
 failure mode is now impossible.
 

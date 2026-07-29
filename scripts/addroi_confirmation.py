@@ -1,6 +1,6 @@
 """Standalone, cheap confirmation experiment for a referee comment (TOMM revision).
 
-The RESEARCH_LOG dead-end registry asserts "addroi side data is never read by
+The research-log/dead-ends.md registry asserts "addroi side data is never read by
 libx265" -- reached by reading documentation/code, never by an actual measured
 encode (grep confirms addroi has never been invoked anywhere in this repo;
 src/presley/components/roi.py's x264_addroi/x265_addroi branch just raises

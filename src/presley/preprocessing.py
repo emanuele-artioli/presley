@@ -24,7 +24,8 @@ def normalize_array(arr: np.ndarray) -> np.ndarray:
 #   davis        -- 24 fps. Perazzi et al., "A Benchmark Dataset and
 #                    Evaluation Methodology for Video Object Segmentation",
 #                    CVPR 2016 (confirmed, not just carried over from the old
-#                    hardcoded default -- see RESEARCH_LOG / D4 for the check).
+#                    hardcoded default -- see research-log/dead-ends.md / D4
+#                    for the check).
 #   youtube_vos  -- 6 fps. YouTube-VOS releases frames pre-sampled every 5th
 #                    frame of a 30fps source (Xu et al., "YouTube-VOS:
 #                    Sequence-to-Sequence Video Object Segmentation", ECCV

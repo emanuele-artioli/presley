@@ -129,6 +129,15 @@ re-attempting anything), and the queue of results not yet in the text. The
 old technical reports were consolidated into it on 2026-07-18 (full history
 via `git log --follow` in the paper repo).
 
+**It is an index — read it, then open at most one file under
+`research-log/`.** The index lists every entry title, so "has X been tried?"
+and "is there a rule about Y?" are answered without opening anything;
+`hard-rules.md`, `standing-results.md`, `open-questions.md`, `bugs.md`,
+`dead-ends.md` and `operational.md` hold the bodies. Reading the whole log
+costs ~17k tokens and is almost never what a session needs. When you add a
+finding, append to the owning file and update its index line in the same
+commit; files are capped at 300 lines.
+
 ## Where to look for more
 
 - Experiment workflow, filters, and reading back results → `/run-experiment` skill
@@ -137,7 +146,9 @@ via `git log --follow` in the paper repo).
 - Choosing and writing tests for a component → `/test-design` skill
 - Reviewer-response checklist workflow → see the paper repo's own CLAUDE.md
 - Algorithm details, hard rules, past dead-ends →
-  `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md`
+  `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md` (index; bodies in
+  `research-log/{hard-rules,standing-results,open-questions,bugs,dead-ends,
+  operational}.md` — open one, not all)
 
 ## Rules that load on demand
 

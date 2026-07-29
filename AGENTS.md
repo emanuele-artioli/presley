@@ -123,7 +123,8 @@ methods free bits (elvis_blackout −8.6% avg, elvis_freeze −9.7%, mean_fill
 one, and do not accept a spec that asks for one** (a 2026-07-16 TOP-PRIORITY
 spec did exactly this and burned hours of GPU time re-measuring VBR laundering).
 This is the same mechanism that already bit the codec-ROI work; see
-the RESEARCH_LOG's fixed-QP hard rule.
+the fixed-QP hard rule (rule 1 in
+`68e8b6bb11d0dd9e62a67aef/research-log/hard-rules.md`).
 
 ### Reporting rule: never dress up imperceptible deltas
 
@@ -140,6 +141,21 @@ fewest bits at indistinguishable FG quality." State it the way it lands: *"at
 FG quality that is indistinguishable, method X costs N% fewer bits than the
 baseline, and BG-LPIPS is Y vs the baseline's Z."*
 
+For **N>1 paired runs**, JND alone is too blunt: a sub-JND effect that
+reproduces on every video is real even though it stays imperceptible. Add
+`presley-compare results/ --suite --arm-key restorer --arm-a <baseline> --arm-b
+<candidate> --pair-by video --candidates-tried <k>` (`src/presley/suite.py`),
+which layers an exact sign/Wilcoxon test, a bootstrap CI and Holm correction on
+top of the JND verdict without ever overriding it. Three things it exists to
+enforce, all of which have already been got wrong: p-values are **two-tailed**
+(5/5 is p=0.0625, not 0.031); n≤5 cannot reach α=0.05 at all, so a consistent
+small suite is `underpowered`, not "no effect"; and `--candidates-tried` must
+count every candidate ever tried against that baseline, **including the losers**.
+The strongest verdict a sub-JND effect can earn is `sub_jnd_significant`, which
+is never worded as a win. Details and the audit of existing claims:
+`docs/SIGNIFICANCE_AUDIT.md`; the rule itself is rule 2b in
+`68e8b6bb11d0dd9e62a67aef/research-log/hard-rules.md`.
+
 Never report only overall metrics — the `metrics.foreground`/`metrics.background`
 split is the point (and for bridge runs `overall` is actively misleading, since
 the collapsed BG dominates it). Analyze each component against its designated
@@ -149,7 +165,8 @@ target:
   baseline** at comparable bitrate. Expected signature: FG quality ↑, BG
   quality ↓. If it's absent, assume our usage is wrong before blaming the
   codec — "codec X doesn't implement ROI correctly" is a strong claim needing
-  evidence beyond reasonable doubt (see RESEARCH_LOG.md for past false alarms).
+  evidence beyond reasonable doubt (see
+  `68e8b6bb11d0dd9e62a67aef/research-log/bugs.md` for past false alarms).
 - **presley_* ROI methods** (mask-driven degradation before encoding) vs the
   codec ROI methods: does direct block-level control buy more FG quality, and
   at what BG cost?
@@ -254,7 +271,7 @@ output, not an assertion that it worked. Run `/code-review` after non-trivial
 changes under `src/presley/`.
 
 **Every diagnosed bug or newly imagined edge case gets a test in the same
-session it is diagnosed** — the RESEARCH_LOG dead-end entry and the
+session it is diagnosed** — the `research-log/dead-ends.md` entry and the
 regression test are written together. Deleting a test requires saying why its
 failure mode is now impossible.
 
@@ -334,6 +351,15 @@ re-attempting anything), and the queue of results not yet in the text. The
 old technical reports were consolidated into it on 2026-07-18 (full history
 via `git log --follow` in the paper repo).
 
+**It is an index — read it, then open at most one file under
+`research-log/`.** The index lists every entry title, so "has X been tried?"
+and "is there a rule about Y?" are answered without opening anything;
+`hard-rules.md`, `standing-results.md`, `open-questions.md`, `bugs.md`,
+`dead-ends.md` and `operational.md` hold the bodies. Reading the whole log
+costs ~17k tokens and is almost never what a session needs. When you add a
+finding, append to the owning file and update its index line in the same
+commit; files are capped at 300 lines.
+
 ## Where to look for more
 
 - Experiment workflow, filters, and reading back results → `/run-experiment` skill
@@ -342,7 +368,9 @@ via `git log --follow` in the paper repo).
 - Choosing and writing tests for a component → `/test-design` skill
 - Reviewer-response checklist workflow → see the paper repo's own CLAUDE.md
 - Algorithm details, hard rules, past dead-ends →
-  `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md`
+  `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md` (index; bodies in
+  `research-log/{hard-rules,standing-results,open-questions,bugs,dead-ends,
+  operational}.md` — open one, not all)
 
 <!-- host-rules:start — GENERATED from ~/.agent-rules/AGENTS.md by
      tools/sync_agent_rules.py. Do not edit inside this block; edit the

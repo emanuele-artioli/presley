@@ -26,6 +26,15 @@ Read `/home/itec/emanuele/.agent-rules/skills/update-paper/SKILL.md` and follow 
   `src/presley/compare.py`) decides whether a delta is real — within-JND is
   "no perceptible difference," never a trend. Degradation comparisons must be
   fixed-QP/CRF, never VBR (`rate_control` field).
+- **Suite-level significance (hard rule 2b):** for a claim resting on N>1
+  paired runs, JND is not the whole gate — run `presley-compare --suite`
+  (`src/presley/suite.py`) too. Never word an n=2 (or any `underpowered`)
+  comparison as a "tie", "wash" or "near-tie": those assert evidence of no
+  difference, and a suite that cannot reach α asserts nothing. Write "within
+  JND at n=N, underpowered" instead. A `sub_jnd_significant` result is
+  reportable but never as a win. For "parameter X has no effect", use the
+  equivalence test, not a failed difference test. Worked examples already in
+  the paper: `docs/SIGNIFICANCE_AUDIT.md`.
 - **Revision tracking (presley IS a tracked revision):** reviewer-visible
   text added/changed goes in `\rev{...}`; removals use `\del{\sout{...}}`.
   Never silently strip existing `\rev{}`/`\del{}` wrapping. Comment markers
