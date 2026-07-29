@@ -21,6 +21,7 @@ Everything here is synthetic and CPU-only: no dataset/, no GPU, no UFO/YOLO
 model weights.
 """
 
+import shutil
 import subprocess
 
 import cv2
@@ -314,6 +315,10 @@ def test_probe_framerate_unknown_dataset_raises(tmp_path):
         probe_framerate("someclip", str(tmp_path / "dataset"), dataset="not_a_known_dataset")
 
 
+@pytest.mark.skipif(
+    shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None,
+    reason="needs the ffmpeg/ffprobe binaries to synthesize and probe a real clip",
+)
 def test_probe_framerate_ffprobes_a_real_video_file(tmp_path):
     """When the source is an actual video file, its own stream framerate
     wins over any KNOWN_DATASET_FRAMERATES entry -- this is the only

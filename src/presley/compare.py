@@ -469,18 +469,46 @@ def main():
                         help="config.component value to compare every other group member against (star topology). "
                              "Without this, all-pairs comparison within each group.")
 
+    suite = parser.add_argument_group(
+        "suite mode (N>1 paired runs)",
+        "Significance layer on top of JND -- see presley.suite. Never overrides a JND "
+        "verdict; the strongest a sub-JND effect can earn is 'sub_jnd_significant'.")
+    suite.add_argument("--suite", action="store_true",
+                        help="Assess a suite of paired runs (arm A vs arm B across several videos)")
+    suite.add_argument("--pair-by", type=str, default="video",
+                        help="Comma-separated dotted config keys identifying a pair, default 'video'")
+    suite.add_argument("--arm-key", type=str, default=None,
+                        help="Dotted config key that distinguishes the two arms, e.g. 'restorer' or 'codec_params.tune'")
+    suite.add_argument("--arm-a", type=str, default=None, help="config value of the baseline arm")
+    suite.add_argument("--arm-b", type=str, default=None, help="config value of the candidate arm")
+    suite.add_argument("--candidates-tried", type=int, default=1,
+                        help="Number of candidates tried against this baseline for this claim, "
+                             "INCLUDING the ones that lost. Sets the multiple-comparisons family size.")
+
     args = parser.parse_args()
 
     pairwise_mode = args.hash_a is not None or args.hash_b is not None
     group_mode = args.group_by is not None
-    if pairwise_mode and group_mode:
-        parser.error("--hash-a/--hash-b and --group-by are mutually exclusive")
-    if not pairwise_mode and not group_mode:
-        parser.error("specify either --hash-a/--hash-b or --group-by")
+    suite_mode = args.suite
+    if sum([pairwise_mode, group_mode, suite_mode]) > 1:
+        parser.error("--hash-a/--hash-b, --group-by and --suite are mutually exclusive")
+    if not pairwise_mode and not group_mode and not suite_mode:
+        parser.error("specify one of --hash-a/--hash-b, --group-by or --suite")
     if pairwise_mode and (args.hash_a is None or args.hash_b is None):
         parser.error("pairwise mode requires both --hash-a and --hash-b")
+    if suite_mode and (args.arm_key is None or args.arm_a is None or args.arm_b is None):
+        parser.error("suite mode requires --arm-key, --arm-a and --arm-b")
 
-    if pairwise_mode:
+    if suite_mode:
+        from presley.suite import compare_suite, format_suite
+        result = compare_suite(
+            args.results_dir,
+            pair_by=[k.strip() for k in args.pair_by.split(",") if k.strip()],
+            arm_key=args.arm_key, arm_a=args.arm_a, arm_b=args.arm_b,
+            region=args.region, family_size=args.candidates_tried,
+        )
+        print(json.dumps(_to_jsonable(result), indent=2) if args.json else format_suite(result))
+    elif pairwise_mode:
         result = same_quality_by_hash(args.hash_a, args.hash_b, args.results_dir, region=args.region)
         print(json.dumps(_to_jsonable(result), indent=2) if args.json else format_pairwise(result))
     else:
