@@ -225,7 +225,8 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             encode_video_x265(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
     elif codec == 'svtav1':
         if 'qp' in codec_params:
-            encode_video_svtav1_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', '8'))
+            _tune = codec_params.get('tune')
+            encode_video_svtav1_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', '8'), tune=None if _tune is None else int(_tune))
         else:
             encode_video_svtav1(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', '8'))
     else:

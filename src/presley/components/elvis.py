@@ -141,7 +141,8 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     elif codec == 'svtav1':
         if 'qp' in codec_params:
             from presley.encode_utils import encode_video_svtav1_qp
-            encode_video_svtav1_qp(temp_shrunk_vid, encoded_shrunk, framerate, int(codec_params['qp']), preset=str(codec_params.get('preset', '8')))
+            _tune = codec_params.get('tune')
+            encode_video_svtav1_qp(temp_shrunk_vid, encoded_shrunk, framerate, int(codec_params['qp']), preset=str(codec_params.get('preset', '8')), tune=None if _tune is None else int(_tune))
         else:
             encode_video_svtav1(temp_shrunk_vid, encoded_shrunk, framerate, target_bitrate, preset=str(codec_params.get('preset', '8')))
     else:

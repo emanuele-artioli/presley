@@ -10,6 +10,7 @@ mislabelling a mode here would let a VBR run be cited as evidence.
 import numpy as np
 import pytest
 
+from presley import encode_utils
 from presley.encode_utils import calculate_target_bitrate, derive_rate_control, scores_to_qp_offsets
 
 
@@ -118,3 +119,57 @@ def test_target_bitrate_scales_with_the_quality_factor():
     base = calculate_target_bitrate(1920, 1080, 30.0, quality_factor=1.0)
     high = calculate_target_bitrate(1920, 1080, 30.0, quality_factor=2.0)
     assert high > base
+
+
+# --- SVT-AV1 tune (F3) -------------------------------------------------------
+# The encoder's own default is tune=1 (PSNR), so every encode predating this
+# parameter optimized an objective the paper does not claim. These pin the
+# backward-compatibility contract: omitting tune must not change the command.
+
+def test_svtav1_qp_omits_tune_by_default(monkeypatch):
+    """Adding the parameter must not alter a single existing encode -- results/
+    holds 694 runs keyed by a hash of their config, and a changed command line
+    would silently invalidate all of them."""
+    seen = {}
+
+    def fake_run(cmd, **kw):
+        seen['cmd'] = cmd
+        class R: returncode = 0
+        return R()
+
+    monkeypatch.setattr(encode_utils.subprocess, 'run', fake_run)
+    encode_utils.encode_video_svtav1_qp('in.mp4', 'out.mp4', 24.0, 43)
+
+    params = seen['cmd'][seen['cmd'].index('-svtav1-params') + 1]
+    assert params == 'rc=0:q=43'
+    assert 'tune' not in params
+
+
+def test_svtav1_qp_passes_tune_when_set(monkeypatch):
+    seen = {}
+
+    def fake_run(cmd, **kw):
+        seen['cmd'] = cmd
+        class R: returncode = 0
+        return R()
+
+    monkeypatch.setattr(encode_utils.subprocess, 'run', fake_run)
+    encode_utils.encode_video_svtav1_qp('in.mp4', 'out.mp4', 24.0, 43, tune=0)
+
+    params = seen['cmd'][seen['cmd'].index('-svtav1-params') + 1]
+    assert params == 'rc=0:q=43:tune=0'
+
+
+def test_svtav1_qp_tune_zero_is_not_treated_as_unset(monkeypatch):
+    """tune=0 is VQ -- the one value we actually want to test -- and is falsy.
+    A truthiness check instead of an `is None` check would silently drop it."""
+    seen = {}
+
+    def fake_run(cmd, **kw):
+        seen['cmd'] = cmd
+        class R: returncode = 0
+        return R()
+
+    monkeypatch.setattr(encode_utils.subprocess, 'run', fake_run)
+    encode_utils.encode_video_svtav1_qp('in.mp4', 'out.mp4', 24.0, 43, tune=0)
+    assert 'tune=0' in seen['cmd'][seen['cmd'].index('-svtav1-params') + 1]
