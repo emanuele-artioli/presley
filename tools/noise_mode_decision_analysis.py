@@ -5,10 +5,13 @@ differently from untouched blocks, at the CTU/mode-decision level?
 Context (referee-response item, TOMM revision): PRESLEY's Gaussian-noise
 degradation (paired with the ``instantir`` restorer, see
 ``RESTORER_DEGRADATIONS`` in ``src/presley/components/presley_ai.py``) is
-already a confirmed dead end on rate grounds -- a fixed-QP screen documented
-in the paper's research-log/dead-ends.md showed noise costs +213% to +334%
-more bits than the pristine baseline at matched QP, the worst of every
-degradation measured.
+already a confirmed dead end on rate grounds -- under matched budget
+(shrink_amount 0.25 + fg_protect, svtav1, restorer:none) noise costs
+**+76.5% to +83.0%** more bits than the pristine baseline at FG-PSNR within
+JND, while same-budget downsample/blur *free* 10-27%; noise is the worst of
+every degradation measured. (Q9, 2026-07-29, `CLAIM(sec:noise-retire)` -- this
+supersedes the earlier unbudgeted fixed-QP screen's +213...+334%, which
+overstated the magnitude; the retirement conclusion is unchanged.)
 A referee asked *why*, specifically in terms of encoder mode decisions and
 rate allocation, not just the bitrate outcome. This script measures that
 mechanism directly with x265's own per-frame analysis log (``--csv`` /

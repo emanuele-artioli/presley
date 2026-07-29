@@ -7,12 +7,15 @@ part of the presley-run pipeline; does not touch `experiments.yaml` or
 **Script:** `tools/noise_mode_decision_analysis.py` (standalone, CPU-only,
 x265/ffmpeg encoding — no GPU model inference).
 
-**Prior finding this explains:** a fixed-QP screen (documented in the paper's
-`RESEARCH_LOG.md`, and re-confirmed in-place at `src/presley/degradation.py`
-line ~477) already established that noise injection is the worst degradation
-PRESLEY has measured — **+213% to +334% more bits than the pristine baseline
-at matched QP**, worse than freeze, blackout, or mean_fill, all of which
-*save* bits at fixed QP. That screen never explained *why* in encoder terms.
+**Prior finding this explains:** noise injection is the worst degradation
+PRESLEY has measured. The citable figure is the **matched-budget** rematch
+(Q9, 2026-07-29 — shrink_amount 0.25 + fg_protect, svtav1, restorer:none):
+**+76.5% to +83.0% more bits than the pristine baseline** at FG-PSNR within
+JND, against same-budget downsample/blur which *free* 10–27%. An earlier
+*unbudgeted* fixed-QP screen reported +213…+334%; that measurement is
+superseded (it overstated the magnitude — see Finding 1 below for the
+coverage asymmetry that inflated it), though the retirement conclusion is
+unchanged. Neither screen explained *why* in encoder terms.
 A referee asked specifically about "mode decisions and rate allocation." This
 report answers that with x265's own analysis instrumentation.
 
@@ -29,7 +32,9 @@ report answers that with x265's own analysis instrumentation.
    both conditions, x265 handles noise-corrupted blocks measurably
    differently — but not the way the "more intra-coding" hypothesis predicts.
 
-Both are real and both contribute to the +213–334% number; §1 is arguably the
+Both are real and both contribute to the bitrate cost (and §1 is why the
+unbudgeted screen's +213–334% overstated it relative to the matched-budget
++76.5–83.0%); §1 is arguably the
 larger effect at these settings, and §2 is the mechanistic answer to the
 referee's question. Details below.
 
@@ -210,8 +215,9 @@ not a fixed penalty independent of operating point.
 
 ## Verdict
 
-The already-known +213–334% bitrate cost has (at least) two contributing
-causes, now separated:
+The already-known noise bitrate cost (**+76.5–83.0%** matched-budget, Q9
+2026-07-29; +213–334% in the superseded unbudgeted screen) has (at least) two
+contributing causes, now separated:
 
 1. **A likely-larger volume effect**: at the shared `alpha=0.5/beta=0.5`
    config, `filter_frame_noise`'s own implicit selection threshold touches
@@ -229,8 +235,9 @@ causes, now separated:
 
 Both are legitimate parts of "why," and the paper response should probably
 lead with #2 (it directly answers what was asked, in the encoder's own
-language) while noting #1 as a discovered caveat on how the existing +213–334%
-figure was produced.
+language) while noting #1 as a discovered caveat on how the superseded
++213–334% figure was produced — the matched-budget +76.5–83.0% is what to
+cite.
 
 ## Limitations
 
