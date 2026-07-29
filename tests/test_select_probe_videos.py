@@ -89,12 +89,33 @@ def test_medoid_count_never_exceeds_k_and_medoids_are_distinct():
 
 def test_shortfall_in_cluster_count_is_reported(capsys, tmp_path, monkeypatch):
     """Asking for more probe videos than the data can distinguish must warn,
-    not silently return a smaller subset -- that would overstate coverage."""
-    rows = [_row(f"v{i}", 1.0) for i in range(4)]  # all coincident
+    not silently return a smaller subset -- that would overstate coverage.
+
+    The shortfall is forced by stubbing pick_medoids rather than by feeding in
+    coincident videos. Coincident rows standardize to an all-zero distance
+    matrix, and how scipy's 'maxclust' breaks that tie is version-dependent --
+    1.10 collapses four coincident points to a single cluster, later versions
+    split them into four. That made this test assert scipy's tie-breaking
+    instead of our warning, and it passed locally while failing CI. The branch
+    under test is ours; the degenerate clustering is not.
+    """
+    rows = [_row(f"v{i}", float(i)) for i in range(4)]
     p = _csv(tmp_path, rows)
+    monkeypatch.setattr(spv, "pick_medoids", lambda z, k: (np.ones(len(z), dtype=int), [0]))
     monkeypatch.setattr(sys, "argv", ["prog", "--attributes", str(p), "-k", "4", "--db", str(tmp_path / "none.db")])
     spv.main()
     assert "smaller than requested" in capsys.readouterr().err
+
+
+def test_pick_medoids_never_exceeds_k_on_coincident_input():
+    """Whatever scipy does with an all-zero distance matrix, the contract holds:
+    at most k medoids, all distinct, all valid indices."""
+    z = np.zeros((4, len(spv.ATTRS)))
+    labels, medoids = spv.pick_medoids(z, 4)
+    assert 1 <= len(medoids) <= 4
+    assert len(set(medoids)) == len(medoids)
+    assert all(0 <= m < 4 for m in medoids)
+    assert len(labels) == 4
 
 
 def test_selection_is_deterministic():
