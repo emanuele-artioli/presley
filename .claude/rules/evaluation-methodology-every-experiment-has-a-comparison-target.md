@@ -68,6 +68,20 @@ fewest bits at indistinguishable FG quality." State it the way it lands: *"at
 FG quality that is indistinguishable, method X costs N% fewer bits than the
 baseline, and BG-LPIPS is Y vs the baseline's Z."*
 
+For **N>1 paired runs**, JND alone is too blunt: a sub-JND effect that
+reproduces on every video is real even though it stays imperceptible. Add
+`presley-compare results/ --suite --arm-key restorer --arm-a <baseline> --arm-b
+<candidate> --pair-by video --candidates-tried <k>` (`src/presley/suite.py`),
+which layers an exact sign/Wilcoxon test, a bootstrap CI and Holm correction on
+top of the JND verdict without ever overriding it. Three things it exists to
+enforce, all of which have already been got wrong: p-values are **two-tailed**
+(5/5 is p=0.0625, not 0.031); n≤5 cannot reach α=0.05 at all, so a consistent
+small suite is `underpowered`, not "no effect"; and `--candidates-tried` must
+count every candidate ever tried against that baseline, **including the losers**.
+The strongest verdict a sub-JND effect can earn is `sub_jnd_significant`, which
+is never worded as a win. Details and the audit of existing claims:
+`docs/SIGNIFICANCE_AUDIT.md`; the rule itself is RESEARCH_LOG hard rule 2b.
+
 Never report only overall metrics — the `metrics.foreground`/`metrics.background`
 split is the point (and for bridge runs `overall` is actively misleading, since
 the collapsed BG dominates it). Analyze each component against its designated

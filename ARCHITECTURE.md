@@ -79,6 +79,7 @@ evaluation/  ──►  metrics per region  ──►  invariants.check_result
 | Module | Responsibility |
 |---|---|
 | `compare.py` | The JND gate. Decides whether a quality difference is real, and enforces which keys may back a foreground claim. |
+| `suite.py` | The suite significance layer on top of `compare.py`: exact sign/Wilcoxon tests, bootstrap CI, effect size and Holm correction over N>1 paired runs. Adds the `sub_jnd_significant` verdict; never overrides a JND call, never promotes a sub-JND effect to a perceptual win. |
 | `invariants.py` | The methodology rules as code: fixed-QP mandate, bitrate accounting, restoration not regressing. Writes `invariant_failures` into each result. |
 
 ## Contracts worth knowing before changing anything
