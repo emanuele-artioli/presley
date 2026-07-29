@@ -18,7 +18,7 @@ never a trend, never a win.**
 | ID | Goal | Test | Status |
 |---|---|---|---|
 | **F1** | **1** | **All-intra leave-one-SB-out bit map vs EVCA** | **DONE — direction CLOSED, EVCA already captures 93-99%** |
-| F2 | 1 | 64x64-snapped vs scattered 16x16 at matched area | bounds registered, suite running |
+| **F2** | **1** | **64x64-snapped vs scattered 16x16 at matched area** | **DONE — signaling-overhead hypothesis REFUTED for 16→64; the bs8 penalty is a cliff, not a gradient** |
 | **F3** | **2** | **`--tune 0` (VQ) vs the PSNR default** | **DONE — confound confirmed; `sub_jnd_significant` at n=7 (p=0.0156)** |
 | **F4** | **2** | **`--film-grain` strength sweep, denoise+synthesize** | **DONE — direction CLOSED for this content; -12.8% bits at a perceptible quality cost** |
 | **F5** | **2** | **Transform-aligned AC truncation vs Gaussian blur** | **DONE — my stated mechanism REFUTED; metrics disagree, no win claimed** |
@@ -319,7 +319,71 @@ alignment, and the 64x64 grid loses this particular justification (it would
 still keep the two independent ones: kvazaar's per-CTU stats being the only
 per-block bit source here, and LPIPS's validated 64x64 patch size).
 
-**Status: bounds registered, suite not yet run.**
+**Manipulation check, run before trusting any null.** A null is only worth
+reporting if the arms really differ. Snapping cuts the degraded region's
+boundary length by **2.9x** (213.0 -> 73.8 mean 4-connectivity boundary edges on
+bear) and moves **23%** of the selected blocks (77.2% overlap). The intervention
+does exactly what the hypothesis asks for.
+
+**Result — snapping does not save bits.**
+
+| video | scattered | snapped | dBits |
+|---|---|---|---|
+| motorbike | 83994 | 86861 | **+3.41%** |
+| color-run | 181968 | 188094 | +3.37% |
+| dogs-jump | 59023 | 60146 | +1.90% |
+| bear | 155640 | 158587 | +1.89% |
+| bike-packing | 184823 | 186962 | +1.16% |
+| dancing | 350502 | 353371 | +0.82% |
+| drift-turn | 186729 | 186792 | +0.03% |
+| drift-straight | 185176 | 183772 | **-0.76%** |
+| **mean** | | | **+1.48%** |
+
+Snapping saves bits on **1 of 8** videos. The exact two-tailed sign test gives
+p=0.0703 and the direction is not unanimous, so the ~1.5% *cost* is itself
+**not** significant either -- the honest statement is that there is **no bit
+saving from superblock alignment**, not that alignment is expensive.
+
+Quality at the same QP and the same area, snapped vs scattered:
+
+| metric | mean d | verdict |
+|---|---|---|
+| PSNR | +0.2554 (8/8 better) | `sub_jnd_significant` |
+| LPIPS | -0.0128 (8/8 better) | `sub_jnd_significant` |
+| DISTS | -0.0046 (7/8 better) | `no_consistent_direction` |
+
+Both are consistent and significant but **below JND**, so under hard rule 2b
+this is "a small, reproducible, imperceptible effect" and never a win.
+
+**Verdict: the signaling-overhead hypothesis is REFUTED for 16 -> 64.** The
+pre-registered rule was that it survives only if snapping saves bits at n=8. It
+does not, despite a 2.9x reduction in fragmentation. So the bs8 penalty in the
+ablation is **not** superblock alignment: alignment beyond 16x16 buys nothing.
+Read together with the ablation table, the picture is a **cliff between 8 and
+16, not a gradient up to 64** -- bs8 costs +27-39% starved while bs16, bs24 and
+bs32 sit within 4% of each other. Whatever bs8 breaks (prediction, partition
+signaling, or simply too many tiny regions), 16x16 is already past it.
+
+**Both predictions in the bounds were wrong, and neither tripped an alarm.**
+Snapping was predicted to save 3-20% and instead cost 1.48%; it was predicted to
+be slightly *worse* in quality and is instead imperceptibly *better*. The
+alarms were set at "costs >5%" and "better on bits AND above-JND better on
+LPIPS", and neither fired, so this is a failed prediction rather than a
+suspicious measurement -- which is the distinction the bounds exist to draw.
+
+The quality direction has a plain mechanism: the scattered arm spends its whole
+area budget on the highest-scoring blocks, which are the most textured, and 2x
+downsampling destroys most there. The snapped arm is forced to spend part of its
+budget on flatter neighbours inside the same superblock, where downsampling
+costs almost nothing. At equal area that trade is imperceptibly favourable.
+
+**Consequence for the plan, stated plainly.** The 64x64 measurement grid loses
+*this* justification -- there is no bitrate argument for it over 16x16. Its two
+independent justifications stand: kvazaar's `--stats-file-prefix` per-CTU stats
+are the only per-block bit source in this environment, and 64x64 is LPIPS's
+validated BAPPS patch size. The finding is also mildly good news for selection:
+**16x16 selection is free relative to 64x64**, so the finer grid can be used for
+its better score tracking without paying for it in bits.
 
 ---
 
