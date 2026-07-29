@@ -201,3 +201,4 @@ scratch_fvmd/
 # Claude Code: local permission grants are machine-specific, not shared
 .claude/settings.local.json
 .claude/worktrees/
+vendor/

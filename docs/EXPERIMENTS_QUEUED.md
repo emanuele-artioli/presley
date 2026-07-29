@@ -1,10 +1,10 @@
 # Experiment queue — restorers, InstantIR audit, D6 upgrades
 
-**Status:** Q1–Q5 done 2026-07-28. InstantIR kill stands (corrected
-settings + NAFNet negative gauge). Real-HAT-GAN (Q4) ties Real-ESRGAN within
-JND — keep Real-ESRGAN as headline. Filter fixed-QP cells with `codec=svtav1`.
-All degradations here are **fixed-QP/CRF only** (AGENTS.md hard rule). Never
-commission VBR for these cells.
+**Status:** Q1–Q5 / Q7 / Q9 / Q10 done (2026-07-28…29). InstantIR kill stands.
+Real-HAT-GAN ties Real-ESRGAN within JND — keep Real-ESRGAN as headline.
+Stream-DiffVSR catalogued (no Goal-2 win). Filter fixed-QP cells with
+`codec=svtav1`. All degradations here are **fixed-QP/CRF only** (AGENTS.md
+hard rule). Never commission VBR for these cells.
 
 **Comparison recipe** (unless a row says otherwise): match
 `CLAIM(tab:conditioned)` — bear + camel, `block_size: 8`, `shrink_amount` /
@@ -22,17 +22,17 @@ commission VBR for these cells.
 | Recent SR GAN | **Real-HAT-GAN** (`Real_HAT_GAN_SRx4_sharper`) | Wired (`restorer: real_hat_gan`); Q4 done | Within JND of Real-ESRGAN on BG-LPIPS; keep Real-ESRGAN. **fp32 only** (fp16 NaNs). Weights: `weights/Real_HAT_GAN_sharper.pth` (HF `Acly/hat`). |
 | Blur diffusion (current) | **InstantIR** | Wired; **kill stands** | Corrected settings still lose to unsharp. |
 | Blur non-diffusion gauge | **NAFNet** | Wired (`restorer: nafnet`); weights on disk | CNN deblur. **fp32 only**. Q5: ties unsharp within JND. |
-| Second blur diffusion (conditional) | **DiffBIR** | Not integrated | Only with a new mechanism argument. |
-| Downsample diffusion (speed) | **Stream-DiffVSR** | Wired (`restorer: stream_diffvsr`); Wave 2 GPU pending vendor env | Report §II; HF `Jamichsu/Stream-DiffVSR`. Isolated vendor env (do not pip into `presley`). Try fp16; reject on Softmax/LN NaNs. |
-| Downsample diffusion (quality) | **DC-VSR** | Wired (`restorer: dc_vsr`); **inference blocked** | HF `Janghyeok/dc-vsr` is UNet-EMA weights only (no pipeline / SAP/TAP/DSSAG code). Stub raises `RuntimeError`. **fp32 only**. Weights: `hf download Janghyeok/dc-vsr --local-dir weights/dc-vsr` (isolate future deps — do not upgrade pinned `presley` env). || Cheap blur control | **unsharp** | Wired; already beats InstantIR as-run | Keep as baseline for blur Goal-2. |
+| Second blur diffusion (conditional) | **DiffBIR** | Not integrated | Only with a new mechanism argument (Q6). |
+| Downsample diffusion (speed) | **Stream-DiffVSR** | Wired (`restorer: stream_diffvsr`); **Q7 DONE** | No Goal-2 win vs Real-ESRGAN; ~2× slower. Keep RE. Lean env `stream-diffvsr` + `vendor/stream-diffvsr` (gitignored). Pins: `transformers>=4.45,<5`, `xformers`. |
+| Downsample diffusion (quality) | **DC-VSR** | Wired stub (`restorer: dc_vsr`); **inference blocked** | HF `Janghyeok/dc-vsr` is UNet-EMA weights only. Stub raises `RuntimeError`. **fp32 only**. |
+| Cheap blur control | **unsharp** | Wired; already beats InstantIR as-run | Keep as baseline for blur Goal-2. |
 
 **Goal-1 transport fact (do not retire blur):** after the S1 budget fix,
-blur frees bits under fixed QP similarly to downsample (RESEARCH_LOG: bear
-blur qp32 −26.9%, qp37 −15.4%; camel blur qp32 −10.0%; boundary camel qp37
-+8.4%). Noise costs bits. InstantIR Goal-2 failure ≠ blur method failure.
+blur frees bits under fixed QP similarly to downsample. Matched-budget noise
+still costs bits (+77…+83% — Q9). InstantIR Goal-2 failure ≠ blur method failure.
 
 ```text
-downsample → Real-ESRGAN (keep) | BSRGAN (few) | Real-HAT-GAN (done, twin) | Stream-DiffVSR (wired, Wave 2 GPU) | DC-VSR (wired; inference blocked)
+downsample → Real-ESRGAN (keep) | BSRGAN (few) | Real-HAT-GAN (done, twin) | Stream-DiffVSR (done, no win) | DC-VSR (stub; inference blocked)
 blur       → InstantIR (kill stands) | NAFNet (gauge, ties unsharp) | DiffBIR (deferred) | unsharp (control)
 ```
 
@@ -48,29 +48,21 @@ blur       → InstantIR (kill stands) | NAFNet (gauge, ties unsharp) | DiffBIR 
 | **Q4** | Real-HAT-GAN vs Real-ESRGAN | **DONE** | Recent SR GAN |
 | **Q5** | NAFNet vs InstantIR/unsharp | **DONE** | Blur method vs model |
 | **Q6** | DiffBIR (conditional) | Only with new mechanism argument | Second diffusion deblur |
-| **Q7** | Stream-DiffVSR vs Real-ESRGAN | Wired — GPU cells wait for vendor env | Report §II speed diffusion SR |
-| **Q8** | DC-VSR quality arm | Wired stub — GPU blocked until upstream inference | Report §II quality ceiling |
-| **Q9** | Noise threshold rematch | yaml ready (merged) — Wave 2 GPU open | Cleaner dead-end number |
-| **Q10** | Mask dilate/erode/jitter | wired (merged) — Wave 2 GPU open (`HOLE(sec:evaluation)`) | Referee mask half |
+| **Q7** | Stream-DiffVSR vs Real-ESRGAN | **DONE** — BG-LPIPS worse than RE (bear 0.251 vs 0.223; camel 0.190 vs 0.152; LPIPS within JND); ~2× slower; keep RE. Hashes `85d92dab` / `0bcc9956` | Report §II catalogue |
+| **Q8** | DC-VSR quality arm | Wired stub — GPU blocked until upstream publishes inference (VAE/scheduler/SAP/TAP/DSSAG) | Report §II quality ceiling |
+| **Q9** | Noise threshold rematch | **DONE** — matched-budget noise +77…+83% bits (vs unbudgeted +213…+334%); ds/blur −10…−27%; FG within JND | Cleaner dead-end number |
+| **Q10** | Mask dilate/erode/jitter | **DONE** (r=4) — vs UFO none within JND; does not demo fg_protect defeat. YOLO under-cover remains the failure mode. Paper `tab:mask-morph` | Referee mask half |
 
-### Write-up status (2026-07-28)
+### Write-up status (2026-07-29)
 
-**Landed in manuscript** (no new encode):
-- D6.1 `tab:mask-sens` (gt vs YOLOE)
-- D6.2 `tab:breadth-ext` (MOSEv2 / YouTube-VOS)
-- DAVIS `tab:breadth`
-- `tab:transport`, `tab:inpainters`
-- (already landed earlier: `tab:goal2`, `tab:conditioned`, `tab:priced-trade`)
+**Landed in manuscript:**
+- D6 tables (`tab:breadth`, `tab:breadth-ext`, `tab:mask-sens`, `tab:transport`, `tab:inpainters`, …)
+- Q9/Q10 fold — paper `9d6de4d` (`CLAIM(sec:noise-retire)`, `tab:mask-morph`)
+- Q7 fold — paper `26cc066` (`CLAIM(tab:conditioned-stream-diffvsr)`)
 
-**Still open HOLEs (need data, not write-up):** av1 n>2, goal2/conditioned n>2,
-priced-trade shrink_amount arm, Q10 dilate/erode.
+**Still open (need data or a gate):**
+- `HOLE(tab:av1)` n>2; `HOLE(tab:goal2/conditioned)` n>2; `HOLE(tab:priced-trade)` shrink_amount
+- **Q8** upstream DC-VSR inference
+- **Q6** DiffBIR — human-gated mechanism argument only
 
----
-
-## Integration order (next session)
-
-See `HANDOFF.md` wave plan for Q6–Q10. Summary:
-1. **Wave 1 (parallel):** Q7 / Q8 / Q10 integrate; Q9 yaml (code fix already landed)
-2. **Wave 2:** fixed-QP GPU cells via `experiment-runner` (codec=`svtav1`)
-3. **Wave 3:** `presley-compare` + paper fold
-4. **Q6 DiffBIR:** human-gated — only with a new mechanism argument (NAFNet already ties unsharp)
+See `HANDOFF.md` for the next-session pickup prompt.
