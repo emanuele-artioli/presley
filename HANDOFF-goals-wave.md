@@ -19,7 +19,8 @@
 > +0.0152 in the suite pass — no mean is quoted anywhere until that is
 > reconciled.
 >
-> **A1 — S1b: THE GATE PASSES. The graded direction is alive.** Branch
+> **A1 — S1b, stage 1: the gate PASSED** (superseded by stage 2 below, which
+> then failed the ceiling test — read both). Branch
 > `exp/s1b-damage-ceiling` in worktree `.claude/worktrees/agent-adc96e2b4b84b5357`,
 > `@d2d6110`, 5 commits, **not merged to main**. All 7 pristine baselines and
 > all 16 uniform-level probes are on disk, verified clean (empty
@@ -32,9 +33,9 @@
 > | within-level spread, p90−p10 at k=3 | 12.36 dB | kill if <2.0 |
 > | **R = spread / cost** | **7.43** | kill if <1.0 |
 >
-> Expected band for R was 3–10, so this passes cleanly. **S2's structure-tensor
-> proxy is NOT pre-emptively dead.** This is not a win — only that the question
-> stays open; the pre-registered decision rule is unchanged.
+> Expected band for R was 3–10, so this passed cleanly — meaning only that the
+> 8 Arm-B runs were worth spending, not that grading works. **Stage 2 then
+> spent them and grading lost; S2 is now dead. See below.**
 >
 > **Three things A1 found that change how earlier results read:**
 > 1. **S1's "naive graded" arm was barely graded on 7 of 8 videos** — share of
@@ -83,8 +84,9 @@
 > looks failed. Data was not corrupted here, but fix before the next parallel
 > launch (unique tmp name; scope the sweep to the run's own hashes).
 >
-> **A2 (the O2 re-test) is RUNNING** as a subagent in its own worktree as of 2026-07-30 (later). Result not yet in.
-> A1 for the GPU. Still outstanding, still approved, unchanged in scope.
+> **A2 (the O2 re-test) is RUNNING** as a subagent in its own worktree as of
+> 2026-07-30 (later), on branch `exp/o2-operator-strength`. Result not yet in;
+> scope unchanged from the original approval.
 >
 > **New gotchas, both of which cost a wasted 23-run pass:**
 > - `--dataset-dir` and `--cache-dir` are relative and must be pointed at the
