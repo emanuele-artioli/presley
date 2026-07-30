@@ -11313,3 +11313,390 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+
+# --- Breadth: presley_ai on the 9 non-DAVIS clips (docs/BREADTH_PRESLEY_AI.md) ---
+# tab:breadth-ext currently rests on `elvis` runs only -- there were ZERO
+# presley_ai runs outside DAVIS, so the article's breadth evidence spoke for
+# ELVIS block-removal, not the degrade/restore pipeline. Each entry mirrors the
+# matching elvis arm exactly (same clip, resolution, codec, fixed QP, block size,
+# budget, fg_protect) and changes only the component and operator, so baseline /
+# elvis / presley_ai form a matched triple per clip per rate point.
+# Bounds pre-registered before launch; a negative result here is reportable.
+# hash: 159121dd8cea42c4
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/8i1uo3x9
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 48c24633eba049e0
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/8i1uo3x9
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: f20c2ea872c34189
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/fii86rku
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 48239b018f75a9b4
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/fii86rku
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: cbd34c75dec37cb9
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/jxmcdk8k
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 522a7bdf1ee4bde7
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/jxmcdk8k
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 52163f3b053009cb
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 640
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/ptq7rtia
+  width: 360
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 3f684a54b6138c9e
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 640
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/ptq7rtia
+  width: 360
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: e066914465c72be4
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/zofozj6l
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: e9674c7a9de1b0c9
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: mosev2/zofozj6l
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 40a7eb9a9ccfac25
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 480
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: youtube_vos/0e4068b53f
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 8f8910b11f7cb463
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 480
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: youtube_vos/0e4068b53f
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 48e6c5bb63e49bb2
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: youtube_vos/282651c6f7
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: f5c63acbe22bcd45
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: youtube_vos/282651c6f7
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 21bdf03c90cbdb3b
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: youtube_vos/30fe0ed0ce
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 75386e182e6c810d
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: youtube_vos/30fe0ed0ce
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: b283dadf4b21b21f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: youtube_vos/b1a8a404ad
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 32
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 26ac9644c4bab6b2
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: x265
+  composite_output: true
+  fg_protect: true
+  height: 360
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: youtube_vos/b1a8a404ad
+  width: 640
+  component: presley_ai
+  codec_params:
+    preset: medium
+    qp: 37
+  degradation: downsample
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
