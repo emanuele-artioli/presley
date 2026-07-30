@@ -436,8 +436,86 @@ the same way F2 isolated alignment from selection):
   matched selection would mean a measurement or pairing bug, the same
   free-lunch alarm used throughout Wave 1.
 
-**Status: bounds registered, entries added to experiments.yaml
-(16 runs, hashes annotated), not yet run.**
+**Result 1 -- bits, and the pre-registered alarm fired.** Graded costs *more*
+bits than binary on 7 of 8 videos (mean **+2.55%**), the opposite of what was
+bounded (3-20% saving) and the exact alarm condition stated in advance.
+
+| video | binary bps | graded bps | dBits |
+|---|---|---|---|
+| bear | 535734 | 574279 | **+7.19%** |
+| drift-straight | 781828 | 829885 | +6.15% |
+| motorbike | 440926 | 455857 | +3.39% |
+| dogs-jump | 229181 | 232812 | +1.58% |
+| bike-packing | 857600 | 867718 | +1.18% |
+| dancing | 1232231 | 1244953 | +1.03% |
+| color-run | 457394 | 458782 | +0.30% |
+| drift-turn | 672843 | 670089 | -0.41% |
+
+**Alarm investigated and closed as a genuine result, not a bug.** Two checks
+before believing a "more bits from more compression" outcome: (a) selection is
+identical between arms by construction -- confirmed directly from the saved
+`strength_maps.npz`: bear binary has 18040 degraded blocks at level 1; bear
+graded has **exactly** 18040 degraded blocks total, split 7590/10223/227
+across levels 1/2/3 -- same budget, genuinely graded, not collapsed to one
+level. (b) the downscale-factor direction is correct (level 3 -> `16//8=2` px
+core), independently pinned by
+`tests/test_degradation_downsample_levels.py`. With selection and mechanism
+both verified, this is a real effect: **7/8 is directionally consistent but
+underpowered** (exact two-tailed sign p=0.0703, same floor logic as every
+other Wave-1 suite -- n=8 cannot clear alpha=0.05 on a 7/8 split), so the
+honest statement is "consistent but not yet significant," not "confirmed."
+
+**Result 2 -- quality moves the same direction as bits: worse, not better.**
+Via `assess_metric`, family_size=1, n=8:
+
+| region | metric | mean d | direction | verdict |
+|---|---|---|---|---|
+| FG | psnr | +0.0037 | 4+/4- | `no_consistent_direction` |
+| FG | lpips | +0.0015 | 7+/1- | `no_consistent_direction` |
+| FG | dists | +0.0024 | 7+/1- | `no_consistent_direction` |
+| BG | psnr | **-0.9139** | 8/8 worse | **`perceptual_loss`** |
+| BG | lpips (primary) | +0.0152 | 8/8 worse | **`sub_jnd_significant`** |
+| BG | dists | +0.0058 | 8/8 worse | `sub_jnd_significant` |
+
+FG is essentially untouched, as bounded (FG blocks are excluded from selection
+identically in both arms). BG is unanimous 8/8 worse on **every** metric.
+BG-PSNR clears JND (-0.91 dB against 0.5) but is a corroborating metric here
+(hard rule 3 -- BG-LPIPS is primary), so it cannot carry the claim alone; the
+primary metric's own verdict is `sub_jnd_significant`, mandated wording "a
+small, reproducible, imperceptible effect" -- direction is worse, not better,
+so read it as a small reproducible *cost*, never a win. Unlike F5, there is no
+metric-disagreement problem: PSNR, LPIPS and DISTS all agree in sign.
+
+**Verdict: naive grading (by the existing removability score alone) does not
+help -- it costs bits and quality together, not one for the other.** This
+kills the specific hypothesis "push already-high-score blocks to a steeper
+downscale" as a standalone improvement. The registered "free lunch" alarm
+(BG-quality win with no bit cost) never had a chance to fire; what happened
+instead is closer to the opposite failure mode.
+
+**A mechanism, consistent with F2 and F4.** A block downsampled to a 2x2 core
+and linearly stretched back to 16x16 (level 3) creates a much larger internal
+discontinuity against its untouched, sharp neighbors than a level-1 block
+does. Wave 1 has now surfaced this family of cost twice: F2 showed the codec
+pays for boundary mismatch when the *selected footprint* fragments; this looks
+like the same mechanism triggered by *within-block* severity instead -- the
+encoder spends bits reproducing a sharper transition than the content
+actually needs, and Real-ESRGAN's per-block SR (validated in this project only
+against level-1 inputs, since this pyramid path had never run before S1) has
+no more information to recover at level 3 than at level 1, so quality does not
+compensate for the extra spend either.
+
+**This does not retire the `downsample_levels` mechanism, only naive use of
+it.** The code (commit `c5c8af6`) is correct and byte-identical at the
+default; what failed is grading purely on the existing bits-cost proxy (F1's
+numerator) with no regard for restorability (W0.2's denominator, which is the
+axis this session's own diagnostic work identified as the real opportunity).
+The natural next step is a level assignment informed by *predicted damage*,
+not just score magnitude -- i.e. reserve aggressive levels for blocks that
+tolerate them, rather than pushing every high-score block equally hard.
+
+Full data: 16 result hashes listed in commit history; `strength_maps.npz`
+under each `results/<hash>/` for the exact per-block level maps.
 
 ---
 
