@@ -618,17 +618,33 @@ default 0 = off, so no existing hash moves) forces every block in the
 `color-run`, `dancing`, `dogs-jump`, `bike-packing`; `bear` already had
 `a07560c409dc38ce`) + 16 probes (k in {2,3} x 8 videos). 23 runs.
 
-**Footprint correction to the scoping text.** The scoping section says "level 1
-is already on disk as Arm C". That is only approximately true and the
-difference matters: the `levels=1` arm selects `round(score) > 0`, the
-`levels=3` arm selects `round(3*score) > 0`, which is a strict superset (on a
-4-block toy case, `[[0,0],[0,1]]` vs `[[0,1],[2,3]]`). So Arm C differs from
-Arm A in *degraded area* as well as in assignment — a second confound in the
-S1 result beyond the one already noted. The probes therefore use the
-`levels=3` footprint throughout, and the **within-level spread check needs
-only k=2 and k=3**, so no extra level-1 probe run is required for the
-early exit. If Arm B is ever run, it inherits the same footprint, which is what
-makes its histogram match Arm A's by construction.
+**Two corrections, both from reading the on-disk strength maps rather than the
+configs.** Written down because the first contradicts a claim I had already
+committed in this file, and the second changes how S1's own result should be
+read.
+
+1. *There is no footprint confound, and the scoping text's worry about one was
+   unfounded — including my own first version of this paragraph, which asserted
+   a strict-superset mismatch on the strength of the code path alone.* These
+   experiments carry `shrink_amount: 0.25`, which the component maps to
+   `select_amount`, so selection is a **clustered 25% budget via `sel`**, not
+   the `round(score*levels) > 0` threshold. Every arm — `levels=1`, `levels=3`,
+   and the probes — degrades **exactly the same 25.0% of blocks** (measured:
+   75.0% at level 0 in all sixteen S1 maps). So S1 was already a clean
+   assignment-only comparison, and the probes inherit the identical footprint.
+   The within-level spread check needs only k=2 and k=3, so no level-1 probe
+   run is required for the early exit.
+2. *S1's "naive graded" arm was barely graded.* The `levels=3` level histograms
+   are overwhelmingly level 1: bike-packing 23.5%/1.5%/0.0% across levels
+   1/2/3, color-run 24.5%/0.5%/0.0%, dogs-jump 23.0%/2.0%/0.0%, and the most
+   graded video, bear, still only 10.5%/14.2%/0.3%. `round(3*score)` puts
+   almost every block at level 1 because the removability scores sit low. So
+   S1's negative result was measured on an arm that is ~95% identical to the
+   binary arm on most videos — it is much weaker evidence against grading than
+   it reads as, and it makes the S1b probes the first runs in project history
+   to push a large fraction of blocks to a steep level at all. It also
+   sharpens the S1 bits surprise: bear's level-3 arm cost **+7.2%** more bytes
+   (245,265 vs 228,803) while moving only a quarter of its blocks off level 1.
 
 **Bounds.**
 
