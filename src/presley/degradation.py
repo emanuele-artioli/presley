@@ -402,7 +402,7 @@ def _pad_sel(sel: Optional[np.ndarray], pad_y: int, pad_x: int) -> Optional[np.n
                   mode='constant', constant_values=False)
 
 
-def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5, sel: Optional[np.ndarray] = None, levels: int = 1, uniform_level: int = 0) -> Tuple[np.ndarray, np.ndarray]:
+def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5, sel: Optional[np.ndarray] = None, levels: int = 1, uniform_level: int = 0, level_map: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Adaptively downsample each block based on removability scores. Returns (image, downsample_maps).
 
     ``sel`` overrides the default threshold selection (round(score)>0) with an
@@ -439,6 +439,16 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
     Requires ``levels > 1`` -- the ``levels<=1`` branch downsamples by the
     scalar ``scale`` rather than by ``2**level``, so a "uniform level" has no
     meaning there.
+
+    ``level_map`` (default None = off) is the S1b **Arm B** path: a finished
+    per-block level assignment, supplied by the caller instead of derived from
+    ``frame_scores``. It is used verbatim -- ``sel`` and the score quantizer are
+    both bypassed, because the map already encodes the footprint. Arm B builds
+    it as a permutation of Arm A's map (`tools/build_oracle_levels.py`), holding
+    the per-frame level histogram exactly fixed while reassigning *which* block
+    sits at each level using mined damage rather than the removability score.
+    Mutually exclusive with ``uniform_level``, and requires ``levels > 1`` for
+    the same reason ``uniform_level`` does.
     """
     uniform_level = int(uniform_level)
     if uniform_level > 0:
@@ -449,6 +459,16 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
             )
         if uniform_level > levels:
             raise ValueError(f"uniform_level={uniform_level} exceeds levels={levels}")
+    if level_map is not None:
+        if uniform_level > 0:
+            raise ValueError(
+                "level_map and uniform_level are mutually exclusive: one supplies the whole "
+                "assignment, the other overwrites it, and silently letting uniform_level win "
+                "would turn an Arm-B run into a probe run with an Arm-B hash")
+        if levels <= 1:
+            raise ValueError(
+                "level_map requires levels > 1: the levels<=1 branch downsamples by the scalar "
+                "`scale` rather than by 2**level, so a graded map would be silently flattened")
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
     pad_x = (block_size - w % block_size) % block_size
@@ -457,20 +477,40 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
         sel = _pad_sel(sel, pad_y, pad_x)
     blocks = split_image_into_blocks(image, block_size)
-    if levels <= 1:
-        level_map = np.round(frame_scores).astype(np.int32)
+    if level_map is not None:
+        # Arm B: the caller supplies the finished per-block level assignment.
+        # It already encodes the footprint (it is a permutation of Arm A's map),
+        # so `sel` and the score quantizer are both bypassed rather than
+        # re-applied -- re-applying `sel` would be a no-op at best and, if the
+        # map and the budget ever disagreed, would silently alter the histogram
+        # the arm exists to hold fixed.
+        quantized = np.asarray(level_map, dtype=np.int32)
+        if pad_y > 0 or pad_x > 0:
+            quantized = np.pad(quantized, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)),
+                               mode='constant', constant_values=0)
+        if quantized.shape != (blocks.shape[0], blocks.shape[1]):
+            raise ValueError(
+                f"level_map shape {quantized.shape} does not match the block grid "
+                f"{(blocks.shape[0], blocks.shape[1])}")
+        if quantized.max(initial=0) > levels:
+            raise ValueError(
+                f"level_map contains level {int(quantized.max())} above levels={levels}")
+        downsample_maps = quantized
     else:
-        level_map = np.clip(np.round(frame_scores * levels), 0, levels).astype(np.int32)
-    downsample_maps = _apply_sel_to_map(level_map, sel, 1)
-    # Flatten AFTER the sel floor, not before: with a budgeted ``sel`` the floor
-    # promotes selected-but-level-0 blocks to level 1, so flattening first
-    # leaves those blocks at 1 and the "uniform" probe is not uniform (measured:
-    # 1.4% of all blocks on motorbike, ~5.6% of the degraded footprint). Those
-    # blocks are less damaged than the rest by construction, so they would
-    # inflate the within-level damage spread -- the exact quantity S1b's
-    # early-exit gate turns on.
-    if uniform_level > 0:
-        downsample_maps = np.where(downsample_maps > 0, uniform_level, 0).astype(np.int32)
+        if levels <= 1:
+            quantized = np.round(frame_scores).astype(np.int32)
+        else:
+            quantized = np.clip(np.round(frame_scores * levels), 0, levels).astype(np.int32)
+        downsample_maps = _apply_sel_to_map(quantized, sel, 1)
+        # Flatten AFTER the sel floor, not before: with a budgeted ``sel`` the floor
+        # promotes selected-but-level-0 blocks to level 1, so flattening first
+        # leaves those blocks at 1 and the "uniform" probe is not uniform (measured:
+        # 1.4% of all blocks on motorbike, ~5.6% of the degraded footprint). Those
+        # blocks are less damaged than the rest by construction, so they would
+        # inflate the within-level damage spread -- the exact quantity S1b's
+        # early-exit gate turns on.
+        if uniform_level > 0:
+            downsample_maps = np.where(downsample_maps > 0, uniform_level, 0).astype(np.int32)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):

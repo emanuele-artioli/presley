@@ -187,3 +187,128 @@ def test_uniform_level_above_the_ceiling_is_rejected():
         assert "exceeds levels" in str(exc)
     else:
         raise AssertionError("uniform_level > levels must raise")
+
+
+# --- S1b Arm B: caller-supplied level map -------------------------------------
+#
+# Arm B's entire validity rests on one property: it applies Arm A's level
+# HISTOGRAM to a different set of blocks. If `sel` or the score quantizer were
+# still allowed to touch the map, the two arms would differ in how much area
+# they degrade as well as in which blocks get which level, and the comparison
+# would confound assignment with area -- the exact confound S1b was designed to
+# remove. These tests pin that the supplied map wins outright, and that every
+# way of accidentally not using it raises instead of silently degrading to Arm A.
+
+
+def test_level_map_is_used_verbatim_and_bypasses_sel():
+    """The supplied assignment wins even when `sel` says degrade nothing.
+
+    A run whose oracle map was silently intersected with `sel` would produce an
+    Arm-B hash with an Arm-A-or-worse footprint and look like a valid result.
+    """
+    block_size = 8
+    rng = np.random.default_rng(11)
+    image = rng.integers(0, 256, size=(16, 16, 3), dtype=np.uint8)
+    scores = rng.random((2, 2)).astype(np.float32)
+    level_map = np.array([[0, 3], [1, 2]], dtype=np.int32)
+
+    _, out = filter_frame_downsample(
+        image, scores, block_size, levels=3,
+        sel=np.zeros((2, 2), dtype=bool), level_map=level_map)
+
+    np.testing.assert_array_equal(out, level_map)
+
+
+def test_level_map_preserves_the_histogram_it_was_given():
+    """Arm B holds the per-level block count fixed; that is the whole design."""
+    block_size = 8
+    rng = np.random.default_rng(12)
+    image = rng.integers(0, 256, size=(32, 32, 3), dtype=np.uint8)
+    scores = rng.random((4, 4)).astype(np.float32)
+    level_map = np.array([[0, 0, 1, 1], [1, 2, 2, 2],
+                          [3, 0, 0, 1], [2, 3, 1, 0]], dtype=np.int32)
+
+    _, out = filter_frame_downsample(
+        image, scores, block_size, levels=3, level_map=level_map)
+
+    np.testing.assert_array_equal(np.bincount(out.ravel(), minlength=4),
+                                  np.bincount(level_map.ravel(), minlength=4))
+
+
+def test_level_map_default_none_leaves_the_score_path_byte_identical():
+    """Adding the parameter must not move any existing experiment hash."""
+    block_size = 8
+    rng = np.random.default_rng(13)
+    image = rng.integers(0, 256, size=(16, 16, 3), dtype=np.uint8)
+    scores = rng.random((2, 2)).astype(np.float32)
+
+    img_a, map_a = filter_frame_downsample(image, scores, block_size, levels=3)
+    img_b, map_b = filter_frame_downsample(image, scores, block_size, levels=3,
+                                           level_map=None)
+
+    np.testing.assert_array_equal(img_a, img_b)
+    np.testing.assert_array_equal(map_a, map_b)
+
+
+def test_level_map_with_uniform_level_is_rejected():
+    """Both set the whole assignment; letting one win silently mislabels the arm."""
+    block_size = 8
+    rng = np.random.default_rng(14)
+    image = rng.integers(0, 256, size=(8, 8, 3), dtype=np.uint8)
+    scores = np.array([[1.0]], dtype=np.float32)
+
+    try:
+        filter_frame_downsample(image, scores, block_size, levels=3,
+                                uniform_level=2,
+                                level_map=np.array([[3]], dtype=np.int32))
+    except ValueError as exc:
+        assert "mutually exclusive" in str(exc)
+    else:
+        raise AssertionError("level_map with uniform_level must raise")
+
+
+def test_level_map_with_levels_1_is_rejected():
+    """levels<=1 scales by `scale`, not 2**level -- a graded map would flatten."""
+    block_size = 8
+    rng = np.random.default_rng(15)
+    image = rng.integers(0, 256, size=(8, 8, 3), dtype=np.uint8)
+    scores = np.array([[1.0]], dtype=np.float32)
+
+    try:
+        filter_frame_downsample(image, scores, block_size, levels=1,
+                                level_map=np.array([[1]], dtype=np.int32))
+    except ValueError as exc:
+        assert "levels > 1" in str(exc)
+    else:
+        raise AssertionError("level_map with levels=1 must raise")
+
+
+def test_level_map_above_the_ceiling_is_rejected():
+    block_size = 8
+    rng = np.random.default_rng(16)
+    image = rng.integers(0, 256, size=(8, 8, 3), dtype=np.uint8)
+    scores = np.array([[1.0]], dtype=np.float32)
+
+    try:
+        filter_frame_downsample(image, scores, block_size, levels=3,
+                                level_map=np.array([[9]], dtype=np.int32))
+    except ValueError as exc:
+        assert "above levels" in str(exc)
+    else:
+        raise AssertionError("a level above the ceiling must raise")
+
+
+def test_level_map_shape_mismatch_is_rejected():
+    """A map built against a different resolution must not broadcast silently."""
+    block_size = 8
+    rng = np.random.default_rng(17)
+    image = rng.integers(0, 256, size=(16, 16, 3), dtype=np.uint8)
+    scores = rng.random((2, 2)).astype(np.float32)
+
+    try:
+        filter_frame_downsample(image, scores, block_size, levels=3,
+                                level_map=np.zeros((4, 4), dtype=np.int32))
+    except ValueError as exc:
+        assert "does not match" in str(exc)
+    else:
+        raise AssertionError("a mis-shaped level_map must raise")

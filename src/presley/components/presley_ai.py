@@ -158,6 +158,22 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # one fixed level, so per-block damage at that level can be mined. Default
     # 0 = off, so no existing hash moves.
     downsample_uniform_level = int(experiment.get('downsample_uniform_level', 0))
+    # S1b Arm B: replace the score-derived level assignment with a precomputed
+    # per-frame level map (tools/build_oracle_levels.py), which keeps Arm A's
+    # exact level histogram but reassigns which block sits at which level using
+    # mined damage instead of the removability score. Default None = off, so no
+    # existing hash moves. The map is authoritative -- it already encodes the
+    # footprint, so both `sel` and the level quantizer are bypassed for it.
+    downsample_level_map = experiment.get('downsample_level_map')
+    oracle_levels = None
+    if downsample_level_map:
+        _p = os.path.join(downsample_level_map, f"{video_name.replace('/', '_')}.npz")
+        if not os.path.exists(_p):
+            raise FileNotFoundError(
+                f"downsample_level_map is set but {_p} does not exist -- an Arm-B run "
+                "without its oracle map would silently fall back to the naive graded "
+                "assignment and be indistinguishable from Arm A")
+        oracle_levels = np.load(_p)['levels']
 
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
@@ -208,8 +224,16 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
 
         if degradation == 'downsample':
+            _lm = None
+            if oracle_levels is not None:
+                if i >= len(oracle_levels):
+                    raise IndexError(
+                        f"oracle level map has {len(oracle_levels)} frames but frame {i} was "
+                        f"requested -- the map was built against a different frame count")
+                _lm = oracle_levels[i]
             degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel, levels=downsample_levels,
-                                                    uniform_level=downsample_uniform_level)
+                                                    uniform_level=downsample_uniform_level,
+                                                    level_map=_lm)
         elif degradation == 'blur':
             degraded, smap = filter_frame_gaussian(frame, score, block_size, sel=sel)
         elif degradation == 'noise':
