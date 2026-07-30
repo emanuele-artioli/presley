@@ -154,6 +154,10 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # mean_fill/freeze have no graded restoration path, so this key is inert
     # for them and ignored on purpose rather than raising.
     downsample_levels = int(experiment.get('downsample_levels', 1))
+    # S1b probe mode: force every block in the downsample_levels footprint to
+    # one fixed level, so per-block damage at that level can be mined. Default
+    # 0 = off, so no existing hash moves.
+    downsample_uniform_level = int(experiment.get('downsample_uniform_level', 0))
 
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
@@ -204,7 +208,8 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
 
         if degradation == 'downsample':
-            degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel, levels=downsample_levels)
+            degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel, levels=downsample_levels,
+                                                    uniform_level=downsample_uniform_level)
         elif degradation == 'blur':
             degraded, smap = filter_frame_gaussian(frame, score, block_size, sel=sel)
         elif degradation == 'noise':

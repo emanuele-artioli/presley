@@ -402,7 +402,7 @@ def _pad_sel(sel: Optional[np.ndarray], pad_y: int, pad_x: int) -> Optional[np.n
                   mode='constant', constant_values=False)
 
 
-def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5, sel: Optional[np.ndarray] = None, levels: int = 1) -> Tuple[np.ndarray, np.ndarray]:
+def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5, sel: Optional[np.ndarray] = None, levels: int = 1, uniform_level: int = 0) -> Tuple[np.ndarray, np.ndarray]:
     """Adaptively downsample each block based on removability scores. Returns (image, downsample_maps).
 
     ``sel`` overrides the default threshold selection (round(score)>0) with an
@@ -424,7 +424,31 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
     `_adaptive_block_pyramid_upscale` reads the stored map value as the power
     of two directly (``np.power(2, downscale_maps)``). ``scale`` is ignored in
     this branch: a single scalar factor has no meaning across a graded ladder.
+
+    ``uniform_level`` (default 0 = off) is the S1b *probe* mode: every block
+    that the ``levels`` footprint would have degraded at all is instead
+    degraded at exactly level ``uniform_level``. This exists to measure
+    per-block damage at a *fixed* level -- damage_b(k) -- which is the input a
+    damage-aware assignment needs and which a graded run cannot supply, since
+    there each block appears at only one, score-determined level. The
+    *footprint* is deliberately still the ``levels`` footprint and not the
+    ``levels=1`` one, so the probes, the naive graded arm and any later
+    matched-histogram reassignment all degrade the identical block set;
+    ``levels=1``'s footprint is a strict subset (round(s)>0 vs
+    round(s*levels)>0) and mixing the two would confound assignment with area.
+    Requires ``levels > 1`` -- the ``levels<=1`` branch downsamples by the
+    scalar ``scale`` rather than by ``2**level``, so a "uniform level" has no
+    meaning there.
     """
+    uniform_level = int(uniform_level)
+    if uniform_level > 0:
+        if levels <= 1:
+            raise ValueError(
+                "uniform_level requires levels > 1: the levels<=1 branch scales by "
+                f"`scale`, not by 2**level, so uniform_level={uniform_level} would be silently ignored"
+            )
+        if uniform_level > levels:
+            raise ValueError(f"uniform_level={uniform_level} exceeds levels={levels}")
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
     pad_x = (block_size - w % block_size) % block_size
@@ -437,6 +461,8 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
         level_map = np.round(frame_scores).astype(np.int32)
     else:
         level_map = np.clip(np.round(frame_scores * levels), 0, levels).astype(np.int32)
+    if uniform_level > 0:
+        level_map = np.where(level_map > 0, uniform_level, 0).astype(np.int32)
     downsample_maps = _apply_sel_to_map(level_map, sel, 1)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])

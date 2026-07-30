@@ -8848,3 +8848,452 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+
+# --- S1b: damage-aware ceiling test (docs/WAVE1_FALSIFIERS.md) ---
+# Pristine baselines at 640x360 svtav1 QP43. tools/mine_block_damage.py
+# joins every restored run to a matched pristine baseline; before these,
+# only bear had one (a07560c409dc38ce) and the miner silently yielded
+# nothing for the other seven probe videos.
+# hash: 7106adb92a8e9c11
+- component: baselines
+  video: motorbike
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 43
+    preset: '8'
+# hash: 95c23f1b93c73326
+- component: baselines
+  video: drift-straight
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 43
+    preset: '8'
+# hash: 67a351820cea1f9e
+- component: baselines
+  video: drift-turn
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 43
+    preset: '8'
+# hash: 929ab8e3ee86cee7
+- component: baselines
+  video: color-run
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 43
+    preset: '8'
+# hash: 3192e6d6b6e9ec4c
+- component: baselines
+  video: dancing
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 43
+    preset: '8'
+# hash: c90ca3fcc5b7c8b8
+- component: baselines
+  video: dogs-jump
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 43
+    preset: '8'
+# hash: 8344d4e1a9d5b80d
+- component: baselines
+  video: bike-packing
+  width: 640
+  height: 360
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 43
+    preset: '8'
+# Uniform-level probes: every block in the levels=3 footprint forced to
+# one fixed level, to measure damage_b(k) per superblock. k=1 is NOT
+# the levels=1 arm on disk -- that arm has a strictly smaller footprint
+# (round(s)>0 vs round(3s)>0) -- but the within-level damage spread,
+# which is the early-exit criterion, only needs k=2 and k=3.
+# hash: 01e9cb2228c06206
+- component: presley_ai
+  video: motorbike
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 2
+# hash: dfa7aea43f509937
+- component: presley_ai
+  video: drift-straight
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 2
+# hash: 6ca87c33f33b642b
+- component: presley_ai
+  video: drift-turn
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 2
+# hash: a916b27eb0135ade
+- component: presley_ai
+  video: color-run
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 2
+# hash: f0fb80c5f996a1a9
+- component: presley_ai
+  video: dancing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 2
+# hash: dbe01c1d0fe8363b
+- component: presley_ai
+  video: dogs-jump
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 2
+# hash: 6437a590c56c629b
+- component: presley_ai
+  video: bike-packing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 2
+# hash: ba87f0fe5b901c66
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 2
+# hash: 14287118971f9cbc
+- component: presley_ai
+  video: motorbike
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 3
+# hash: 9f8217f163b6aa88
+- component: presley_ai
+  video: drift-straight
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 3
+# hash: 762d42d2b8aeea9e
+- component: presley_ai
+  video: drift-turn
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 3
+# hash: 1aa5d44a194b21aa
+- component: presley_ai
+  video: color-run
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 3
+# hash: 6842e622a4144120
+- component: presley_ai
+  video: dancing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 3
+# hash: ab2c9c567229be90
+- component: presley_ai
+  video: dogs-jump
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 3
+# hash: 2cd884b123dc6ccf
+- component: presley_ai
+  video: bike-packing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 3
+# hash: 56121ae83420b24d
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+  downsample_uniform_level: 3

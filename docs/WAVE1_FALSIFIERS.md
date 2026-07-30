@@ -604,6 +604,71 @@ worthless. Per hard rule 2b a sub-JND quality gain is **not** a win, so a
 consistent-but-imperceptible Arm-B improvement counts as a failure of this
 decision rule, not a partial success.
 
+### S1b run log — bounds pre-registered 2026-07-30, before any number was read
+
+Committed *before* launching the probes, per the bound-before-believing rule.
+The scoping section above drafted these; this is the run-time confirmation with
+the two things it left open made numeric: what counts as "small" spread, and
+what the probe bitrates should do.
+
+**Setup as actually built.** `downsample_uniform_level` (new config key,
+default 0 = off, so no existing hash moves) forces every block in the
+`downsample_levels: 3` footprint to one fixed level. 7 pristine baselines at
+640x360 svtav1 QP43 preset 8 (`motorbike`, `drift-straight`, `drift-turn`,
+`color-run`, `dancing`, `dogs-jump`, `bike-packing`; `bear` already had
+`a07560c409dc38ce`) + 16 probes (k in {2,3} x 8 videos). 23 runs.
+
+**Footprint correction to the scoping text.** The scoping section says "level 1
+is already on disk as Arm C". That is only approximately true and the
+difference matters: the `levels=1` arm selects `round(score) > 0`, the
+`levels=3` arm selects `round(3*score) > 0`, which is a strict superset (on a
+4-block toy case, `[[0,0],[0,1]]` vs `[[0,1],[2,3]]`). So Arm C differs from
+Arm A in *degraded area* as well as in assignment — a second confound in the
+S1 result beyond the one already noted. The probes therefore use the
+`levels=3` footprint throughout, and the **within-level spread check needs
+only k=2 and k=3**, so no extra level-1 probe run is required for the
+early exit. If Arm B is ever run, it inherits the same footprint, which is what
+makes its histogram match Arm A's by construction.
+
+**Bounds.**
+
+1. *Damage grows with level.* Mean `delta_psnr` (pristine-encode PSNR minus
+   degraded+restored PSNR, per 64x64 SB, area-pooled) expected **2-8 dB at
+   k=2** and **4-14 dB at k=3**, with k=3 worse than k=2 by **at least 1 dB**.
+   **ALARM** if k=3 is not clearly worse than k=2 (the level is not reaching
+   the pixels — the `film-grain=1` silent-no-op class), if either mean is
+   negative (degrade+restore beating a pristine encode *on average* is not
+   credible), or if either exceeds 20 dB.
+2. *Within-level spread — the early-exit criterion.* W0.2 measured a 6.2-8.2 dB
+   p90-p10 spread of `delta_psnr` at level 1. Expect **5-12 dB** at k=2 and
+   k=3. "Small" is defined here, before the number, in the only terms that
+   matter for a reassignment: a damage-aware assignment can only pay if the
+   *within*-level spread is large next to the *between*-level cost of moving a
+   block up a level. So define
+
+   > **R = (p90-p10 of delta_psnr within k=3) / (mean delta_psnr(k=3) - mean delta_psnr(k=2))**
+
+   **Kill the graded direction with zero Arm-B runs if R < 1.0** — a perfect
+   sort would then buy less than one level-step of damage, i.e. nothing to
+   exploit. Also kill on an absolute floor: **p90-p10 within k=3 < 2.0 dB**.
+   Expected R is **3-10**. **ALARM if R > 30** — that points at a degenerate
+   between-level gap (again: level not reaching pixels) rather than at
+   enormous headroom.
+3. *Probe bitrates.* At a fixed footprint, more downsampling is smoother, so
+   expect `transmitted_size_bytes` at k=3 to be **0-15% below** k=2. **ALARM if
+   k=3 costs >5% MORE than k=2** — that would reproduce S1's "more compression,
+   more bits" surprise with the fragmentation/footprint confounds removed, and
+   is a thing to investigate, not a finding to report.
+4. *Arm B vs Arm A (matched histogram), only if R clears the gate.* BG-LPIPS
+   expected to improve by **0.005-0.04**. **ALARM above 0.08.**
+5. *Arm B vs Arm C — the decision.* Per the decision rule fixed above, and per
+   hard rule 2b, a sub-JND Arm-B gain is a **failure** of the rule, not a
+   partial success.
+
+Every run's `invariant_failures` is checked before any of its numbers are used.
+LPIPS/DISTS are backfilled (`presley.evaluation.backfill`), since the runs come
+back PSNR/SSIM-only.
+
 ---
 
 ## F7 — chroma-first degradation: is there enough chroma to be worth taking?

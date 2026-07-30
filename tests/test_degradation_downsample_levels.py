@@ -96,3 +96,72 @@ def test_levels_clip_to_the_requested_ceiling():
     _, level_map = filter_frame_downsample(image, scores, block_size, levels=4)
 
     assert level_map[0, 0] == 4
+
+
+# --- S1b: uniform_level probe mode -----------------------------------------
+# The damage-aware ceiling test needs damage_b(k) -- per-block damage at a
+# FIXED level. A graded run cannot supply it (each block appears at exactly one
+# score-determined level), so probe runs force one level across the whole
+# footprint. The footprint must stay the levels>1 footprint, because the
+# levels=1 footprint is a strict subset and mixing them would confound
+# "which blocks got which level" with "how much area was degraded at all".
+
+
+def test_uniform_level_flattens_the_ladder_but_keeps_the_footprint():
+    block_size = 8
+    rng = np.random.default_rng(5)
+    image = rng.integers(0, 256, size=(16, 16, 3), dtype=np.uint8)
+    scores = np.array([[0.05, 0.4], [0.7, 1.0]], dtype=np.float32)
+
+    _, graded = filter_frame_downsample(image, scores, block_size, levels=3)
+    _, uniform = filter_frame_downsample(image, scores, block_size, levels=3, uniform_level=2)
+
+    assert graded.tolist() == [[0, 1], [2, 3]]
+    assert uniform.tolist() == [[0, 2], [2, 2]]
+    # identical footprint, only the assignment differs -- the whole point
+    np.testing.assert_array_equal(graded > 0, uniform > 0)
+
+
+def test_uniform_level_0_is_the_graded_path_unchanged():
+    """Default-off must be byte-identical, so no existing hash moves."""
+    block_size = 8
+    rng = np.random.default_rng(6)
+    image = rng.integers(0, 256, size=(16, 16, 3), dtype=np.uint8)
+    scores = np.array([[0.1, 0.5], [0.8, 1.0]], dtype=np.float32)
+
+    a_img, a_map = filter_frame_downsample(image, scores, block_size, levels=3)
+    b_img, b_map = filter_frame_downsample(image, scores, block_size, levels=3, uniform_level=0)
+
+    np.testing.assert_array_equal(a_img, b_img)
+    np.testing.assert_array_equal(a_map, b_map)
+
+
+def test_uniform_level_rejects_the_binary_branch_rather_than_being_ignored():
+    """levels<=1 scales by `scale`, not 2**level, so a uniform level there
+    would be silently dropped -- the exact silent-no-op class of bug that has
+    already cost this project a wasted probe batch."""
+    block_size = 8
+    rng = np.random.default_rng(7)
+    image = rng.integers(0, 256, size=(8, 8, 3), dtype=np.uint8)
+    scores = np.array([[1.0]], dtype=np.float32)
+
+    try:
+        filter_frame_downsample(image, scores, block_size, levels=1, uniform_level=2)
+    except ValueError as exc:
+        assert "levels > 1" in str(exc)
+    else:
+        raise AssertionError("uniform_level with levels=1 must raise, not no-op")
+
+
+def test_uniform_level_above_the_ceiling_is_rejected():
+    block_size = 8
+    rng = np.random.default_rng(8)
+    image = rng.integers(0, 256, size=(8, 8, 3), dtype=np.uint8)
+    scores = np.array([[1.0]], dtype=np.float32)
+
+    try:
+        filter_frame_downsample(image, scores, block_size, levels=3, uniform_level=4)
+    except ValueError as exc:
+        assert "exceeds levels" in str(exc)
+    else:
+        raise AssertionError("uniform_level > levels must raise")
