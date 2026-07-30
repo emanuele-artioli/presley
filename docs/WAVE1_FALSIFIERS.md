@@ -604,6 +604,339 @@ worthless. Per hard rule 2b a sub-JND quality gain is **not** a win, so a
 consistent-but-imperceptible Arm-B improvement counts as a failure of this
 decision rule, not a partial success.
 
+### S1b run log — bounds pre-registered 2026-07-30, before any number was read
+
+Committed *before* launching the probes, per the bound-before-believing rule.
+The scoping section above drafted these; this is the run-time confirmation with
+the two things it left open made numeric: what counts as "small" spread, and
+what the probe bitrates should do.
+
+**Setup as actually built.** `downsample_uniform_level` (new config key,
+default 0 = off, so no existing hash moves) forces every block in the
+`downsample_levels: 3` footprint to one fixed level. 7 pristine baselines at
+640x360 svtav1 QP43 preset 8 (`motorbike`, `drift-straight`, `drift-turn`,
+`color-run`, `dancing`, `dogs-jump`, `bike-packing`; `bear` already had
+`a07560c409dc38ce`) + 16 probes (k in {2,3} x 8 videos). 23 runs.
+
+**Two corrections, both from reading the on-disk strength maps rather than the
+configs.** Written down because the first contradicts a claim I had already
+committed in this file, and the second changes how S1's own result should be
+read.
+
+1. *There is no footprint confound, and the scoping text's worry about one was
+   unfounded — including my own first version of this paragraph, which asserted
+   a strict-superset mismatch on the strength of the code path alone.* These
+   experiments carry `shrink_amount: 0.25`, which the component maps to
+   `select_amount`, so selection is a **clustered 25% budget via `sel`**, not
+   the `round(score*levels) > 0` threshold. Every arm — `levels=1`, `levels=3`,
+   and the probes — degrades **exactly the same 25.0% of blocks** (measured:
+   75.0% at level 0 in all sixteen S1 maps). So S1 was already a clean
+   assignment-only comparison, and the probes inherit the identical footprint.
+   The within-level spread check needs only k=2 and k=3, so no level-1 probe
+   run is required for the early exit.
+2. *S1's "naive graded" arm was barely graded, and **bear is not
+   representative of it**.* See the dedicated subsection below — this is the
+   correction with consequences outside S1b.
+
+### ⚠ S1's graded arm is degenerate on 7 of 8 videos — correction for `tab:graded`
+
+**This contradicts how S1 is currently described in the paper text** (landed by
+Wave A3, committed and unpushed, presenting S1 as `tab:graded` and describing it
+as pushing the score "as far as the transport allows"). That description
+generalizes from bear, and bear is the single outlier in the batch. Recorded
+here so the paper text can be corrected against a citable source. **I have not
+edited the paper** — that is another wave's job.
+
+Level histograms of the eight `levels=3` runs, as a share of the **degraded
+footprint** (the footprint is a clustered 25% budget from `shrink_amount: 0.25`
+and is identical in every arm, so these shares are directly comparable), read
+straight off `strength_maps.npz` via `sidechannel.load_level_masks`:
+
+| video | foot% | L1% | L2% | L3% | ≥L2% | bytes binary | bytes graded | Δbytes |
+|---|---|---|---|---|---|---|---|---|
+| bear | 25.0 | 42.1 | 56.7 | 1.3 | **57.9** | 228,803 | 245,265 | +7.19% |
+| motorbike | 25.0 | 77.5 | 22.3 | 0.2 | 22.5 | 98,749 | 102,093 | +3.39% |
+| drift-straight | 25.0 | 79.5 | 20.1 | 0.4 | 20.5 | 203,601 | 216,116 | +6.15% |
+| dancing | 25.0 | 85.1 | 14.7 | 0.2 | 14.9 | 397,908 | 402,016 | +1.03% |
+| dogs-jump | 25.0 | 91.8 | 8.2 | 0.0 | 8.2 | 78,781 | 80,029 | +1.58% |
+| bike-packing | 25.0 | 94.1 | 5.8 | 0.0 | 5.9 | 308,200 | 311,836 | +1.18% |
+| drift-turn | 24.9 | 96.1 | 3.2 | 0.7 | 3.9 | 224,281 | 223,363 | −0.41% |
+| color-run | 25.0 | 98.0 | 1.8 | 0.2 | **2.0** | 200,110 | 200,717 | +0.30% |
+
+- **Median 88.5% of the degraded footprint never leaves level 1** (range
+  42.1–98.0%). The median share reaching level ≥2 is **11.5%**.
+- **Level 3 is essentially unused: at most 1.26% of the footprint, on bear.**
+  The "3" in `levels=3` is a quantizer ceiling that the data never approaches,
+  because `round(3*score)` needs `score ≥ 1/2` for level 2 and `≥ 5/6` for
+  level 3, and the removability scores sit far below that.
+- **bear moves 57.9% of its footprint to level ≥2 — 5× the median and 29× the
+  minimum.** Any sentence about what the graded arm *does* that is calibrated
+  on bear is wrong for the other seven videos.
+
+**Consequence for how S1's negative result may be cited.** On color-run,
+drift-turn, bike-packing and dogs-jump the graded arm is 92–98% identical to the
+binary arm inside the footprint, so those four videos cannot carry evidence
+about grading in either direction — they are near-replicates of the control that
+happen to cost slightly more bits. S1's "costs bits 7/8, costs BG quality 8/8"
+therefore remains true as *reported*, but it is much weaker evidence against
+grading **as a mechanism** than it reads as: most of its n=8 barely exercised the
+mechanism. The honest statement is that *the naive score→level quantizer is
+degenerate at these score magnitudes*, which is a finding about the quantizer,
+not about graded degradation.
+
+It also sharpens the bits surprise rather than explaining it away: the two videos
+that grade the most (bear +7.19%, drift-straight +6.15%) are also the two that
+lose the most bits, and the video that grades least (color-run, 2.0% at level ≥2)
+is nearly free (+0.30%). The bit penalty tracks *how much grading actually
+happened*, which is consistent with the "sharper transitions cost bits" reading
+in the S1 write-up above and inconsistent with it being noise.
+
+**This is what makes the S1b probes worth running at all:** at k=2 and k=3 they
+put 100% of the footprint at a steep level, so they are the first runs in project
+history to exercise the pyramid's graded path on a large share of blocks.
+
+**Bounds.**
+
+1. *Damage grows with level.* Mean `delta_psnr` (pristine-encode PSNR minus
+   degraded+restored PSNR, per 64x64 SB, area-pooled) expected **2-8 dB at
+   k=2** and **4-14 dB at k=3**, with k=3 worse than k=2 by **at least 1 dB**.
+   **ALARM** if k=3 is not clearly worse than k=2 (the level is not reaching
+   the pixels — the `film-grain=1` silent-no-op class), if either mean is
+   negative (degrade+restore beating a pristine encode *on average* is not
+   credible), or if either exceeds 20 dB.
+2. *Within-level spread — the early-exit criterion.* W0.2 measured a 6.2-8.2 dB
+   p90-p10 spread of `delta_psnr` at level 1. Expect **5-12 dB** at k=2 and
+   k=3. "Small" is defined here, before the number, in the only terms that
+   matter for a reassignment: a damage-aware assignment can only pay if the
+   *within*-level spread is large next to the *between*-level cost of moving a
+   block up a level. So define
+
+   > **R = (p90-p10 of delta_psnr within k=3) / (mean delta_psnr(k=3) - mean delta_psnr(k=2))**
+
+   **Kill the graded direction with zero Arm-B runs if R < 1.0** — a perfect
+   sort would then buy less than one level-step of damage, i.e. nothing to
+   exploit. Also kill on an absolute floor: **p90-p10 within k=3 < 2.0 dB**.
+   Expected R is **3-10**. **ALARM if R > 30** — that points at a degenerate
+   between-level gap (again: level not reaching pixels) rather than at
+   enormous headroom.
+3. *Probe bitrates.* At a fixed footprint, more downsampling is smoother, so
+   expect `transmitted_size_bytes` at k=3 to be **0-15% below** k=2. **ALARM if
+   k=3 costs >5% MORE than k=2** — that would reproduce S1's "more compression,
+   more bits" surprise with the fragmentation/footprint confounds removed, and
+   is a thing to investigate, not a finding to report.
+4. *Arm B vs Arm A (matched histogram), only if R clears the gate.* BG-LPIPS
+   expected to improve by **0.005-0.04**. **ALARM above 0.08.**
+5. *Arm B vs Arm C — the decision.* Per the decision rule fixed above, and per
+   hard rule 2b, a sub-JND Arm-B gain is a **failure** of the rule, not a
+   partial success.
+
+Every run's `invariant_failures` is checked before any of its numbers are used.
+LPIPS/DISTS are backfilled (`presley.evaluation.backfill`), since the runs come
+back PSNR/SSIM-only.
+
+### S1b result — the early-exit gate PASSES (2026-07-30)
+
+All 16 probes (k∈{2,3} × 8 videos) plus the 7 new pristine baselines are on
+disk. **All 16 have empty `invariant_failures` and zero NaN across 42 metrics
+each** — the wall of `[av1] Missing Sequence Header` / `Failed to get pixel
+format` in the runner log is benign ffmpeg decoder noise on the per-frame
+decode path, *not* the silent-NaN AV1 trap, and was verified as such by
+reading the metrics rather than by reading the log.
+
+Mined with `tools/mine_block_damage.py` (143 run/baseline pairs, 1,786,560 SB
+observations → `results/block_damage_s1b.npz`). The numbers below are the
+**6,246 fully-degraded superblocks** (`strength_frac >= 0.999`) of the 16
+probe runs — partial-coverage SBs are excluded because their level is
+ambiguous by construction.
+
+| level | n | mean | p10 | p50 | p90 | p90−p10 |
+|---|---|---|---|---|---|---|
+| k=2 | 3,123 | 12.10 | 5.74 | 12.42 | 17.89 | 12.15 |
+| k=3 | 3,123 | 13.76 | 7.24 | 13.87 | 19.60 | 12.36 |
+
+**Gate, evaluated exactly as pre-registered above:**
+
+- between-level cost `mean Δ(k=3) − mean Δ(k=2)` = **+1.664 dB** (threshold:
+  at least 1 dB, and k=3 must be clearly worse — **met**, and in the right
+  direction)
+- within-level spread at k=3 = **12.36 dB** (kill if < 2.0 — **not met**)
+- **R = 12.36 / 1.664 = 7.43** (kill if R < 1.0; alarm if R > 30 — **passes
+  cleanly**, and lands inside the pre-registered expected band of 3–10)
+
+**Verdict: the graded direction survives the ceiling gate.** A perfect
+damage-aware sort has roughly 7.4 level-steps of headroom to play with, which
+is real room and not a rounding artifact. The 8 Arm-B confirmation runs are
+therefore warranted; S2's structure-tensor proxy is *not* pre-emptively dead.
+**This is not yet a win** — it says only that the question is still open. The
+decision rule fixed above still governs: Arm B must beat plain binary on
+BG-LPIPS clearing JND at matched bits, or on a bitrate saving at sub-JND-equal
+quality. A sub-JND Arm-B gain remains a failure of the rule.
+
+**Two quantities landed outside their pre-registered bands. Recorded, not
+glossed:**
+
+1. **Mean damage at k=2 is 12.10 dB against a predicted 2–8 dB.** k=3's 13.76
+   dB is inside its 4–14 dB band, and neither trips the >20 dB hard alarm, but
+   the k=2 prediction was simply wrong — damage at level 2 is much closer to
+   level 3 than the 4× pixel ratio suggested. The likely reason is that most of
+   the damage is incurred by the *first* halving and by the restorer's
+   inability to invent detail at all, not by the amount discarded beyond that.
+   This weakens nothing in the gate (it makes the between-level gap *smaller*,
+   which makes R *larger* — the conservative direction would have been the
+   opposite), but it should be checked before it is used as a modelling
+   assumption.
+2. **Within-level spread at k=3 is 12.36 dB against a predicted 5–12 dB** —
+   marginally above, and consistent with W0.2's 6.2–8.2 dB at level 1 growing
+   with level. Immaterial to the gate's sign.
+
+**Per-video, and one genuine non-monotonicity:**
+
+| video | mean Δ k=2 | mean Δ k=3 | sep | spread k=3 | R |
+|---|---|---|---|---|---|
+| bear | 13.09 | 13.87 | 0.77 | 9.77 | 12.63 |
+| bike-packing | 12.31 | 14.34 | 2.03 | 6.26 | 3.08 |
+| color-run | 9.24 | 13.03 | 3.79 | 12.10 | 3.19 |
+| dancing | 11.75 | 14.80 | 3.05 | 13.35 | 4.38 |
+| **dogs-jump** | **13.33** | **13.25** | **−0.08** | 13.04 | n/a |
+| drift-straight | 11.28 | 15.19 | 3.91 | 7.33 | 1.87 |
+| drift-turn | 9.98 | 12.12 | 2.14 | 15.91 | 7.43 |
+| motorbike | 12.37 | 15.83 | 3.46 | 14.85 | 4.29 |
+
+`dogs-jump` is **non-monotonic**: level 3 is very slightly *less* damaging than
+level 2 (−0.08 dB). At 13 dB of damage with a 13 dB spread this is well inside
+noise and does not trip the aggregate alarm (6/8 videos are cleanly monotonic
+and the pooled sep is +1.66 dB), but it is the one video where the level is
+arguably not reaching the pixels, and it is also the lowest-bitrate clip in the
+suite (79 kB). Do not use `dogs-jump` alone to argue anything about level
+response.
+
+**Bound 3 (probe bitrates) — passes, and it retires S1's central surprise.**
+Predicted: k=3 costs 0–15% *fewer* bytes than k=2; alarm if k=3 costs >5% more.
+
+| video | bytes k=2 | bytes k=3 | k=3 vs k=2 |
+|---|---|---|---|
+| bear | 240,103 | 231,269 | −3.68% |
+| drift-turn | 221,503 | 213,568 | −3.58% |
+| motorbike | 99,999 | 96,814 | −3.19% |
+| drift-straight | 221,056 | 215,724 | −2.41% |
+| color-run | 196,818 | 192,210 | −2.34% |
+| dancing | 403,358 | 394,185 | −2.27% |
+| bike-packing | 309,805 | 305,949 | −1.24% |
+| dogs-jump | 78,925 | 79,312 | +0.49% |
+
+7/8 negative, mean −2.3%, no video anywhere near the +5% alarm. **At a fixed
+footprint and a uniform level, more downsampling costs fewer bits — exactly as
+intuition says, and the opposite of S1's headline surprise.** Read together
+with the degeneracy correction below, S1's "more compression, more bits" is
+therefore best explained as a cost of *mixing* levels within the footprint
+(fragmentation, and level boundaries the content never had) rather than as a
+property of stronger downsampling. That is a mechanism S1 could not separate
+and these probes can. It does not overturn S1's measured bitrates — those
+stand — but it does reinterpret them.
+
+### S1b Arm B — the ceiling test FAILS. The graded direction is closed.
+
+Run 2026-07-30, after the gate passed. LPIPS/DISTS backfilled on all 8 Arm-B
+runs and all 16 probes (48/48 succeeded, 0 failures). All 8 Arm-B runs have
+empty `invariant_failures`.
+
+**The isolation was verified on disk, not assumed.** Every Arm-B run's
+transmitted `strength_maps.npz` is byte-identical to its oracle map, and its
+per-level block histogram is exactly Arm A's. The oracle reassigns 4–50% of the
+footprint depending on video (color-run 4%, bear 50%), tracking how graded Arm A
+was in the first place. `color-run` and `drift-turn` therefore have little room
+to differ and contribute correspondingly little power.
+
+**The matched-histogram design worked:** Arm B vs Arm A costs −0.44% bits (3/8
+higher, sign p=0.7266). Bit spend is held fixed, so quality differences between
+those two arms are attributable to assignment alone.
+
+#### Arm B vs Arm A — does damage-aware assignment beat score-based?
+
+| metric | mean Δ | split | sign p | verdict |
+|---|---|---|---|---|
+| BG-LPIPS (primary) | −0.0042 | 7/8 better | 0.0703 | `no_consistent_direction` |
+| BG-DISTS | −0.0019 | 7/8 better | 0.0703 | `no_consistent_direction` |
+| BG-PSNR | +0.4336 dB | 7/8 better | 0.0703 | `no_consistent_direction` |
+| BG-SSIM | +0.0018 | 6/8 better | 0.2891 | `no_consistent_direction` |
+
+Mandated wording for all four: *"direction is not consistent across the suite
+— no claim."* The oracle leans better than naive grading on every metric and on
+7 of 8 videos, but not unanimously, so **nothing may be claimed**. Note against
+pre-registered bound 4: BG-LPIPS was predicted to improve by 0.005–0.04; the
+observed 0.0042 sits just below that band. No alarm (that was set above 0.08),
+but the oracle's edge over naive grading is smaller than expected.
+
+#### Arm B vs Arm C — THE DECISION: does the oracle beat plain binary?
+
+Bits: **+2.09%, 8 of 8 videos higher, two-tailed sign p=0.0078.**
+
+| metric | mean Δ | split | sign p | verdict |
+|---|---|---|---|---|
+| BG-LPIPS (primary) | +0.0110 | 8/8 **worse** | 0.0078 | `sub_jnd_significant` |
+| BG-DISTS | +0.0039 | 8/8 worse | 0.0078 | `sub_jnd_significant` |
+| BG-PSNR | −0.4803 dB | 8/8 worse | 0.0078 | `sub_jnd_significant` |
+| BG-SSIM | −0.0100 | 8/8 worse | 0.0078 | `sub_jnd_significant` |
+
+All four metrics agree in sign on every video. Mandated wording: *"consistent
+and statistically significant across the suite but BELOW the perceptual
+threshold — report as a small, reproducible, imperceptible effect; never as a
+perceptual win, a quality improvement, or a 'better' result."* Here the
+reproducible imperceptible effect runs in the **worse** direction.
+
+Foreground is untouched, as the hard exclusion requires: all four FG metrics
+return `no_consistent_direction` with deltas at or below 0.002.
+
+#### Verdict against the pre-registered decision rule
+
+The rule, fixed before the runs: *the graded direction survives only if oracle
+damage-aware grading beats plain binary on **either** BG-LPIPS clearing JND at
+matched bits, **or** a bitrate saving at sub-JND-equal quality.*
+
+It achieves **neither**. Arm B spends more bits than binary on every video
+*and* is worse on every background metric on every video. Per hard rule 2b a
+sub-JND gain would not have been a win; a sub-JND *loss* alongside a bit cost
+is unambiguous. **Grading is closed. Do not build S2's structure-tensor damage
+proxy** — its ceiling is now measured, and it is below plain binary.
+
+**The scope of that closure, stated precisely.** The oracle is **greedy**
+(sorts by the marginal cost of the steep step) and **superblock-resolution**
+(64px, the resolution damage was measured at; blocks inside one SB share a
+tolerance). A constrained-optimal, finer-grained assignment could do better
+than this one. So what is closed is *level assignment driven by measured
+per-block damage tolerance at this granularity* — which is the entire class S2
+would have approximated, and S2 could only ever have been worse than the oracle
+it approximates. Claiming more than that from these 8 runs would overreach.
+
+**Why the headroom did not convert — the mechanism, consistent across S1b.**
+The gate was not wrong: the within-level damage spread is real (12.36 dB, 7.4x
+the between-level cost). What the ceiling test shows is that the spread is not
+*exploitable by reassignment*, because reassignment is not free. Bound 3 already
+established that at a fixed footprint and a **uniform** level, more downsampling
+costs **fewer** bits — so the bit cost of every graded arm comes from *mixing*
+levels within a footprint, not from strength. Arm B mixes exactly as much as Arm
+A does (identical histogram) and duly pays almost the same penalty (+2.09% vs
+Arm A's +2.55% over binary). Damage measured at a uniform level does not predict
+damage under a mixed assignment, because the dominant term is the discontinuity
+between neighbouring levels rather than the depth of any one block. That is a
+property of the transport, not of the scoring function — which is why replacing
+the score with a perfect damage oracle does not rescue it.
+
+**Corollary for Goal 1.** S1's negative was not, as it appeared, evidence that
+the *removability score* is the wrong quantity to grade on. Both S1 and S1b now
+point at the same conclusion: **graded multi-level downscale is the wrong
+transport**, whatever ranks the levels. The mis-specification argument for the
+selection axis stands on its own evidence (the form of the score, and
+`tab:ablation`) and does not depend on S1 — the paper should not lean on S1 to
+carry it.
+
+**Limitations.** n=8, one codec (SVT-AV1 fixed QP 43 preset 8), one resolution
+(640x360), one restorer (Real-ESRGAN), one degradation (downsample), three
+levels, one budget (25%). Two videos (color-run, drift-turn) had under 2% of
+blocks reassigned and are close to no-ops. Damage was mined at 64px superblock
+resolution from uniform-level probes; a finer or mixed-context damage
+measurement is untested.
+
 ---
 
 ## F7 — chroma-first degradation: is there enough chroma to be worth taking?
