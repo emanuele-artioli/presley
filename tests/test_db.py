@@ -12,6 +12,7 @@ Deliberately not tested: SQLite's own durability, and the exact float formatting
 of the JSON mirror (the round-trip assertion covers what matters). Nothing here
 touches the real results/ tree — every test builds its own under tmp_path.
 """
+import argparse
 import json
 import multiprocessing
 import os
@@ -228,3 +229,39 @@ def test_schema_version_mismatch_is_loud(tmp_path):
 
     with pytest.raises(RuntimeError, match="schema v999"):
         db.init_schema(conn)
+
+
+# --- the query tool's ambiguity guard -----------------------------------------
+
+def test_compare_refuses_an_ambiguous_pairing(tmp_path, monkeypatch):
+    """A --where matching two runs for one video must fail, not emit duplicates.
+
+    This is not hypothetical: the first real invocation of `compare` silently
+    paired a 640x360 arm against a 1280x720 run of the same video because the
+    filter did not constrain resolution, producing n=9 with `bear` twice and a
+    -57% rate delta. A table generator that can duplicate a key is worse than
+    no generator, because the output looks authoritative.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "qr", os.path.join(os.path.dirname(os.path.dirname(__file__)), "tools", "query_results.py"))
+    qr = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(qr)
+
+    conn = db.connect(str(tmp_path))
+    db.upsert_run(conn, _result(h="small", video="bear", width=640))
+    db.upsert_run(conn, _result(h="large", video="bear", width=1280))
+    db.upsert_run(conn, _result(h="armb", video="bear", downsample_level_map="cache/x"))
+
+    args = argparse.Namespace(
+        a_where="json_extract(doc,'$.config.downsample_level_map') IS NULL",
+        b_where="json_extract(doc,'$.config.downsample_level_map') IS NOT NULL",
+        metric="lpips_mean", region="background", pair_by="video")
+
+    with pytest.raises(SystemExit, match="multiple runs for the same video"):
+        qr.cmd_compare(conn, args)
+
+    # Narrowed to one run per side, it works.
+    args.a_where += " AND width = 640"
+    rows = qr.cmd_compare(conn, args)
+    assert len(rows) == 1
