@@ -1,5 +1,75 @@
 # Handoff — three-goal restructure: Wave 0 + Wave 1 COMPLETE, builds begin (2026-07-30)
 
+> ## UPDATE 2026-07-30 (later) — waves A1 and A3 ran; read this block first
+>
+> Both were run as parallel subagents in their own worktrees. **A1 was killed
+> mid-task by a monthly spend limit**, not by a technical failure; the main
+> session finished its decisive step by hand.
+>
+> **A3 — paper restructure: DONE.** Paper repo `@0738d16`, **2 commits
+> unpushed** (origin is Overleaf — pushing is the user's call). Reframed around
+> selection/reduction/restoration keeping every table and number; α/β is now a
+> mis-specification ablation; new `tab:graded`. The retracted "+6 VMAF" claim is
+> struck with `\del{\sout{}}` in abstract, intro and conclusions.
+> **Caveat that matters:** F1's "93–99%" and W0.2's "6.2–8.2 dB" appear in NO
+> reviewer-visible sentence, because `NEXT(sec:implementation)` requires CLAIM
+> grade first and **F1 still has no `results/<hash>`** (ad-hoc, n=3, all-intra).
+> Promoting F1 through `presley-run` under inter coding is now a real todo.
+> Also unresolved: mean ΔBG-LPIPS is +0.0177 recomputed from `result.json` vs
+> +0.0152 in the suite pass — no mean is quoted anywhere until that is
+> reconciled.
+>
+> **A1 — S1b: THE GATE PASSES. The graded direction is alive.** Branch
+> `exp/s1b-damage-ceiling` in worktree `.claude/worktrees/agent-adc96e2b4b84b5357`,
+> `@d2d6110`, 5 commits, **not merged to main**. All 7 pristine baselines and
+> all 16 uniform-level probes are on disk, verified clean (empty
+> `invariant_failures`, zero NaN across 42 metrics each). Mined 143 pairs →
+> `results/block_damage_s1b.npz`.
+>
+> | quantity | value | kill threshold |
+> |---|---|---|
+> | between-level cost, mean Δ(k=3)−Δ(k=2) | +1.664 dB | must be ≥1 dB |
+> | within-level spread, p90−p10 at k=3 | 12.36 dB | kill if <2.0 |
+> | **R = spread / cost** | **7.43** | kill if <1.0 |
+>
+> Expected band for R was 3–10, so this passes cleanly. **S2's structure-tensor
+> proxy is NOT pre-emptively dead.** This is not a win — only that the question
+> stays open; the pre-registered decision rule is unchanged.
+>
+> **Three things A1 found that change how earlier results read:**
+> 1. **S1's "naive graded" arm was barely graded on 7 of 8 videos** — share of
+>    the footprint promoted past level 1 is 57.9% on bear but 8.2% on dogs-jump.
+>    S1's negative is therefore weaker evidence against grading than it reads
+>    as. **The paper text was corrected for this** (commit `0738d16`).
+> 2. **S1's "more compression, more bits" is a MIXING cost, not a property of
+>    downsampling.** At a fixed footprint and one uniform level, the more
+>    aggressive level costs FEWER bytes on 7/8 videos (mean −2.3%). Paper
+>    corrected for this too.
+> 3. Mean damage at k=2 came in at 12.10 dB against a predicted 2–8 dB — the
+>    prediction was simply wrong (the error runs in the conservative direction
+>    for R). `dogs-jump` is non-monotonic (−0.08 dB, inside noise). Both
+>    recorded in `docs/WAVE1_FALSIFIERS.md`, not glossed.
+>
+> **What S1b still owes:** LPIPS/DISTS backfill on the 16 probes, and the 8
+> Arm-B oracle-assignment runs (match Arm A's per-video level histogram,
+> reassign by measured damage tolerance from `block_damage_s1b.npz`). The gate
+> existed to decide whether those 8 runs are worth spending: **they are.**
+>
+> **A2 (the O2 re-test) was never started** — it was deliberately queued behind
+> A1 for the GPU. Still outstanding, still approved, unchanged in scope.
+>
+> **New gotchas, both of which cost a wasted 23-run pass:**
+> - `--dataset-dir` and `--cache-dir` are relative and must be pointed at the
+>   main checkout **exactly like `--results-dir`** when running from a worktree.
+> - `presley-run` had ~37 *other* waves' unrun entries queued in
+>   `experiments.yaml`; it must be driven from a filtered file or it runs them.
+> - A wall of `[av1] Missing Sequence Header` / `Failed to get pixel format` in
+>   the runner log is **benign ffmpeg noise**, not the silent-NaN AV1 trap.
+>   Confirm by reading the metrics, never by reading the log.
+> - **A subagent does not receive background-job completion notifications.** If
+>   you delegate a long run, tell the agent to poll with bounded foreground
+>   calls; ending its turn to "wait" just stops it. This cost a full stall here.
+
 > Supersedes the 2026-07-29 version of this file (Wave 1 was half done then;
 > all seven falsifiers are closed now). Unrelated workstream: `HANDOFF.md`
 > at this same root covers the Q6/Q8 restorer queue — different work, don't
