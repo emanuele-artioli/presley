@@ -834,10 +834,108 @@ property of stronger downsampling. That is a mechanism S1 could not separate
 and these probes can. It does not overturn S1's measured bitrates — those
 stand — but it does reinterpret them.
 
-**Still outstanding for S1b:** LPIPS/DISTS backfill on the 16 probes, and the
-8 Arm-B oracle-assignment runs (matched to Arm A's per-video level histogram,
-reassigning by measured damage tolerance). The gate's job was to decide whether
-those 8 runs are worth spending, and the answer is yes.
+### S1b Arm B — the ceiling test FAILS. The graded direction is closed.
+
+Run 2026-07-30, after the gate passed. LPIPS/DISTS backfilled on all 8 Arm-B
+runs and all 16 probes (48/48 succeeded, 0 failures). All 8 Arm-B runs have
+empty `invariant_failures`.
+
+**The isolation was verified on disk, not assumed.** Every Arm-B run's
+transmitted `strength_maps.npz` is byte-identical to its oracle map, and its
+per-level block histogram is exactly Arm A's. The oracle reassigns 4–50% of the
+footprint depending on video (color-run 4%, bear 50%), tracking how graded Arm A
+was in the first place. `color-run` and `drift-turn` therefore have little room
+to differ and contribute correspondingly little power.
+
+**The matched-histogram design worked:** Arm B vs Arm A costs −0.44% bits (3/8
+higher, sign p=0.7266). Bit spend is held fixed, so quality differences between
+those two arms are attributable to assignment alone.
+
+#### Arm B vs Arm A — does damage-aware assignment beat score-based?
+
+| metric | mean Δ | split | sign p | verdict |
+|---|---|---|---|---|
+| BG-LPIPS (primary) | −0.0042 | 7/8 better | 0.0703 | `no_consistent_direction` |
+| BG-DISTS | −0.0019 | 7/8 better | 0.0703 | `no_consistent_direction` |
+| BG-PSNR | +0.4336 dB | 7/8 better | 0.0703 | `no_consistent_direction` |
+| BG-SSIM | +0.0018 | 6/8 better | 0.2891 | `no_consistent_direction` |
+
+Mandated wording for all four: *"direction is not consistent across the suite
+— no claim."* The oracle leans better than naive grading on every metric and on
+7 of 8 videos, but not unanimously, so **nothing may be claimed**. Note against
+pre-registered bound 4: BG-LPIPS was predicted to improve by 0.005–0.04; the
+observed 0.0042 sits just below that band. No alarm (that was set above 0.08),
+but the oracle's edge over naive grading is smaller than expected.
+
+#### Arm B vs Arm C — THE DECISION: does the oracle beat plain binary?
+
+Bits: **+2.09%, 8 of 8 videos higher, two-tailed sign p=0.0078.**
+
+| metric | mean Δ | split | sign p | verdict |
+|---|---|---|---|---|
+| BG-LPIPS (primary) | +0.0110 | 8/8 **worse** | 0.0078 | `sub_jnd_significant` |
+| BG-DISTS | +0.0039 | 8/8 worse | 0.0078 | `sub_jnd_significant` |
+| BG-PSNR | −0.4803 dB | 8/8 worse | 0.0078 | `sub_jnd_significant` |
+| BG-SSIM | −0.0100 | 8/8 worse | 0.0078 | `sub_jnd_significant` |
+
+All four metrics agree in sign on every video. Mandated wording: *"consistent
+and statistically significant across the suite but BELOW the perceptual
+threshold — report as a small, reproducible, imperceptible effect; never as a
+perceptual win, a quality improvement, or a 'better' result."* Here the
+reproducible imperceptible effect runs in the **worse** direction.
+
+Foreground is untouched, as the hard exclusion requires: all four FG metrics
+return `no_consistent_direction` with deltas at or below 0.002.
+
+#### Verdict against the pre-registered decision rule
+
+The rule, fixed before the runs: *the graded direction survives only if oracle
+damage-aware grading beats plain binary on **either** BG-LPIPS clearing JND at
+matched bits, **or** a bitrate saving at sub-JND-equal quality.*
+
+It achieves **neither**. Arm B spends more bits than binary on every video
+*and* is worse on every background metric on every video. Per hard rule 2b a
+sub-JND gain would not have been a win; a sub-JND *loss* alongside a bit cost
+is unambiguous. **Grading is closed. Do not build S2's structure-tensor damage
+proxy** — its ceiling is now measured, and it is below plain binary.
+
+**The scope of that closure, stated precisely.** The oracle is **greedy**
+(sorts by the marginal cost of the steep step) and **superblock-resolution**
+(64px, the resolution damage was measured at; blocks inside one SB share a
+tolerance). A constrained-optimal, finer-grained assignment could do better
+than this one. So what is closed is *level assignment driven by measured
+per-block damage tolerance at this granularity* — which is the entire class S2
+would have approximated, and S2 could only ever have been worse than the oracle
+it approximates. Claiming more than that from these 8 runs would overreach.
+
+**Why the headroom did not convert — the mechanism, consistent across S1b.**
+The gate was not wrong: the within-level damage spread is real (12.36 dB, 7.4x
+the between-level cost). What the ceiling test shows is that the spread is not
+*exploitable by reassignment*, because reassignment is not free. Bound 3 already
+established that at a fixed footprint and a **uniform** level, more downsampling
+costs **fewer** bits — so the bit cost of every graded arm comes from *mixing*
+levels within a footprint, not from strength. Arm B mixes exactly as much as Arm
+A does (identical histogram) and duly pays almost the same penalty (+2.09% vs
+Arm A's +2.55% over binary). Damage measured at a uniform level does not predict
+damage under a mixed assignment, because the dominant term is the discontinuity
+between neighbouring levels rather than the depth of any one block. That is a
+property of the transport, not of the scoring function — which is why replacing
+the score with a perfect damage oracle does not rescue it.
+
+**Corollary for Goal 1.** S1's negative was not, as it appeared, evidence that
+the *removability score* is the wrong quantity to grade on. Both S1 and S1b now
+point at the same conclusion: **graded multi-level downscale is the wrong
+transport**, whatever ranks the levels. The mis-specification argument for the
+selection axis stands on its own evidence (the form of the score, and
+`tab:ablation`) and does not depend on S1 — the paper should not lean on S1 to
+carry it.
+
+**Limitations.** n=8, one codec (SVT-AV1 fixed QP 43 preset 8), one resolution
+(640x360), one restorer (Real-ESRGAN), one degradation (downsample), three
+levels, one budget (25%). Two videos (color-run, drift-turn) had under 2% of
+blocks reassigned and are close to no-ops. Damage was mined at 64px superblock
+resolution from uniform-level probes; a finer or mixed-context damage
+measurement is untested.
 
 ---
 
