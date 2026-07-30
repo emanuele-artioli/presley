@@ -1269,3 +1269,197 @@ pairs and this comparison is entirely pre-restoration.
 
 **Limitations.** One video, 30 frames, one arbitrary strength setting per
 operator (keep=2, k=15), pre-restoration, and no FG/BG split.
+
+## O2 re-test — sweep operator STRENGTH, measure POST-restoration
+
+**Registered before any run. Bounds committed before launching.**
+
+F5 left O2 unsettled, not closed: it refuted the *stated mechanism*
+("codec-aligned zeros are cheaper in bits" — they are not, AC truncation cost
++36% MORE bits at equal QP), but the residual signal it left behind is real —
+a 0.053 LPIPS advantage for AC truncation holding at 100% of rate points,
+which DISTS contradicts in sign at 100% of rate points. F5 could not settle
+that because it swept **QP only** (so the two operators were matched in rate
+but never in degradation strength) and measured **pre-restoration** (so it
+could say nothing about a Goal-2 family that is defined as (operator, prior)
+pairs). This re-test removes exactly those two limitations.
+
+### What changed in the code
+
+`filter_frame_ac_truncate` (`src/presley/degradation.py`) makes F5's throwaway
+script a first-class pipeline operator: per-channel DCT in YCrCb on the codec's
+own 8x8 grid, keeping the top-left `keep` x `keep` coefficients, with the same
+`sel` budget contract as blur/downsample and a binary strength map. `keep` is
+the strength knob (`keep=8` is a no-op, `keep=1` is DC-only). `presley_ai` now
+also reads **`blur_kernel`** from the experiment — it never did, which is the
+mechanical reason F5 could only ever test one blur strength; `roi.py` has read
+it all along. Both defaults (`blur_kernel: 15`, `ac_keep: 2`) reproduce the
+previous hardcoded behavior, so no existing experiment hash or output moves.
+
+NAFNet is admitted for `ac_truncate` in `RESTORER_DEGRADATIONS`: it is a
+conditioned restorer doing one full-frame forward and pasting untouched blocks
+back, so it reads the map only as "was this block degraded" — the same binary
+units blur emits. **The same prior on both operators is the point**: the
+operator is then the only variable.
+
+### The strength ladders (measured on bear, 5 frames, all blocks degraded)
+
+| blur `k` | degraded PSNR | | `ac_keep` | degraded PSNR |
+|---|---|---|---|---|
+| 7  | 22.83 dB | | 4 | 24.81 dB |
+| 15 | 21.12 dB | | 2 | 21.68 dB |
+| 31 | 19.78 dB | | 1 | 19.72 dB |
+
+Three rungs each, chosen so the two ladders span an overlapping degradation
+range (blur 19.8–22.8 dB, AC 19.7–24.8 dB) with the middle rungs nearly
+matched. This is the axis F5 never had.
+
+### Design
+
+96 runs: **8 pre-registered probe videos** (motorbike, drift-straight,
+drift-turn, color-run, dancing, dogs-jump, bike-packing, bear —
+`tools/select_probe_videos.py -k 8`; n=8 is the smallest n whose exact
+two-tailed sign test can reach p=0.0078 and survive Holm) x **6 operator
+rungs** x **2 restorers** (`none` = the pre-restoration control at matched
+strength, `nafnet` = the post-restoration measurement). 640x360, block_size 16,
+`shrink_amount: 0.25` with `fg_protect`, svtav1 preset 8 **fixed QP 43**
+(never VBR). Comparison is BG-LPIPS/BG-DISTS of the restored output vs the
+ORIGINAL, on a common bitrate axis by log-rate interpolation over the
+overlapping rate range — not hand-picked matched pairs (same procedure as F5,
+so the two are comparable). LPIPS/DISTS are backfilled
+(`presley.evaluation.backfill`); runs return PSNR/SSIM-only.
+
+### Bounds, stated before measuring
+
+| # | Measurement | Plausible range | Basis | ALARM outside |
+|---|---|---|---|---|
+| M1 | bits: AC vs blur at the matched middle rung | −10% … +30% | F5 saw +36% at *unmatched* strength; matching should shrink it | [−40%, +60%] |
+| M2 | pre-restoration BG-LPIPS, AC − blur, matched rate | −0.080 … +0.020 | F5's −0.053 on one video, now over 8 | \|Δ\| > 0.15 |
+| M3 | pre-restoration BG-DISTS, AC − blur | −0.010 … +0.030 | F5's +0.0095, sub-JND, 100% consistent | outside [−0.05, +0.08] |
+| M4 | **post-restoration BG-LPIPS, AC − blur** | −0.040 … +0.040 | restoration compresses operator differences; NAFNet's training favours blur | \|Δ\| > 0.12 |
+| M5 | **post-restoration BG-DISTS, AC − blur** | −0.020 … +0.030 | as M3, damped by restoration | \|Δ\| > 0.06 |
+| M6 | sign consistency across the 8 videos | 2/8 … 8/8 | anything is possible at n=8 | 8/8 in the direction *opposite* to the mean |
+| M7 | NAFNet restoration gain (BG-LPIPS, transmitted − restored) | −0.020 … +0.060 | NAFNet is a weak CNN gauge, not a strong prior | gain > 0.15 or < −0.10 |
+| M8 | `invariant_failures` | empty, all 96 | — | any non-empty run (non-citable) |
+
+### Decision rule, fixed in advance
+
+**O2 survives** only if, post-restoration at matched rate, AC truncation beats
+blur on **both** LPIPS and DISTS, with a consistent sign across videos and a
+suite verdict of at least `sub_jnd_significant`, **and** costs no more than
++10% bits. Anything else — the two metrics still disagreeing in sign, AC losing
+on either metric, or the advantage evaporating after restoration — **closes
+O2**, on the grounds that a (operator, prior) pair that cannot beat the
+incumbent operator with the same prior is not a Goal-2 family member.
+
+### RESULT — O2 CLOSED. The 0.053 LPIPS advantage was a strength mismatch.
+
+96 runs, 8 probe videos x 6 operator rungs x 2 restorers, svtav1 preset 8 fixed
+QP 43, 640x360, block_size 16, `shrink_amount: 0.25` + `fg_protect`. **0 runs
+with `invariant_failures`** (M8 clean, all 96 citable). Analysis:
+`tools/o2_analyze.py`.
+
+#### Breach 1 (method, not a bound) — the matched-RATE procedure was inexecutable
+
+Sweeping either operator from its weakest to its strongest rung moves the
+bitrate by **under 5%** — *less* than the constant ~5-8% offset between the two
+operators. Each operator's rate range is a degenerate point, the two barely
+overlap, and F5's log-rate interpolation would have been extrapolation dressed
+as interpolation. **Investigated before reporting**: the strength ladders are
+demonstrably applied (transmitted BG-PSNR falls monotonically with strength on
+all 8 videos, spanning 2.3-4.8 dB), the bits simply do not follow. That is the
+project's own standing result — blur/downsample **relocate no bits under fixed
+QP** — reproducing on a third operator, not a bug.
+
+So the matching axis was moved from rate to **degradation**, which is what the
+sweep was commissioned to provide in the first place ("so the two are matched in
+degradation rather than only in rate"). The sweep delivered it almost exactly:
+at the strongest rung the two operators land within **0.09 dB** of each other in
+transmitted BG-PSNR on **all 8 videos** (mean gap −0.02 dB). The bit difference
+is reported alongside, never folded in.
+
+#### The one matched rung (blur k=31 vs ac_keep=1, gap ≤0.09 dB)
+
+| measurement | result | `assess_metric` verdict |
+|---|---|---|
+| bits, AC vs blur | **+4.6%** (range +2.2…+7.8%) | — |
+| **post-restoration BG-LPIPS** | 7/8 AC-better, mean −0.0189, CI [−0.0286, −0.0084] | `no_consistent_direction`: *"direction is not consistent across the suite -- no claim"* |
+| **post-restoration BG-DISTS** | **4/8 better, 4/8 worse**, mean −0.0004 | `no_consistent_direction`: *"direction is not consistent across the suite -- no claim"* |
+| pre-restoration BG-LPIPS | 7/8, mean −0.0188 | `no_consistent_direction` (same wording) |
+| pre-restoration BG-DISTS | 5/8, mean −0.0011 | `no_consistent_direction` (same wording) |
+
+**At matched degradation there is no operator effect left to explain.** DISTS is
+a dead 4-4 split with a mean four thousandths of a JND; LPIPS reverses on
+color-run. Neither metric earns any verdict above "no claim", before Holm and
+before the JND gate is even reached.
+
+#### The unmatched rungs — where F5's signal actually came from
+
+F5's single pairing (keep=2 vs k=15) is this sweep's rung 2, and rung 2 is
+**not** degradation-matched: `ac_keep=2` is **0.73 dB LESS degraded** than blur
+k=15 (rung 1 is worse still, 1.43 dB). At those rungs AC truncation wins
+unanimously 8/8 on both metrics — which is exactly what an operator that
+degrades less should do, and it pays +7.6-7.8% bits for the privilege. The
+strongest verdict any of it earns post-restoration is `sub_jnd_significant`:
+*"consistent and statistically significant across the suite but BELOW the
+perceptual threshold -- report as a small, reproducible, imperceptible effect;
+never as a perceptual win, a quality improvement, or a 'better' result"*. (One
+cell, rung-1 LPIPS **pre**-restoration, does reach `perceptual_win` at mean
+−0.0574 — at a 1.43 dB degradation head start and +7.6% bits. It is a
+measurement of the head start, not of transform alignment, and is not claimed.)
+
+#### The F5 LPIPS/DISTS sign contradiction is RESOLVED — it was an artifact
+
+F5 reported LPIPS favouring AC by −0.053 at 100% of rate points while DISTS
+favoured blur by +0.0095 at 100% of rate points, and called it "a systematic
+disagreement, not noise". It was neither: it was **one arbitrary
+(keep=2, k=15) pairing swept over QP**. Sweep the operators' own strength
+instead and the disagreement disappears in both directions —
+
+- at **unmatched** strength (F5's regime, rungs 1-2), LPIPS and DISTS **agree**,
+  both unanimously favouring AC truncation, 8/8;
+- at **matched** degradation (rung 3), both collapse to no consistent direction.
+
+So the contradiction resolves **against the operator**: there was never a
+transform-alignment effect for the two metrics to disagree about. The residual
+0.053 LPIPS advantage F5 could not explain is fully accounted for by AC
+truncation at keep=2 simply removing less information than a 15-tap Gaussian —
+the same explanation F5 already found for the +36% bit cost, applied to the
+quality axis it did not extend it to.
+
+#### Verdict on O2 — CLOSED
+
+Against the decision rule fixed in advance, which required AC truncation to beat
+blur post-restoration on **both** LPIPS and DISTS with a consistent sign at no
+more than +10% bits: it fails on **DISTS** (4-4 split), fails on **sign
+consistency** for LPIPS (7/8), and the only rungs where it wins are the ones
+where it was not degrading as hard, at a real bit cost. Transform-aligned AC
+truncation is **not** a Goal-2 family member. F5 killed the mechanism; this
+kills the residual signal that kept the operator alive.
+
+#### Bounds ledger
+
+M1 +4.6% (matched) / +7.8% (rung 2) — in bounds. M2 −0.0188 — in bounds.
+M3 −0.0011 — in bounds. M4 −0.0189 — in bounds. M5 −0.0004 — in bounds.
+M6 7/8 and 4/8 — in bounds. M8 0 failures — in bounds.
+**M7 BREACHED**, and investigated: NAFNet's mean BG-LPIPS gain is +0.000 to
++0.017 on 7 videos (a weak gauge, as expected), but on **bike-packing** it
+*damages* the background — up to −0.154 LPIPS and −0.072 DISTS. Localised
+before reporting: it is one video, both operators, both metrics agreeing, and
+it scales **inversely** with degradation strength (worst at the weakest rung,
+≈0 at the strongest). Same code path as the other seven, invariants clean — a
+restorer failure on that content, not a wiring bug. It does not carry the
+headline: the matched rung is the strongest rung, where the failure has
+decayed to −0.016/−0.008.
+
+#### Limitations
+
+The prior is NAFNet, deliberately (a cheap CNN gauge, the same prior on both
+operators so the operator is the only variable). Its restoration gain is
+≤0.017 LPIPS on 7/8 videos, so "post-restoration" here is close to
+"pre-restoration plus a small, video-specific perturbation". This test can
+therefore rule out an operator advantage that survives a *weak* prior; a strong
+generative prior could in principle reorder the two operators, and that would be
+a new experiment with its own pre-registered bounds — not a reason to reopen
+this one. Also: one QP (43), one selection budget (25%), one resolution, and
+DAVIS-like content throughout.
