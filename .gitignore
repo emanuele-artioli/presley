@@ -202,3 +202,8 @@ scratch_fvmd/
 .claude/settings.local.json
 .claude/worktrees/
 vendor/
+
+# Results DB (regenerable from the result.json mirrors; see src/presley/db.py)
+results/*.db
+results/*.db-wal
+results/*.db-shm
