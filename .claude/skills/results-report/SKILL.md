@@ -7,6 +7,23 @@ Read `/home/itec/emanuele/.agent-rules/skills/results-report/SKILL.md` and follo
 
 ## PRESLEY specifics
 
+- **Query the DB first; do not hand-roll a scan.** `results/presley.db`
+  (`src/presley/db.py`) is the source of truth for run metadata; `result.json`
+  is a derived mirror. Use `tools/query_results.py` (`exists`,
+  `missing-metric`, `datasets`, `compare`, `sql`), which indexes any new runs
+  automatically. **The citability rules below are enforced there as views, so
+  rely on them rather than on remembering the prose**: `v_citable` (empty
+  `invariant_failures` *and* evaluated), `v_fg_metrics` (the union-bbox
+  metrics are absent from it entirely, not merely discouraged), `v_rate`
+  (`actual_bitrate_bps` only). Queries run against `v_citable` unless you pass
+  `--include-uncitable`, which names every uncitable row it lets through.
+- **Building a table for the paper?** `--format latex --claim` emits the
+  `tabular` body *and* the `CLAIM(...)`/`src(...)` provenance block from the
+  same rows, so hashes and numbers are never transcribed by hand. `compare`
+  **refuses** a filter matching two runs for one video rather than emitting a
+  duplicated row — if it errors, narrow the filter; do not work around it.
+  **The mean it prints is not a verdict**: wording comes from
+  `presley.suite.assess_metric`.
 - **Result schema:** `results/<hash>/result.json` has `config` (what to
   group/filter by) and `metrics` (`foreground`/`background`/`overall`, each
   with `psnr_mean/std`, `ssim_mean/std`, `mse_mean/std`, plus
