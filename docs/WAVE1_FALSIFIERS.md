@@ -734,6 +734,111 @@ Every run's `invariant_failures` is checked before any of its numbers are used.
 LPIPS/DISTS are backfilled (`presley.evaluation.backfill`), since the runs come
 back PSNR/SSIM-only.
 
+### S1b result — the early-exit gate PASSES (2026-07-30)
+
+All 16 probes (k∈{2,3} × 8 videos) plus the 7 new pristine baselines are on
+disk. **All 16 have empty `invariant_failures` and zero NaN across 42 metrics
+each** — the wall of `[av1] Missing Sequence Header` / `Failed to get pixel
+format` in the runner log is benign ffmpeg decoder noise on the per-frame
+decode path, *not* the silent-NaN AV1 trap, and was verified as such by
+reading the metrics rather than by reading the log.
+
+Mined with `tools/mine_block_damage.py` (143 run/baseline pairs, 1,786,560 SB
+observations → `results/block_damage_s1b.npz`). The numbers below are the
+**6,246 fully-degraded superblocks** (`strength_frac >= 0.999`) of the 16
+probe runs — partial-coverage SBs are excluded because their level is
+ambiguous by construction.
+
+| level | n | mean | p10 | p50 | p90 | p90−p10 |
+|---|---|---|---|---|---|---|
+| k=2 | 3,123 | 12.10 | 5.74 | 12.42 | 17.89 | 12.15 |
+| k=3 | 3,123 | 13.76 | 7.24 | 13.87 | 19.60 | 12.36 |
+
+**Gate, evaluated exactly as pre-registered above:**
+
+- between-level cost `mean Δ(k=3) − mean Δ(k=2)` = **+1.664 dB** (threshold:
+  at least 1 dB, and k=3 must be clearly worse — **met**, and in the right
+  direction)
+- within-level spread at k=3 = **12.36 dB** (kill if < 2.0 — **not met**)
+- **R = 12.36 / 1.664 = 7.43** (kill if R < 1.0; alarm if R > 30 — **passes
+  cleanly**, and lands inside the pre-registered expected band of 3–10)
+
+**Verdict: the graded direction survives the ceiling gate.** A perfect
+damage-aware sort has roughly 7.4 level-steps of headroom to play with, which
+is real room and not a rounding artifact. The 8 Arm-B confirmation runs are
+therefore warranted; S2's structure-tensor proxy is *not* pre-emptively dead.
+**This is not yet a win** — it says only that the question is still open. The
+decision rule fixed above still governs: Arm B must beat plain binary on
+BG-LPIPS clearing JND at matched bits, or on a bitrate saving at sub-JND-equal
+quality. A sub-JND Arm-B gain remains a failure of the rule.
+
+**Two quantities landed outside their pre-registered bands. Recorded, not
+glossed:**
+
+1. **Mean damage at k=2 is 12.10 dB against a predicted 2–8 dB.** k=3's 13.76
+   dB is inside its 4–14 dB band, and neither trips the >20 dB hard alarm, but
+   the k=2 prediction was simply wrong — damage at level 2 is much closer to
+   level 3 than the 4× pixel ratio suggested. The likely reason is that most of
+   the damage is incurred by the *first* halving and by the restorer's
+   inability to invent detail at all, not by the amount discarded beyond that.
+   This weakens nothing in the gate (it makes the between-level gap *smaller*,
+   which makes R *larger* — the conservative direction would have been the
+   opposite), but it should be checked before it is used as a modelling
+   assumption.
+2. **Within-level spread at k=3 is 12.36 dB against a predicted 5–12 dB** —
+   marginally above, and consistent with W0.2's 6.2–8.2 dB at level 1 growing
+   with level. Immaterial to the gate's sign.
+
+**Per-video, and one genuine non-monotonicity:**
+
+| video | mean Δ k=2 | mean Δ k=3 | sep | spread k=3 | R |
+|---|---|---|---|---|---|
+| bear | 13.09 | 13.87 | 0.77 | 9.77 | 12.63 |
+| bike-packing | 12.31 | 14.34 | 2.03 | 6.26 | 3.08 |
+| color-run | 9.24 | 13.03 | 3.79 | 12.10 | 3.19 |
+| dancing | 11.75 | 14.80 | 3.05 | 13.35 | 4.38 |
+| **dogs-jump** | **13.33** | **13.25** | **−0.08** | 13.04 | n/a |
+| drift-straight | 11.28 | 15.19 | 3.91 | 7.33 | 1.87 |
+| drift-turn | 9.98 | 12.12 | 2.14 | 15.91 | 7.43 |
+| motorbike | 12.37 | 15.83 | 3.46 | 14.85 | 4.29 |
+
+`dogs-jump` is **non-monotonic**: level 3 is very slightly *less* damaging than
+level 2 (−0.08 dB). At 13 dB of damage with a 13 dB spread this is well inside
+noise and does not trip the aggregate alarm (6/8 videos are cleanly monotonic
+and the pooled sep is +1.66 dB), but it is the one video where the level is
+arguably not reaching the pixels, and it is also the lowest-bitrate clip in the
+suite (79 kB). Do not use `dogs-jump` alone to argue anything about level
+response.
+
+**Bound 3 (probe bitrates) — passes, and it retires S1's central surprise.**
+Predicted: k=3 costs 0–15% *fewer* bytes than k=2; alarm if k=3 costs >5% more.
+
+| video | bytes k=2 | bytes k=3 | k=3 vs k=2 |
+|---|---|---|---|
+| bear | 240,103 | 231,269 | −3.68% |
+| drift-turn | 221,503 | 213,568 | −3.58% |
+| motorbike | 99,999 | 96,814 | −3.19% |
+| drift-straight | 221,056 | 215,724 | −2.41% |
+| color-run | 196,818 | 192,210 | −2.34% |
+| dancing | 403,358 | 394,185 | −2.27% |
+| bike-packing | 309,805 | 305,949 | −1.24% |
+| dogs-jump | 78,925 | 79,312 | +0.49% |
+
+7/8 negative, mean −2.3%, no video anywhere near the +5% alarm. **At a fixed
+footprint and a uniform level, more downsampling costs fewer bits — exactly as
+intuition says, and the opposite of S1's headline surprise.** Read together
+with the degeneracy correction below, S1's "more compression, more bits" is
+therefore best explained as a cost of *mixing* levels within the footprint
+(fragmentation, and level boundaries the content never had) rather than as a
+property of stronger downsampling. That is a mechanism S1 could not separate
+and these probes can. It does not overturn S1's measured bitrates — those
+stand — but it does reinterpret them.
+
+**Still outstanding for S1b:** LPIPS/DISTS backfill on the 16 probes, and the
+8 Arm-B oracle-assignment runs (matched to Arm A's per-video level histogram,
+reassigning by measured damage tolerance). The gate's job was to decide whether
+those 8 runs are worth spending, and the answer is yes.
+
 ---
 
 ## F7 — chroma-first degradation: is there enough chroma to be worth taking?
