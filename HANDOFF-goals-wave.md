@@ -1,158 +1,212 @@
-# Handoff — three-goal restructure: Wave 0 done, Wave 1 half done (2026-07-29)
+# Handoff — three-goal restructure: Wave 0 + Wave 1 COMPLETE, builds begin (2026-07-30)
+
+> Supersedes the 2026-07-29 version of this file (Wave 1 was half done then;
+> all seven falsifiers are closed now). Unrelated workstream: `HANDOFF.md`
+> at this same root covers the Q6/Q8 restorer queue — different work, don't
+> conflate them.
 
 ## What triggered this handoff
 
-Not a failure or an outage. **The repo changed underneath this session.** While
-this branch was being worked, `main` gained the suite-significance layer (from a
-chip this session spawned), the `research-log/` split, and a noise-figure
-supersession. This session's context predates all of it, and its worktree was
-stale on every one of those files.
+**Not a failure, an outage, or a rate limit.** A natural boundary: Wave 1 is
+finished, the first Goal-1 build (S1) has been landed *and* screened, and
+everything is committed, pushed and green. The session was long and its
+remaining items (S1b / O2 / paper restructure) share almost no state, so they
+are better run as parallel workstreams from fresh sessions than sequentially
+from a warm one.
 
-That divergence is now **resolved**: `origin/main` is merged into this branch,
-the F3 finding has been re-verdicted under the new hard rule 2b, tests and both
-CI gates pass. The handoff is because the session is long and the remaining work
-is cleaner from a session that starts with the new tooling in context, not
-because anything is broken or half-finished.
-
-Nothing of ours is running. `nvidia-smi` shows one process
-(`nasrinke/medsam3`, 5998 MiB) — **another user's, not ours**; do not kill it and
-do not read it as a stalled job of ours.
+**GPU:** `nvidia-smi` shows one process — `nasrinke/medsam3`, 5998 MiB.
+**That is another user's, not ours.** Do not kill it, and do not read it as a
+stalled job of ours. Nothing of ours is running or queued.
 
 ## One-paragraph summary
 
 PRESLEY is a perceptual video-compression research pipeline: degrade
 less-important regions server-side, restore them client-side with generative
-models. The user is restructuring the paper around three goals — (1) pick which
-blocks to degrade, (2) reduce size by degrading them, (3) restore well. The
-approved plan is
+models. The user is restructuring the paper around three goals — (1) pick
+which blocks to degrade, (2) reduce size by degrading them, (3) restore well.
+Approved plan:
 [`~/.claude/plans/ok-that-is-a-sleepy-lark.md`](/home/itec/emanuele/.claude/plans/ok-that-is-a-sleepy-lark.md).
-Its core claim, now backed by two independent measurements, is that the
-block-selection axis (`alpha`/`beta`) was **mis-specified**: it models only how
-many *bits* a block costs and never how well the block *comes back after
-restoration*, so the objective only ever had a numerator. Wave 0 built the
-tooling to measure the missing denominator; Wave 1 is a set of cheap falsifiers,
-each designed to kill its own workstream before anyone spends days on it.
+Its core claim is that the block-selection axis (`alpha`/`beta`) was
+**mis-specified**: it models only how many *bits* a block costs and never how
+well the block *comes back after restoration* — the objective only ever had a
+numerator. Wave 0 built the measurement tooling, Wave 1 was seven cheap
+falsifiers each designed to kill its own workstream, and the builds have now
+started.
 
-## Current state (verified while writing this, not recalled)
+## Current state — verified while writing this, not recalled
 
-### Code — branch `feat/goals-wave0`, worktree `.claude/worktrees/goal-rework`
+### Code — `presley@main` @ `4de46eb`, clean, pushed, CI green
 
-- **Clean, pushed, `HEAD == origin/feat/goals-wave0` @ `776d0f2`, 11 commits
-  ahead of `main`. UNMERGED.**
-- Full suite green: `PYTHONPATH=$PWD/src <python> -m pytest tests/ -q --ignore=tests/invariants`
-- Both CI gates pass locally: `tools/check_architecture.py` ("covers all 33
-  modules") and `tools/sync_agent_rules.py --check` ("up to date").
-- **Merging is the first thing to raise with the user.** Project rule: suggest,
-  never self-merge.
+- `git status`: clean, `main...origin/main` in sync.
+- Full suite green (`PYTHONPATH=$PWD/src <python> -m pytest tests/ -q
+  --ignore=tests/invariants`), both CI gates pass locally
+  (`tools/check_architecture.py`, `tools/sync_agent_rules.py --check`).
+- **`feat/goals-wave0` is fully merged into main** (`git log feat/goals-wave0
+  --not main` is empty). Its worktree at `.claude/worktrees/goal-rework` is
+  clean and now redundant — safe to `git worktree remove` and delete the
+  branch, but that is housekeeping, not required.
 
-### Paper — `68e8b6bb11d0dd9e62a67aef/`
+### Paper — `68e8b6bb11d0dd9e62a67aef@main` @ `97b9852`, clean, pushed to Overleaf
 
-- Clean, `main` @ `d044d44`, **0 commits unpushed to Overleaf**.
-- This session's contribution (`2490cf3`) is on `main` and pushed, and survived
-  the `research-log/` split intact — verified present in
-  `research-log/dead-ends.md`, `research-log/standing-results.md` (2 refs), and
-  the `NOTE(sec:implementation)` in `sections/presley.tex`.
-- Nothing further is owed to the paper from this session's work. Everything
-  landed is a **SCREEN**, not CLAIM-grade, and says so.
+- 0 commits unpushed. `origin` IS Overleaf; pushing there is a user decision,
+  and the user approved each push this session.
 
-### Done and verified
+### Done and verified this session
 
 | | Result |
 |---|---|
-| **W0.1** `tools/index_results.py` | SQLite index over 694 results, 152 cols. Cross-checked against hand-computed figures. |
-| **W0.2** `tools/mine_block_damage.py` | 111 run/baseline pairs → 1.66M superblock observations. **Damage spread 6.2 dB (realesrgan) / 8.2 dB (propainter) *within a single run*.** |
-| **W0.3** `tools/select_probe_videos.py` | Probe set = **camel, motorbike, drift-straight, dancing**. **bear never separates from camel at any k from 2–8** (0.92 sd vs 4.15 sd median) — bear is redundant, don't run both. |
-| **F1** | **Direction CLOSED.** EVCA already captures **93.0–99.4%** of achievable bit saving (ρ +0.754…+0.958). **Do not build `bitcost.py`.** |
-| **F3** | Confound real (SVT-AV1 defaults to `tune=1`=PSNR, verified bitwise). Now **`sub_jnd_significant` at n=7, p=0.0156**. |
-| **F5** | **My stated mechanism REFUTED** — AC truncation costs +36% MORE bits at equal QP. At matched rate LPIPS and DISTS **disagree in sign at 100% of rate points**. No win claimed. |
-| **F6** | Gate mechanism validated (FG never worse than transmitted, by construction) but gain is 10–50× below JND. Nothing worth gating with current restorers. |
+| **Merge** | Wave 0 tooling merged to main. **It broke CI** — `test_shortfall_in_cluster_count_is_reported` asserted scipy's tie-breaking on an all-zero distance matrix (1.10 local → 1 cluster, CI's newer scipy → 4). Fixed by stubbing `pick_medoids`; added a version-independent contract test. |
+| **F4** film-grain | **O4 CLOSED.** `film-grain=N` is a *denoise strength*: level 1 is a bitwise no-op, level 8 *costs* bits, level 50 saves 12.8% but is unanimous 8/8 worse at matched rate (`perceptual_loss`). Scoped to DAVIS-like clean source. |
+| **F7** chroma | **O3 CLOSED on its oracle ceiling.** All chroma is only 5.07% of the bitstream; a *perfect* colorizer wins a sub-JND 0.0305 LPIPS. No model built. |
+| **F2** alignment | **Signaling-overhead hypothesis REFUTED for 16→64.** At matched area, snapping saves bits on 1/8 videos. The bs8 penalty is a **cliff between 8 and 16**, not a gradient. Corollary: 16×16 selection is free vs 64×64. |
+| **`suite.py` defect** | `assess_metric` chose between its two above-JND verdicts on `clears_jnd` alone, ignoring direction — so a perceptible **degradation** came back as `perceptual_win` with wording "may be worded as an improvement". Added `perceptual_loss`. **No landed verdict changed** (F4 was the first suite to reach that branch in the worse direction). |
+| **Paper fold** | F2 + F3 folded in (`NOTE`/`NEXT` markers; softened an unconfirmed causal clause in the block-size prose; cross-updated `reviewers_comments.md`). F4–F7 deliberately stayed in the research log — no `HOLE()` exists for them in the current text. |
+| **S1** | Graded multi-level downscale landed (`downsample_levels`, byte-identical at the default). **First time the 2^k pyramid path in `restoration.py:624` ever ran** — every strength map in project history was binary. |
+| **S1 experiment** | **Clean NEGATIVE.** Naive score-based grading costs bits on 7/8 videos (mean +2.55%) *and* BG quality on 8/8 (PSNR −0.91 dB clears JND; LPIPS +0.0152 `sub_jnd_significant`; DISTS agrees). Alarm investigated before reporting — selection verified identical from `strength_maps.npz`. Real effect, not a bug. |
 
-### Not done
+**Wave 1 scoreboard — all seven closed:** F1 (EVCA captures 93–99%, direction
+closed), F2, F3 (`tune` confound real but sub-JND), F4, F5 (O2 mechanism
+refuted), F6 (gate validated, parked), F7. **Nothing in the wave produced a
+win**, which is what a well-designed falsifier wave looks like.
 
-**F2, F4, F7** — see next steps.
+## What's running right now
 
-## Corrections this session made to its own work (don't re-introduce)
+**Nothing.** No background jobs, no GPU processes of ours, nothing queued.
+Verify with `nvidia-smi` and `pgrep -af presley.runner` (expect only the
+other user's medsam3 process).
 
-- **`p=0.031` for 5/5 is wrong.** It is the *one-tailed* value; the direction was
-  read off the data first. Correct value is **0.0625**, which is the floor at
-  n=5 — it can never reach α=0.05. This error originated in this session's chip
-  brief. It is now fixed everywhere; hard rule 2b names it explicitly.
-- **F6's first result (+0.00 dB, 0.0% block wins) was a tautology, not a
-  finding.** `_adaptive_block_pyramid_upscale` writes *only* degraded blocks, so
-  restored output is bit-identical to transmitted on every protected FG pixel —
-  the measurement compared a frame against itself. **Never read it as
-  "restoration never helps FG."** Pre-stated bounds caught this.
-- **`docs/HANDOFF_TO_PAPER_RESTRUCTURE.md` says the `0.031` figure is in
-  `docs/WAVE1_FALSIFIERS.md`. It is not** — it was only ever in the chip brief.
-  The correction itself is right; only its stated location is wrong.
+## Open questions / decisions
 
-## Open questions for the user
-
-1. **Merge `feat/goals-wave0` into `main`?** Green, pushed, 11 commits, CI gates
-   pass locally. Recommend yes; the tooling (index, damage miner, probe
-   selector) is what everything downstream reads.
-2. **Is O2 (AC truncation) worth another round?** F5 refuted the *mechanism* but
-   left a real 0.053 LPIPS advantage at 100% of rate points, contradicted by
-   DISTS. Options: (a) re-test sweeping operator **strength** rather than only
-   QP, and **post-restoration** — the honest next test; (b) drop O2 and move to
-   O3/O4; (c) leave it catalogued as a metric-disagreement case. Recommend (a),
-   because the current test was pre-restoration and the Goal-2 family is defined
-   as (operator, prior) pairs.
-3. **Does F6 stay parked until a codec-conditioned restorer exists?** F6 and the
-   Q6 mechanism argument converge on MoE-DiffIR. Recommend parking it.
+1. **Does the graded direction survive at all?** S1b (scoped, below) answers
+   it. If the *oracle* damage-aware assignment cannot beat plain binary, close
+   the graded direction entirely and do **not** build S2's structure-tensor
+   proxy — its ceiling would already be known worthless.
+2. **Is the paper restructure ready to start now, or should it wait for S1b?**
+   Argument for now: F1 + W0.2 + S1 already form the complete "the axis was
+   mis-specified" argument the restructure needs (numerator solved, denominator
+   varies 6.2–8.2 dB within a run, naive grading on the numerator fails).
+   Argument for waiting: S1b might add a fourth, sharper data point.
+   **Recommend starting now** — the argument does not depend on S1b's outcome.
+3. **Clean up the stale worktrees?** `git worktree list` shows 11, several
+   from long-finished sessions. `goal-rework` in particular is clean and fully
+   merged. Housekeeping only; ask before deleting anything (host rule: read a
+   branch before deleting it).
 
 ## Immediate next steps, in order
 
-1. **Read** `docs/HANDOFF_TO_PAPER_RESTRUCTURE.md` and
-   `research-log/hard-rules.md` rule 2b before wording any comparison. Cheapest
-   correct summary: *never call an n=2 result a tie; n≥6 to be significant at
-   all, n≥8 for restorer comparisons.*
-2. **Ask the user about merging** (open question 1). Do not self-merge.
-3. **F4 (~1 h, cheapest remaining).** `--film-grain` on/off. SVT-AV1 v1.8.0 here
-   exposes `--film-grain 1..50` and `--film-grain-denoise`. Encode the probe set
-   with/without at fixed QP, rate-match, run through
-   `presley-compare --suite`. **Size the suite to n≥6 before running** — at n=4
-   nothing can be significant. Expect grain removal to save bits on textured
-   clips and do nothing on flat ones.
-4. **F7 (~0.5 d).** Chroma-first degradation. The only axis orthogonal to
-   everything tried; every operator to date is luma-structure focused. Degrade
-   BG chroma hard, keep luma; restore with a colorization prior.
-5. **F2 (~1 d).** 64×64-snapped vs scattered 16×16 selection at matched degraded
-   *area*. Tests the signaling-overhead hypothesis that the existing ablation
-   already hints at (bs=8 *increases* bitrate vs 16–64).
-6. **Then S1**, the highest value-per-effort item in the whole plan: emit a
-   genuine multi-level downscale map. **Verified: every strength map in project
-   history is binary 0/1 across all 13 (restorer, degradation) combinations**, so
-   the `2^k` pyramid in `restoration.py:624` has never once run.
+**Recommended split into parallel waves** (host rule — these share almost no
+state, so run them in separate worktrees rather than sequentially):
 
-**Bound before believing.** Write plausible best/worst case for each falsifier
-*before* reading its number. This session's F6 alarm is the worked example of
-why — it caught a tautology that would otherwise have killed a workstream.
+### Wave A1 — S1b damage-aware ceiling test (fully scoped, ready to run)
 
-## Landmarks and gotchas
+Full design, bounds and decision rule: **`docs/WAVE1_FALSIFIERS.md`, section
+"S1b"**. Read that before touching anything. Two blockers found while scoping
+that will silently waste a run if missed:
+
+1. **Add 7 pristine baselines first.** `tools/mine_block_damage.py` joins each
+   restored run to a matched pristine baseline (same video/resolution/codec/QP).
+   At 640×360 svtav1 QP43 **only `bear` has one** (`a07560c409dc38ce`).
+   `motorbike, drift-straight, drift-turn, color-run, dancing, dogs-jump,
+   bike-packing` have none — without them the miner yields nothing, silently.
+   These are `component: baselines`, plain encodes, no restoration — cheap.
+2. **LPIPS/DISTS need a backfill pass.** Runs come back PSNR/SSIM-only.
+   Use `presley.evaluation.backfill.{backfill_lpips,backfill_dists}`.
+   Note the CLI's `--only` takes exactly one `--backfill-*` flag at a time,
+   so a two-metric backfill needs two calls or a small driver script.
+
+Then: 16 uniform-level probe runs (levels 2 and 3 × 8 videos; level 1 is
+already on disk as the S1 binary arm) → mine per-SB `delta_psnr` → **check the
+within-level damage spread first** (if it's small there is nothing to exploit
+and the direction dies with zero further runs) → only then the 8 Arm-B
+confirmation runs. ~31 runs, ~1–1.5 h GPU.
+
+### Wave A2 — the O2 re-test (approved long ago, never done)
+
+The user approved this at the start of the session and it was never run. F5
+refuted O2's stated mechanism but swept **QP only, pre-restoration**, leaving a
+real 0.053 LPIPS advantage that DISTS contradicts in sign. The approved test is
+to sweep the **operator strength** and measure **post-restoration**, because
+the Goal-2 family is defined as (operator, prior) pairs and a pre-restoration
+measurement cannot settle it. Same n=8 probe suite and bounds discipline.
+
+### Wave A3 — the actual paper restructure (highest value, untouched)
+
+The plan's "Paper restructuring" section: reframe around Goal 1/2/3 **keeping
+every existing table and result**; α/β moves from "robustness" to an ablation
+showing the axis was mis-specified, which *motivates* the new work instead of
+reporting a null. Fold via `/update-paper`. This is the original point of the
+whole plan and has not been started — this session only added `NOTE`/`NEXT`
+markers for F2/F3.
+
+### Wave B — conditional on A1
+
+S2 (structure-tensor coherence as a cheap damage proxy) **only if** S1b's
+ceiling passes. If it fails, close the graded direction and redirect to Goal 3
+/ codec-conditioned restoration.
+
+## Things not to redo
+
+- **F6 is PARKED by explicit user decision**, pending a codec-conditioned
+  restorer (converges with the Q6 MoE-DiffIR argument). It is a decision, not
+  outstanding work — don't reopen it.
+- **`src/presley/bitcost.py` in the plan's Files table is OBSOLETE.** F1
+  explicitly concluded "do not build `bitcost.py`" — EVCA already captures
+  93–99% of the achievable bit saving. The plan file predates that result.
+- **Don't re-derive the `perceptual_loss` fix** — it's landed and tested.
+- **Don't quote `p=0.031` for 5/5** — it's the one-tailed value; correct is
+  0.0625, which is the floor at n=5. Hard rule 2b names this explicitly.
+
+## Landmarks
 
 | Path | Why |
 |---|---|
 | `~/.claude/plans/ok-that-is-a-sleepy-lark.md` | The approved three-goal plan |
-| `docs/WAVE1_FALSIFIERS.md` | Every falsifier: bounds, method, verdict, limitations |
-| `docs/HANDOFF_TO_PAPER_RESTRUCTURE.md` | What the significance session changed |
-| `docs/SIGNIFICANCE_AUDIT.md` + `research-log/hard-rules.md` 2b | Wording rules for any comparison |
-| `src/presley/suite.py` | `assess_metric` returns the verdict *and* mandated wording — quote it, don't paraphrase |
-| `tools/{index_results,mine_block_damage,select_probe_videos}.py` | Wave 0 output |
+| `docs/WAVE1_FALSIFIERS.md` | Every falsifier + S1/S1b: bounds, method, verdict, limitations. **The single most useful file here.** |
+| `68e8b6bb11d0dd9e62a67aef/RESEARCH_LOG.md` | Index only — open **one** file under `research-log/`, not all (~17k tokens if you read everything) |
+| `research-log/hard-rules.md` rule 2b | Wording rules for any comparison; n≥6 to be significant at all, n≥8 for restorer comparisons |
+| `research-log/dead-ends.md` | Read before re-attempting anything — F2/F4/F7/S1-naive all live here |
+| `src/presley/suite.py` | `assess_metric` returns the verdict *and* the mandated wording — quote it, don't paraphrase |
+| `tools/{index_results,mine_block_damage,select_probe_videos}.py` | Wave 0 output; the miner is S1b's engine |
 
-**Gotchas that already cost this session time:**
+**Probe suite (pre-registered, use it):** `tools/select_probe_videos.py -k 8` →
+motorbike, drift-straight, drift-turn, color-run, dancing, dogs-jump,
+bike-packing, bear. n=8 is chosen so the exact two-tailed sign test can reach
+p=0.0078 and survive Holm correction; the k=4 set floors at 0.125 and can
+never be significant.
+
+## Gotchas that already cost time
 
 - **The conda env's editable install resolves `presley` to the MAIN checkout,
   not your worktree.** Any `src/` change needs `PYTHONPATH=$PWD/src` or the
   tests silently exercise the wrong code. Python:
   `/home/itec/emanuele/.conda/envs/presley/bin/python`.
-- **OpenCV cannot decode AV1 here.** `cv2.VideoCapture` returns an empty frame
-  list and metrics come out `NaN` with no error. Decode with `ffmpeg` to PNG.
 - **`results/` and `cache/` do not exist in worktrees** (gitignored, per
   checkout). Tools take an explicit `--results-dir` pointing at
   `/home/itec/emanuele/presley/results`.
-- **Single-frame ffmpeg encodes cost ~0.55 s each**, dominated by process
-  startup — an F1-style sweep of 3 videos × 6 frames × 61 encodes exceeds a
-  10-minute foreground timeout. Budget accordingly or run detached.
-- `strength_maps.npz` is **bit-plane packed**; read it with
+- **A grain/degradation arm can decode *smoother* than its control even when
+  the effect is correctly applied** — the intuitive A/B gives the wrong answer.
+  Only a same-file toggle settles it (F4 used dav1d `--filmgrain 0/1`;
+  `av1tools` conda env has dav1d 1.5.3).
+- **Rate-matching must pick its search direction from the data.** A QP search
+  that only scans one way silently leaves one arm spending more bits —
+  it bit this session in F4 before being caught.
+- **Comparing decoded frames against PNG references costs ~29 dB to a
+  colorspace/upsampling mismatch.** Put every arm *and* the reference through
+  one identical conversion (F7).
+- **`strength_maps.npz` is bit-plane packed** — read it with
   `sidechannel.load_level_masks`, not `np.load`.
+- **OpenCV cannot decode AV1 here** — `cv2.VideoCapture` returns an empty frame
+  list and metrics come out `NaN` with no error. Decode with `ffmpeg`.
+- **Single-frame ffmpeg encodes cost ~0.55 s each**, dominated by process
+  startup; a large sweep exceeds a 10-minute foreground timeout. Run detached.
+- **Don't launch a long job with `nohup ... &` *and* `run_in_background`** —
+  the wrapper exits immediately and the harness reports a completion that
+  hasn't happened. Use `run_in_background` alone.
+
+**Bound before believing.** Write plausible best/worst cases for each
+measurement *before* reading its number, and commit them. This session's
+bounds caught three things that would otherwise have been reported as
+findings: F4's LPIPS breach, F7's <2% chroma alarm, and S1's "more bits from
+more compression". Two of the three turned out to be real effects and one
+prediction was simply wrong — the point is that each was *investigated* before
+being written down as a result.
