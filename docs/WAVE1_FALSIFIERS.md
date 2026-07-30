@@ -519,6 +519,93 @@ under each `results/<hash>/` for the exact per-block level maps.
 
 ---
 
+## S1b — damage-aware grading: test the CEILING before building a predictor
+
+**Scoped 2026-07-30, not yet run.** Direct follow-up to the S1 result above.
+
+**Question.** S1 showed that grading by the existing removability score fails.
+That score is F1's *numerator* (how many bits a block costs) and contains
+nothing about W0.2's *denominator* (how well a block comes back after
+restoration). So the open question is not "does grading work" but "was it
+graded on the wrong quantity". Before building any damage predictor, test
+whether a **perfect** one would even help -- the same oracle-ceiling move that
+killed O3 in F7 for the cost of an afternoon.
+
+**Why a ceiling test is the right shape.** A damage predictor is real work
+(S2's structure-tensor coherence, or a learned model). If an oracle that
+*already knows* each block's true damage cannot beat plain binary, the graded
+direction is dead outright and no predictor is worth building. If the oracle
+does win, the size of its win becomes the budget for how good a cheap proxy
+has to be -- exactly the framing F7's 0.174-LPIPS gap provided.
+
+**Design -- hold the level histogram fixed, vary only the assignment.**
+The S1 result already confounds two things (grading changes both *how many*
+blocks sit at each level and *which* ones). Isolate the second, the way F2
+isolated alignment by matching degraded area by construction:
+
+- **Arm C (binary)** -- already run, the 8 `levels=1` hashes above.
+- **Arm A (naive graded)** -- already run, the 8 `levels=3` hashes above.
+  Level assigned by score magnitude.
+- **Arm B (oracle damage-aware)** -- NEW. Takes **Arm A's exact per-video
+  level histogram** (e.g. bear's 7590/10223/227 across levels 1/2/3) and
+  reassigns which blocks get which level, sorting by *measured damage
+  tolerance* instead of by score: blocks that suffer least at a steep level
+  get the steep levels. Same block count per level, so the bit spend is held
+  roughly fixed by construction and only the assignment varies.
+
+**Measuring the damage input.** `tools/mine_block_damage.py` already emits
+exactly the needed quantity -- per-64x64-SB `delta_psnr`, damage attributable
+to degrade->restore over and above what the codec did at that QP -- and the S1
+runs already carry its inputs (`block_mse.npz` / `block_psnr.npz` are present).
+Per-block damage at each level comes from **uniform-level probe runs**: all
+selected blocks at level 2, and all at level 3 (level 1 is Arm C, already on
+disk). That gives damage_b(k) for k in 1..3 per superblock.
+
+**Blocker to clear first, found while scoping:** the miner joins each restored
+run to a *matched pristine baseline* (same video/resolution/codec/QP), and at
+640x360 svtav1 QP43 only **bear** has one (`a07560c409dc38ce`). The other seven
+probe videos have none. Seven `component: baselines` runs must be added first
+-- these are plain encodes with no restoration, so they are cheap, but the
+mining silently yields nothing without them.
+
+**Cost.** 7 pristine baselines + 16 uniform-level probe runs (2 levels x 8
+videos) + 8 Arm-B confirmation runs = **31 runs**. The 16-run S1 batch took
+roughly 30-40 minutes wall clock including evaluation, so budget ~1-1.5 h GPU
+plus offline mining/allocation. Note LPIPS/DISTS are **not** computed by
+default (S1's runs came back PSNR/SSIM-only and needed a backfill pass) --
+either run the backfill afterwards or the perceptual verdicts will be missing.
+
+**Bounds, to be registered before reading any number** (drafted here, confirm
+at run time):
+
+- *Damage vs level.* Mean `delta_psnr` should increase monotonically with
+  level -- level 3 discards 16x more pixels than level 1. **Alarm if level 3
+  is not clearly worse than level 1 on average**, which would mean the level
+  is not reaching the pixels and the whole probe is measuring nothing (the
+  same silent-no-op failure `film-grain=1` produced in F4).
+- *Damage spread within a level.* W0.2 measured a 6.2-8.2 dB p90-p10 spread at
+  level 1. Expect a comparable or larger spread at levels 2-3. **If the spread
+  is small, there is nothing for a damage-aware assignment to exploit and the
+  direction dies right there** -- this is the cheapest possible kill and it
+  needs no Arm-B run at all, so check it before spending the 8 runs.
+- *Arm B vs Arm A (matched histogram).* Expect BG-LPIPS to improve by
+  0.005-0.04 if damage tolerance is a real, exploitable axis. **Alarm above
+  0.08** -- that would exceed the entire binary-vs-naive gap and points at a
+  histogram or pairing mismatch rather than a finding.
+- *Arm B vs Arm C (the decision).* The real question.
+
+**Decision rule, fixed in advance.** The graded direction survives only if
+oracle damage-aware grading beats plain binary on **either** axis: BG-LPIPS
+clearing JND at matched bits, **or** a bitrate saving at sub-JND-equal
+quality (a Goal-1 win). If the oracle achieves neither, grading is closed for
+good -- not merely "graded on the wrong quantity" -- and S2's structure-tensor
+proxy should not be built, because its ceiling would already be known to be
+worthless. Per hard rule 2b a sub-JND quality gain is **not** a win, so a
+consistent-but-imperceptible Arm-B improvement counts as a failure of this
+decision rule, not a partial success.
+
+---
+
 ## F7 — chroma-first degradation: is there enough chroma to be worth taking?
 
 **Question.** O3 is the only axis orthogonal to everything tried -- every
