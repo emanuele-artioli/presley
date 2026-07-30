@@ -8504,3 +8504,347 @@ experiments:
   restorer_params:
     fp32: true
     num_frames: 14
+# hash: 79d911465fed8e66
+- component: presley_ai
+  video: motorbike
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: b5e34e9535e95f55
+- component: presley_ai
+  video: motorbike
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+# hash: 649a949e211996b4
+- component: presley_ai
+  video: drift-straight
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 4e37c0044e896863
+- component: presley_ai
+  video: drift-straight
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+# hash: b881ce63a6c6b4cf
+- component: presley_ai
+  video: drift-turn
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 7f24116293981c8c
+- component: presley_ai
+  video: drift-turn
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+# hash: ff1d96789ede7861
+- component: presley_ai
+  video: color-run
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: df95fc53aa9daa06
+- component: presley_ai
+  video: color-run
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+# hash: 9fde9ecef2bd01e5
+- component: presley_ai
+  video: dancing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: 37a5ba4672377d19
+- component: presley_ai
+  video: dancing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+# hash: 2c12da814dc87f63
+- component: presley_ai
+  video: dogs-jump
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: a65c763b51ecdee1
+- component: presley_ai
+  video: dogs-jump
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+# hash: b70dab8d332719f2
+- component: presley_ai
+  video: bike-packing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: cb8e4b838abf0631
+- component: presley_ai
+  video: bike-packing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3
+# hash: 6330a540950be357
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+# hash: c4c57169c454d595
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: downsample
+  restorer: realesrgan
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 43
+    preset: '8'
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  downsample_levels: 3

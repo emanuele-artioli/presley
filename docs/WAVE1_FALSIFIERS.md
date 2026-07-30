@@ -387,6 +387,60 @@ its better score tracking without paying for it in bits.
 
 ---
 
+## S1 evaluation — does the graded downscale map actually help?
+
+Not a falsifier of an existing claim -- a first look at whether S1's code
+change (commit `c5c8af6`: `filter_frame_downsample` now supports
+`downsample_levels`, backward-compatible at the default) does anything. The
+code lands the *mechanism*; this is the first real experiment through it.
+
+**Design.** n=8 probe suite, 640x360, block_size 16, `shrink_amount` 0.25,
+`fg_protect`, fixed QP 43, svtav1, restorer Real-ESRGAN. Two arms per video,
+**identical selection** (same blocks chosen by `select_removal_mask_global`,
+independent of `downsample_levels`, so this isolates grading from selection
+the same way F2 isolated alignment from selection):
+
+- **binary** (`downsample_levels` omitted, i.e. 1) -- every selected block
+  downsamples by factor 2, the historical behavior.
+- **graded** (`downsample_levels: 3`) -- each selected block's own
+  removability score quantizes into level 1-3, downsampling by 2/4/8x
+  accordingly, restored through Real-ESRGAN's pyramid at 1-3 rounds per block.
+
+**Bounds, stated before reading any number.**
+
+- *Bits.* Grading pushes already-high-score blocks to a steeper downscale, so
+  the graded arm should encode to **fewer bytes** than binary at the same QP
+  and the same selected block set -- more information discarded, same rate
+  control. Expect **3-20% additional saving**. **Alarm if the graded arm
+  costs MORE bits than binary** (more aggressive downsampling should never
+  cost bits at fixed QP with identical selection -- a positive delta points
+  at a selection or area mismatch between arms, not a finding) or if the
+  saving exceeds 40% (implausibly large for re-encoding roughly a quarter of
+  the frame more aggressively).
+- *Foreground quality.* FG blocks are excluded from selection identically in
+  both arms, so FG-PSNR/LPIPS should be **near-flat, sub-JND** -- consistent
+  with the alpha/beta finding, not the F6 tautology (this compares the SAME
+  region across two DIFFERENT bitstreams, not restored-vs-transmitted within
+  one, so a real if small rate-distortion-coupling delta is expected, not an
+  exact zero).
+- *Background quality.* Genuinely open. Two directions are both plausible:
+  Real-ESRGAN's pyramid gets *more* rounds on graded's steeper blocks, which
+  could recover comparably; or the coarser starting point could compound
+  error across rounds and cost real quality. No pre-existing result bounds
+  this either way -- W0.2 only established that damage-after-restoration
+  varies 6.2-8.2 dB *within* a single run, which says the axis matters, not
+  which direction grading moves it. Recorded as exploratory rather than
+  bounded to a specific range; the one thing that would be an alarm rather
+  than a genuine result is a BG-quality improvement large enough to clear
+  JND with no corresponding bit cost anywhere -- a free win on both axes at
+  matched selection would mean a measurement or pairing bug, the same
+  free-lunch alarm used throughout Wave 1.
+
+**Status: bounds registered, entries added to experiments.yaml
+(16 runs, hashes annotated), not yet run.**
+
+---
+
 ## F7 — chroma-first degradation: is there enough chroma to be worth taking?
 
 **Question.** O3 is the only axis orthogonal to everything tried -- every
