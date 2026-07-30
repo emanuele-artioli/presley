@@ -174,12 +174,14 @@ def backfill(results_dir: str = "results", force: bool = False) -> Dict[str, Lis
     the citation rule cannot act on — `results-report` and `update-paper` refuse
     results whose verdict is non-empty, so a *missing* verdict reads as "fine".
     This is a metadata-only pass: no re-encoding, no re-evaluation, and it is
-    re-entrant.
+    re-entrant, and safe to run concurrently with another backfill over the
+    same tree.
 
     Returns the offending hashes and their failures.
     """
     import json
     import os
+    import tempfile
 
     offenders: Dict[str, List[str]] = {}
     for entry in sorted(os.listdir(results_dir)):
@@ -197,10 +199,21 @@ def backfill(results_dir: str = "results", force: bool = False) -> Dict[str, Lis
             continue
         failures = check_result(result)
         result["invariant_failures"] = failures
-        tmp = path + ".tmp"
-        with open(tmp, "w") as handle:
-            json.dump(result, handle, indent=2)
-        os.replace(tmp, path)
+        # Unique temp name per pass: two runners sweeping the same shared tree
+        # (separate worktrees, one results/) used to pick the same `<path>.tmp`,
+        # and whichever replaced first left the other with FileNotFoundError.
+        # Same directory, so os.replace stays atomic on the same filesystem.
+        fd, tmp = tempfile.mkstemp(
+            dir=os.path.dirname(path), prefix="result.json.", suffix=".tmp"
+        )
+        try:
+            with os.fdopen(fd, "w") as handle:
+                json.dump(result, handle, indent=2)
+            os.replace(tmp, path)
+        except BaseException:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
+            raise
         if failures:
             offenders[entry] = failures
     return offenders

@@ -4,9 +4,13 @@ These run in the fast tier on synthetic results. The `-m invariants` tier in
 tests/invariants/ applies the same checks to the real results/ tree.
 """
 
+import json
+import multiprocessing
+import os
+
 import pytest
 
-from presley.invariants import check_goal1, check_result
+from presley.invariants import backfill, check_goal1, check_result
 
 
 def good_result(**overrides):
@@ -197,3 +201,66 @@ def test_goal1_is_not_evaluated_across_a_real_quality_difference():
     candidate["metrics"]["foreground"]["psnr_mean"] = 45.0  # far outside JND
 
     assert check_goal1(baseline, candidate) == []
+
+
+def _backfill_worker(results_dir, ready, go, error_queue):
+    """One concurrent backfill sweep, started only once its sibling is ready."""
+    try:
+        ready.set()
+        go.wait(timeout=30)
+        for _ in range(5):  # several sweeps, to widen the interleaving window
+            backfill(results_dir, force=True)
+    except BaseException as exc:  # pragma: no cover - reported via the queue
+        error_queue.put(f"{type(exc).__name__}: {exc}")
+
+
+def test_two_concurrent_backfills_over_one_tree_both_succeed(tmp_path):
+    """Two runners share one results/ tree; neither may die on the other's temp file.
+
+    Observed 2026-07-30: `backfill` wrote a fixed `<path>.tmp`, so the second
+    process's `os.replace` hit FileNotFoundError after the first had already
+    consumed it — a completed experiment wave exiting non-zero, and a plausible
+    lost write. Built against tmp_path: the real results/ tree is gitignored and
+    is never a test target.
+    """
+    results_dir = tmp_path / "results"
+    results_dir.mkdir()
+    hashes = [f"{i:016x}" for i in range(60)]
+    for hash_id in hashes:
+        run_dir = results_dir / hash_id
+        run_dir.mkdir()
+        (run_dir / "result.json").write_text(
+            json.dumps(good_result(experiment_hash=hash_id))
+        )
+
+    ctx = multiprocessing.get_context("fork")
+    errors = ctx.Queue()
+    go = ctx.Event()
+    ready = [ctx.Event(), ctx.Event()]
+    procs = [
+        ctx.Process(
+            target=_backfill_worker, args=(str(results_dir), r, go, errors)
+        )
+        for r in ready
+    ]
+    for proc in procs:
+        proc.start()
+    for r in ready:
+        assert r.wait(timeout=30), "a backfill worker never started"
+    go.set()
+    for proc in procs:
+        proc.join(timeout=120)
+
+    reported = []
+    while not errors.empty():
+        reported.append(errors.get())
+    assert reported == [], f"concurrent backfill failed: {reported}"
+    assert [p.exitcode for p in procs] == [0, 0]
+
+    # Every result survived intact, and no temp file was orphaned in the tree.
+    for hash_id in hashes:
+        run_dir = results_dir / hash_id
+        payload = json.loads((run_dir / "result.json").read_text())
+        assert payload["experiment_hash"] == hash_id
+        assert payload["invariant_failures"] == []
+        assert [f for f in os.listdir(run_dir) if f != "result.json"] == []
