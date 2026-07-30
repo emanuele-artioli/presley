@@ -494,6 +494,80 @@ def filter_frame_gaussian(image: np.ndarray, frame_scores: np.ndarray, block_siz
         blur_strengths = blur_strengths[:, :-1]
     return (new_image, blur_strengths)
 
+def _ac_truncate_patch(patch: np.ndarray, keep: int, dct_size: int = 8) -> np.ndarray:
+    """Zero every DCT coefficient outside the top-left ``keep`` x ``keep`` corner.
+
+    Operates in YCrCb on the codec's own ``dct_size`` grid (8x8 for AV1's
+    smallest transform), one 2-D DCT per sub-block per channel. ``keep`` is the
+    number of retained low-frequency rows/columns: ``keep=dct_size`` is a
+    no-op, ``keep=1`` keeps only DC (a flat sub-block). The patch side must be a
+    multiple of ``dct_size``.
+    """
+    if keep >= dct_size:
+        return patch.copy()
+    ycrcb = cv2.cvtColor(patch, cv2.COLOR_BGR2YCrCb).astype(np.float32)
+    h, w = ycrcb.shape[:2]
+    out = ycrcb.copy()
+    for ch in range(ycrcb.shape[2]):
+        plane = ycrcb[:, :, ch]
+        for y in range(0, h - h % dct_size, dct_size):
+            for x in range(0, w - w % dct_size, dct_size):
+                coeffs = cv2.dct(plane[y:y + dct_size, x:x + dct_size])
+                coeffs[keep:, :] = 0.0
+                coeffs[:, keep:] = 0.0
+                out[y:y + dct_size, x:x + dct_size, ch] = cv2.idct(coeffs)
+    return cv2.cvtColor(np.clip(out, 0, 255).astype(np.uint8), cv2.COLOR_YCrCb2BGR)
+
+
+def filter_frame_ac_truncate(image: np.ndarray, frame_scores: np.ndarray, block_size: int, keep: int = 2, sel: Optional[np.ndarray] = None, dct_size: int = 8) -> Tuple[np.ndarray, np.ndarray]:
+    """Transform-domain AC truncation per block. Returns (image, strengths).
+
+    The O2 operator from F5: instead of a pixel-domain low-pass that straddles
+    transform boundaries, write exact zeros in the codec's own basis. ``keep``
+    is the operator STRENGTH knob (smaller = stronger degradation); F5 used a
+    single fixed ``keep=2``, which is exactly the limitation this sweep exists
+    to remove.
+
+    ``sel`` overrides the default threshold selection (round(score)>0) with an
+    explicit boolean block mask, same contract as filter_frame_gaussian. The
+    returned map is binary (one truncation, like blur's one Gaussian), so a
+    conditioned restorer reads it as "this block was degraded" and the map packs
+    to a single bit-plane.
+    """
+    if keep < 1:
+        raise ValueError(f"keep must be >= 1 (keep=1 retains DC only), got {keep}")
+    (h, w, c) = image.shape
+    # Blocks must be a whole number of DCT sub-blocks for the codec-aligned grid
+    # to mean anything; block_size 16 -> four 8x8 sub-blocks.
+    if block_size % dct_size != 0:
+        raise ValueError(
+            f"block_size ({block_size}) must be a multiple of dct_size ({dct_size}) "
+            f"for transform-aligned truncation")
+    pad_y = (block_size - h % block_size) % block_size
+    pad_x = (block_size - w % block_size) % block_size
+    if pad_y > 0 or pad_x > 0:
+        image = np.pad(image, ((0, pad_y), (0, pad_x), (0, 0)), mode='edge')
+        frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
+        sel = _pad_sel(sel, pad_y, pad_x)
+    blocks = split_image_into_blocks(image, block_size)
+    strengths = _apply_sel_to_map(np.round(frame_scores).astype(np.int32), sel, 1)
+    strengths = (strengths > 0).astype(np.int32)
+    processed_blocks = blocks.copy()
+    (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
+    for by in range(num_blocks_y):
+        for bx in range(num_blocks_x):
+            if strengths[by, bx] > 0:
+                processed_blocks[by, bx] = _ac_truncate_patch(blocks[by, bx], keep, dct_size)
+    new_image = combine_blocks_into_image(processed_blocks)
+    if pad_y > 0:
+        new_image = new_image[:-pad_y, :, :]
+        strengths = strengths[:-1, :]
+    if pad_x > 0:
+        new_image = new_image[:, :-pad_x, :]
+        strengths = strengths[:, :-1]
+    return (new_image, strengths)
+
+
 def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: int, noise_variance: float = 50.0, sel: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Apply adaptive Gaussian noise per block based on scores. Returns (image, noise_strengths).
 

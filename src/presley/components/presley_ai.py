@@ -6,7 +6,7 @@ from typing import Dict, Any
 from presley.preprocessing import get_reference_frames, get_removability_scores
 from presley.encode_utils import save_frames_as_video, load_frames_from_video, encode_video_x265, encode_video_x265_qp, encode_video_svtav1_qp, encode_video_svtav1, derive_rate_control
 from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
-                                 filter_frame_noise,
+                                 filter_frame_noise, filter_frame_ac_truncate,
                                  filter_frame_mean_fill, filter_frame_freeze,
                                  select_removal_mask_global, upsample_block_mask)
 from presley.sidechannel import save_level_masks, composite_passthrough
@@ -73,10 +73,18 @@ RESTORER_DEGRADATIONS = {
     'instantir':  ('blur',) + INPAINT_DEGRADATIONS,
     # CNN deblur gauge (Chen et al. 2022); same blur (+ hole) set as InstantIR.
     # Single full-frame forward — see restore_with_nafnet_adaptive.
-    'nafnet':     ('blur',) + INPAINT_DEGRADATIONS,
+    # `ac_truncate` is admitted here because NAFNet is a conditioned restorer
+    # that takes the degraded pixels and does ONE full-frame forward, pasting
+    # untouched blocks back -- it reads the map only as "was this block
+    # degraded". AC truncation's map is binary for exactly the same reason
+    # blur's is (one operator application per block), so the units match. This
+    # pairing is what makes the O2 re-test possible: the same prior on both
+    # operators, so the operator is the only variable.
+    'nafnet':     ('blur', 'ac_truncate') + INPAINT_DEGRADATIONS,
     # map = sharpening rounds; downsample is also a low-pass, so unsharp is a
-    # meaningful no-ML benchmark for it too.
-    'unsharp':    ('blur', 'downsample') + INPAINT_DEGRADATIONS,
+    # meaningful no-ML benchmark for it too. AC truncation is a low-pass in the
+    # transform domain, so unsharp is its no-ML control as well.
+    'unsharp':    ('blur', 'downsample', 'ac_truncate') + INPAINT_DEGRADATIONS,
 }
 # NOTE: no `lanczos` entry. `restore_downsample_opencv_lanczos` expects a frame
 # whose blocks are still physically shrunk, but `filter_frame_downsample`
@@ -154,6 +162,13 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # mean_fill/freeze have no graded restoration path, so this key is inert
     # for them and ignored on purpose rather than raising.
     downsample_levels = int(experiment.get('downsample_levels', 1))
+    # Operator STRENGTH knobs. Both defaults reproduce the historical hardcoded
+    # behavior byte-for-byte, so no existing experiment hash or output moves:
+    # blur was pinned at cv2's k=15 here (`roi.py` always read it from the
+    # config; `presley_ai` never did, which is why F5 could only test one blur
+    # strength), and ac_truncate is new with F5's keep=2 as its default.
+    blur_kernel = int(experiment.get('blur_kernel', 15))
+    ac_keep = int(experiment.get('ac_keep', 2))
 
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
@@ -206,7 +221,9 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         if degradation == 'downsample':
             degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel, levels=downsample_levels)
         elif degradation == 'blur':
-            degraded, smap = filter_frame_gaussian(frame, score, block_size, sel=sel)
+            degraded, smap = filter_frame_gaussian(frame, score, block_size, kernel_size=blur_kernel, sel=sel)
+        elif degradation == 'ac_truncate':
+            degraded, smap = filter_frame_ac_truncate(frame, score, block_size, keep=ac_keep, sel=sel)
         elif degradation == 'noise':
             degraded, smap = filter_frame_noise(frame, score, block_size, sel=sel)
         elif degradation == 'mean_fill':
