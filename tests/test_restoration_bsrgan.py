@@ -98,3 +98,35 @@ def test_upscale_bsrgan_adaptive_matches_realesrgan_given_the_same_stub():
     )
 
     np.testing.assert_array_equal(bsrgan_out, realesrgan_out)
+
+
+def test_pyramid_upscale_handles_a_genuinely_graded_map(rng):
+    """S1: every strength map in project history has been binary 0/1, because
+    `filter_frame_downsample` only ever emitted round(score) before S1 -- so
+    this code path (multiple DISTINCT levels in one map) has never actually
+    run despite the pyramid supporting it since it was written. Pin it on a
+    map with three distinct levels (0, 1, 2) in one 3x3 block grid.
+    """
+    block_size = 8
+    frame = rng.integers(0, 256, size=(24, 24, 3), dtype=np.uint8)  # 3x3 blocks
+    downscale_map = np.array([[0, 1, 2], [0, 0, 0], [0, 0, 0]], dtype=np.int32)
+
+    calls = []
+
+    def counting_double(img: np.ndarray) -> np.ndarray:
+        calls.append(img.shape)
+        return _double(img)
+
+    restored = restoration.upscale_bsrgan_adaptive(
+        frame, downscale_map, block_size, upsample_fn=counting_double
+    )
+
+    assert restored.shape == frame.shape
+    assert restored.dtype == frame.dtype
+    # max_factor = 2**2 = 4 -> exactly 2 pyramid rounds regardless of how many
+    # distinct levels are present, since upsample_fn runs on the whole frame.
+    assert len(calls) == 2
+    # The level-0 block was never degraded going in, so it must come back
+    # pixel-identical to the input -- not merely close, since nothing in the
+    # pyramid should ever touch a block whose factor is 1.
+    np.testing.assert_array_equal(restored[0:8, 0:8], frame[0:8, 0:8])

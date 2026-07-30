@@ -147,6 +147,13 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     mask_morphology = experiment.get('mask_morphology', 'none')
     mask_morphology_radius = int(experiment.get('mask_morphology_radius', 0))
     mask_morphology_seed = int(experiment.get('mask_morphology_seed', 0))
+    # S1: graded multi-level downscale (default 1 = the historical binary
+    # behavior, byte-exact). Only 'downsample' consumes this -- the pyramid
+    # restorers (Real-ESRGAN/BSRGAN/...) are the only restoration path built to
+    # read a multi-level map (_adaptive_block_pyramid_upscale); blur/noise/
+    # mean_fill/freeze have no graded restoration path, so this key is inert
+    # for them and ignored on purpose rather than raising.
+    downsample_levels = int(experiment.get('downsample_levels', 1))
 
     # 1. Load data
     raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
@@ -197,7 +204,7 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
 
         if degradation == 'downsample':
-            degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel)
+            degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel, levels=downsample_levels)
         elif degradation == 'blur':
             degraded, smap = filter_frame_gaussian(frame, score, block_size, sel=sel)
         elif degradation == 'noise':

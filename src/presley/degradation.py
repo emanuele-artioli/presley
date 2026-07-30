@@ -402,11 +402,28 @@ def _pad_sel(sel: Optional[np.ndarray], pad_y: int, pad_x: int) -> Optional[np.n
                   mode='constant', constant_values=False)
 
 
-def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5, sel: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_size: int, scale: float = 0.5, sel: Optional[np.ndarray] = None, levels: int = 1) -> Tuple[np.ndarray, np.ndarray]:
     """Adaptively downsample each block based on removability scores. Returns (image, downsample_maps).
 
     ``sel`` overrides the default threshold selection (round(score)>0) with an
     explicit boolean block mask, same contract as filter_frame_mean_fill.
+
+    ``levels`` (default 1, backward compatible) is the number of graded
+    downscale levels. `_adaptive_block_pyramid_upscale` (restoration.py) has
+    always supported an arbitrary per-block exponent -- a full 2^k pyramid --
+    but this was the only degradation caller, and it only ever emitted 0/1, so
+    the pyramid's graded path has never once run (every strength map in
+    project history is binary). With ``levels=1`` the returned map is exactly
+    ``round(frame_scores)`` as before and ``scale`` still sets that single
+    factor -- byte-identical output, no existing experiment hash moves. With
+    ``levels>1`` each selected block's continuous removability score is
+    quantized into ``round(score * levels)`` in ``{1..levels}`` (``sel``'s
+    floor still guarantees a selected block is never emitted at level 0, which
+    would mean "selected but not degraded"), and level L is downsampled by
+    factor ``2**L`` -- an exponent, not ``scale`` -- because
+    `_adaptive_block_pyramid_upscale` reads the stored map value as the power
+    of two directly (``np.power(2, downscale_maps)``). ``scale`` is ignored in
+    this branch: a single scalar factor has no meaning across a graded ladder.
     """
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size
@@ -416,14 +433,22 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
         frame_scores = np.pad(frame_scores, ((0, 1 if pad_y > 0 else 0), (0, 1 if pad_x > 0 else 0)), mode='constant', constant_values=0)
         sel = _pad_sel(sel, pad_y, pad_x)
     blocks = split_image_into_blocks(image, block_size)
-    downsample_maps = _apply_sel_to_map(np.round(frame_scores).astype(np.int32), sel, 1)
+    if levels <= 1:
+        level_map = np.round(frame_scores).astype(np.int32)
+    else:
+        level_map = np.clip(np.round(frame_scores * levels), 0, levels).astype(np.int32)
+    downsample_maps = _apply_sel_to_map(level_map, sel, 1)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):
         for bx in range(num_blocks_x):
-            if downsample_maps[by, bx] > 0:
+            level = int(downsample_maps[by, bx])
+            if level > 0:
                 block = blocks[by, bx]
-                small_size = max(1, int(block_size * scale))
+                if levels <= 1:
+                    small_size = max(1, int(block_size * scale))
+                else:
+                    small_size = max(1, block_size // (2 ** level))
                 small_block = cv2.resize(block, (small_size, small_size), interpolation=cv2.INTER_AREA)
                 upsampled_block = cv2.resize(small_block, (block_size, block_size), interpolation=cv2.INTER_LINEAR)
                 processed_blocks[by, bx] = upsampled_block
