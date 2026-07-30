@@ -634,17 +634,66 @@ read.
    assignment-only comparison, and the probes inherit the identical footprint.
    The within-level spread check needs only k=2 and k=3, so no level-1 probe
    run is required for the early exit.
-2. *S1's "naive graded" arm was barely graded.* The `levels=3` level histograms
-   are overwhelmingly level 1: bike-packing 23.5%/1.5%/0.0% across levels
-   1/2/3, color-run 24.5%/0.5%/0.0%, dogs-jump 23.0%/2.0%/0.0%, and the most
-   graded video, bear, still only 10.5%/14.2%/0.3%. `round(3*score)` puts
-   almost every block at level 1 because the removability scores sit low. So
-   S1's negative result was measured on an arm that is ~95% identical to the
-   binary arm on most videos — it is much weaker evidence against grading than
-   it reads as, and it makes the S1b probes the first runs in project history
-   to push a large fraction of blocks to a steep level at all. It also
-   sharpens the S1 bits surprise: bear's level-3 arm cost **+7.2%** more bytes
-   (245,265 vs 228,803) while moving only a quarter of its blocks off level 1.
+2. *S1's "naive graded" arm was barely graded, and **bear is not
+   representative of it**.* See the dedicated subsection below — this is the
+   correction with consequences outside S1b.
+
+### ⚠ S1's graded arm is degenerate on 7 of 8 videos — correction for `tab:graded`
+
+**This contradicts how S1 is currently described in the paper text** (landed by
+Wave A3, committed and unpushed, presenting S1 as `tab:graded` and describing it
+as pushing the score "as far as the transport allows"). That description
+generalizes from bear, and bear is the single outlier in the batch. Recorded
+here so the paper text can be corrected against a citable source. **I have not
+edited the paper** — that is another wave's job.
+
+Level histograms of the eight `levels=3` runs, as a share of the **degraded
+footprint** (the footprint is a clustered 25% budget from `shrink_amount: 0.25`
+and is identical in every arm, so these shares are directly comparable), read
+straight off `strength_maps.npz` via `sidechannel.load_level_masks`:
+
+| video | foot% | L1% | L2% | L3% | ≥L2% | bytes binary | bytes graded | Δbytes |
+|---|---|---|---|---|---|---|---|---|
+| bear | 25.0 | 42.1 | 56.7 | 1.3 | **57.9** | 228,803 | 245,265 | +7.19% |
+| motorbike | 25.0 | 77.5 | 22.3 | 0.2 | 22.5 | 98,749 | 102,093 | +3.39% |
+| drift-straight | 25.0 | 79.5 | 20.1 | 0.4 | 20.5 | 203,601 | 216,116 | +6.15% |
+| dancing | 25.0 | 85.1 | 14.7 | 0.2 | 14.9 | 397,908 | 402,016 | +1.03% |
+| dogs-jump | 25.0 | 91.8 | 8.2 | 0.0 | 8.2 | 78,781 | 80,029 | +1.58% |
+| bike-packing | 25.0 | 94.1 | 5.8 | 0.0 | 5.9 | 308,200 | 311,836 | +1.18% |
+| drift-turn | 24.9 | 96.1 | 3.2 | 0.7 | 3.9 | 224,281 | 223,363 | −0.41% |
+| color-run | 25.0 | 98.0 | 1.8 | 0.2 | **2.0** | 200,110 | 200,717 | +0.30% |
+
+- **Median 88.5% of the degraded footprint never leaves level 1** (range
+  42.1–98.0%). The median share reaching level ≥2 is **11.5%**.
+- **Level 3 is essentially unused: at most 1.26% of the footprint, on bear.**
+  The "3" in `levels=3` is a quantizer ceiling that the data never approaches,
+  because `round(3*score)` needs `score ≥ 1/2` for level 2 and `≥ 5/6` for
+  level 3, and the removability scores sit far below that.
+- **bear moves 57.9% of its footprint to level ≥2 — 5× the median and 29× the
+  minimum.** Any sentence about what the graded arm *does* that is calibrated
+  on bear is wrong for the other seven videos.
+
+**Consequence for how S1's negative result may be cited.** On color-run,
+drift-turn, bike-packing and dogs-jump the graded arm is 92–98% identical to the
+binary arm inside the footprint, so those four videos cannot carry evidence
+about grading in either direction — they are near-replicates of the control that
+happen to cost slightly more bits. S1's "costs bits 7/8, costs BG quality 8/8"
+therefore remains true as *reported*, but it is much weaker evidence against
+grading **as a mechanism** than it reads as: most of its n=8 barely exercised the
+mechanism. The honest statement is that *the naive score→level quantizer is
+degenerate at these score magnitudes*, which is a finding about the quantizer,
+not about graded degradation.
+
+It also sharpens the bits surprise rather than explaining it away: the two videos
+that grade the most (bear +7.19%, drift-straight +6.15%) are also the two that
+lose the most bits, and the video that grades least (color-run, 2.0% at level ≥2)
+is nearly free (+0.30%). The bit penalty tracks *how much grading actually
+happened*, which is consistent with the "sharper transitions cost bits" reading
+in the S1 write-up above and inconsistent with it being noise.
+
+**This is what makes the S1b probes worth running at all:** at k=2 and k=3 they
+put 100% of the footprint at a steep level, so they are the first runs in project
+history to exercise the pyramid's graded path on a large share of blocks.
 
 **Bounds.**
 
