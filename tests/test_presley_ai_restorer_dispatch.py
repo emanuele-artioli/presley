@@ -61,11 +61,17 @@ def test_bsrgan_hole_degradations_use_the_binary_rounds_recipe():
 
 
 def test_nafnet_is_registered_alongside_instantir():
-    """CNN deblur gauge for blur transport (Q5) — same allowed degradations
-    as InstantIR (blur + hole fills)."""
+    """CNN deblur gauge for blur transport (Q5): InstantIR's set (blur + hole
+    fills) plus `ac_truncate`, added for the O2 re-test. NAFNet does one
+    conditioned full-frame forward and reads the map only as "was this block
+    degraded", and AC truncation's map is binary for the same reason blur's is,
+    so the units match. InstantIR is deliberately NOT extended: its map is
+    restoration *rounds*, a different quantity that was never calibrated for
+    this operator."""
     assert "nafnet" in RESTORER_DEGRADATIONS
-    assert RESTORER_DEGRADATIONS["nafnet"] == ("blur",) + INPAINT_DEGRADATIONS
-    assert RESTORER_DEGRADATIONS["nafnet"] == RESTORER_DEGRADATIONS["instantir"]
+    assert RESTORER_DEGRADATIONS["nafnet"] == ("blur", "ac_truncate") + INPAINT_DEGRADATIONS
+    assert set(RESTORER_DEGRADATIONS["instantir"]) < set(RESTORER_DEGRADATIONS["nafnet"])
+    assert "ac_truncate" not in RESTORER_DEGRADATIONS["instantir"]
 
 
 def test_nafnet_rejects_downsample():

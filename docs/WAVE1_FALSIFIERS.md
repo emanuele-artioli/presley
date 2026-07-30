@@ -1018,3 +1018,115 @@ suite verdict of at least `sub_jnd_significant`, **and** costs no more than
 on either metric, or the advantage evaporating after restoration — **closes
 O2**, on the grounds that a (operator, prior) pair that cannot beat the
 incumbent operator with the same prior is not a Goal-2 family member.
+
+### RESULT — O2 CLOSED. The 0.053 LPIPS advantage was a strength mismatch.
+
+96 runs, 8 probe videos x 6 operator rungs x 2 restorers, svtav1 preset 8 fixed
+QP 43, 640x360, block_size 16, `shrink_amount: 0.25` + `fg_protect`. **0 runs
+with `invariant_failures`** (M8 clean, all 96 citable). Analysis:
+`tools/o2_analyze.py`.
+
+#### Breach 1 (method, not a bound) — the matched-RATE procedure was inexecutable
+
+Sweeping either operator from its weakest to its strongest rung moves the
+bitrate by **under 5%** — *less* than the constant ~5-8% offset between the two
+operators. Each operator's rate range is a degenerate point, the two barely
+overlap, and F5's log-rate interpolation would have been extrapolation dressed
+as interpolation. **Investigated before reporting**: the strength ladders are
+demonstrably applied (transmitted BG-PSNR falls monotonically with strength on
+all 8 videos, spanning 2.3-4.8 dB), the bits simply do not follow. That is the
+project's own standing result — blur/downsample **relocate no bits under fixed
+QP** — reproducing on a third operator, not a bug.
+
+So the matching axis was moved from rate to **degradation**, which is what the
+sweep was commissioned to provide in the first place ("so the two are matched in
+degradation rather than only in rate"). The sweep delivered it almost exactly:
+at the strongest rung the two operators land within **0.09 dB** of each other in
+transmitted BG-PSNR on **all 8 videos** (mean gap −0.02 dB). The bit difference
+is reported alongside, never folded in.
+
+#### The one matched rung (blur k=31 vs ac_keep=1, gap ≤0.09 dB)
+
+| measurement | result | `assess_metric` verdict |
+|---|---|---|
+| bits, AC vs blur | **+4.6%** (range +2.2…+7.8%) | — |
+| **post-restoration BG-LPIPS** | 7/8 AC-better, mean −0.0189, CI [−0.0286, −0.0084] | `no_consistent_direction`: *"direction is not consistent across the suite -- no claim"* |
+| **post-restoration BG-DISTS** | **4/8 better, 4/8 worse**, mean −0.0004 | `no_consistent_direction`: *"direction is not consistent across the suite -- no claim"* |
+| pre-restoration BG-LPIPS | 7/8, mean −0.0188 | `no_consistent_direction` (same wording) |
+| pre-restoration BG-DISTS | 5/8, mean −0.0011 | `no_consistent_direction` (same wording) |
+
+**At matched degradation there is no operator effect left to explain.** DISTS is
+a dead 4-4 split with a mean four thousandths of a JND; LPIPS reverses on
+color-run. Neither metric earns any verdict above "no claim", before Holm and
+before the JND gate is even reached.
+
+#### The unmatched rungs — where F5's signal actually came from
+
+F5's single pairing (keep=2 vs k=15) is this sweep's rung 2, and rung 2 is
+**not** degradation-matched: `ac_keep=2` is **0.73 dB LESS degraded** than blur
+k=15 (rung 1 is worse still, 1.43 dB). At those rungs AC truncation wins
+unanimously 8/8 on both metrics — which is exactly what an operator that
+degrades less should do, and it pays +7.6-7.8% bits for the privilege. The
+strongest verdict any of it earns post-restoration is `sub_jnd_significant`:
+*"consistent and statistically significant across the suite but BELOW the
+perceptual threshold -- report as a small, reproducible, imperceptible effect;
+never as a perceptual win, a quality improvement, or a 'better' result"*. (One
+cell, rung-1 LPIPS **pre**-restoration, does reach `perceptual_win` at mean
+−0.0574 — at a 1.43 dB degradation head start and +7.6% bits. It is a
+measurement of the head start, not of transform alignment, and is not claimed.)
+
+#### The F5 LPIPS/DISTS sign contradiction is RESOLVED — it was an artifact
+
+F5 reported LPIPS favouring AC by −0.053 at 100% of rate points while DISTS
+favoured blur by +0.0095 at 100% of rate points, and called it "a systematic
+disagreement, not noise". It was neither: it was **one arbitrary
+(keep=2, k=15) pairing swept over QP**. Sweep the operators' own strength
+instead and the disagreement disappears in both directions —
+
+- at **unmatched** strength (F5's regime, rungs 1-2), LPIPS and DISTS **agree**,
+  both unanimously favouring AC truncation, 8/8;
+- at **matched** degradation (rung 3), both collapse to no consistent direction.
+
+So the contradiction resolves **against the operator**: there was never a
+transform-alignment effect for the two metrics to disagree about. The residual
+0.053 LPIPS advantage F5 could not explain is fully accounted for by AC
+truncation at keep=2 simply removing less information than a 15-tap Gaussian —
+the same explanation F5 already found for the +36% bit cost, applied to the
+quality axis it did not extend it to.
+
+#### Verdict on O2 — CLOSED
+
+Against the decision rule fixed in advance, which required AC truncation to beat
+blur post-restoration on **both** LPIPS and DISTS with a consistent sign at no
+more than +10% bits: it fails on **DISTS** (4-4 split), fails on **sign
+consistency** for LPIPS (7/8), and the only rungs where it wins are the ones
+where it was not degrading as hard, at a real bit cost. Transform-aligned AC
+truncation is **not** a Goal-2 family member. F5 killed the mechanism; this
+kills the residual signal that kept the operator alive.
+
+#### Bounds ledger
+
+M1 +4.6% (matched) / +7.8% (rung 2) — in bounds. M2 −0.0188 — in bounds.
+M3 −0.0011 — in bounds. M4 −0.0189 — in bounds. M5 −0.0004 — in bounds.
+M6 7/8 and 4/8 — in bounds. M8 0 failures — in bounds.
+**M7 BREACHED**, and investigated: NAFNet's mean BG-LPIPS gain is +0.000 to
++0.017 on 7 videos (a weak gauge, as expected), but on **bike-packing** it
+*damages* the background — up to −0.154 LPIPS and −0.072 DISTS. Localised
+before reporting: it is one video, both operators, both metrics agreeing, and
+it scales **inversely** with degradation strength (worst at the weakest rung,
+≈0 at the strongest). Same code path as the other seven, invariants clean — a
+restorer failure on that content, not a wiring bug. It does not carry the
+headline: the matched rung is the strongest rung, where the failure has
+decayed to −0.016/−0.008.
+
+#### Limitations
+
+The prior is NAFNet, deliberately (a cheap CNN gauge, the same prior on both
+operators so the operator is the only variable). Its restoration gain is
+≤0.017 LPIPS on 7/8 videos, so "post-restoration" here is close to
+"pre-restoration plus a small, video-specific perturbation". This test can
+therefore rule out an operator advantage that survives a *weak* prior; a strong
+generative prior could in principle reorder the two operators, and that would be
+a new experiment with its own pre-registered bounds — not a reason to reopen
+this one. Also: one QP (43), one selection budget (25%), one resolution, and
+DAVIS-like content throughout.
