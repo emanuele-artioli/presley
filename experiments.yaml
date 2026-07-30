@@ -11121,3 +11121,195 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+
+# --- S1b Arm B: oracle damage-aware level assignment (docs/WAVE1_FALSIFIERS.md) ---
+# Holds Arm A's per-frame level HISTOGRAM exactly fixed and reassigns WHICH block
+# sits at each level by mined damage tolerance, so bit spend is fixed by
+# construction and only the assignment varies. Maps are built offline by
+# tools/build_oracle_levels.py into cache/oracle_levels/<video>.npz; the run
+# raises rather than silently falling back if a map is missing.
+# Verdict: loses to plain binary on BOTH axes -- graded direction closed.
+# hash: 2f007ddcc7843ba1
+- component: presley_ai
+  video: bear
+  width: 640
+  height: 360
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  degradation: downsample
+  downsample_levels: 3
+  downsample_level_map: /home/itec/emanuele/presley/cache/oracle_levels
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+# hash: 4eccbb57f27540f5
+- component: presley_ai
+  video: motorbike
+  width: 640
+  height: 360
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  degradation: downsample
+  downsample_levels: 3
+  downsample_level_map: /home/itec/emanuele/presley/cache/oracle_levels
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+# hash: 6f4f6ec71635d3c7
+- component: presley_ai
+  video: drift-straight
+  width: 640
+  height: 360
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  degradation: downsample
+  downsample_levels: 3
+  downsample_level_map: /home/itec/emanuele/presley/cache/oracle_levels
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+# hash: 699601fa60e90e93
+- component: presley_ai
+  video: drift-turn
+  width: 640
+  height: 360
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  degradation: downsample
+  downsample_levels: 3
+  downsample_level_map: /home/itec/emanuele/presley/cache/oracle_levels
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+# hash: b30e6290fe5c86ea
+- component: presley_ai
+  video: color-run
+  width: 640
+  height: 360
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  degradation: downsample
+  downsample_levels: 3
+  downsample_level_map: /home/itec/emanuele/presley/cache/oracle_levels
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+# hash: 009d8a655cd8bb15
+- component: presley_ai
+  video: dancing
+  width: 640
+  height: 360
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  degradation: downsample
+  downsample_levels: 3
+  downsample_level_map: /home/itec/emanuele/presley/cache/oracle_levels
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+# hash: 36f5031883fe8f50
+- component: presley_ai
+  video: dogs-jump
+  width: 640
+  height: 360
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  degradation: downsample
+  downsample_levels: 3
+  downsample_level_map: /home/itec/emanuele/presley/cache/oracle_levels
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+# hash: 386712b1534fbbfd
+- component: presley_ai
+  video: bike-packing
+  width: 640
+  height: 360
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  degradation: downsample
+  downsample_levels: 3
+  downsample_level_map: /home/itec/emanuele/presley/cache/oracle_levels
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 0
+  alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
