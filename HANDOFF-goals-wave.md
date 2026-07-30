@@ -84,9 +84,46 @@
 > looks failed. Data was not corrupted here, but fix before the next parallel
 > launch (unique tmp name; scope the sweep to the run's own hashes).
 >
-> **A2 (the O2 re-test) is RUNNING** as a subagent in its own worktree as of
-> 2026-07-30 (later), on branch `exp/o2-operator-strength`. Result not yet in;
-> scope unchanged from the original approval.
+> **A2 — O2 re-test: DONE. O2 is CLOSED.** Branch `exp/o2-operator-strength`
+> in worktree `.claude/worktrees/agent-aafe24d0c56f058d2`, 2 commits, **not
+> merged, not pushed**. Suite green, both CI gates pass. 96 runs (8 videos × 6
+> strength rungs × 2 restorers), zero `invariant_failures` — verified from
+> `results/` in the main session, and the headline deltas reproduce exactly.
+>
+> F5 swept **QP only**, so the operators were matched in *rate* and never in
+> *degradation*, and it measured pre-restoration. The re-test swept the
+> operator's own strength and measured post-restoration with the **same prior
+> (NAFNet) on both arms**. At the matched rung (operators within 0.095 dB of
+> transmitted BG-PSNR on all 8): **BG-DISTS is a dead 4–4 split** (mean
+> −0.0004) and **BG-LPIPS reverses on color-run** (7/8, mean −0.0189) — both
+> `no_consistent_direction`, "no claim" — while AC truncation still costs
+> **+4.6% bits**.
+>
+> **F5's LPIPS/DISTS sign contradiction was an artifact**, not a systematic
+> metric disagreement: it came from one arbitrary (keep=2, k=15) pairing where
+> `ac_keep=2` is 0.73 dB *less degraded* than blur k=15. At unmatched strength
+> the two metrics *agree* (8/8, both favouring AC); at matched strength both
+> collapse. The 0.053 residual is fully explained by keep=2 removing less
+> information — F5's own explanation for its +36% bit cost, never extended to
+> the quality axis.
+>
+> **Scope:** NAFNet is a weak prior (≤0.017 LPIPS gain on 7/8), so a strong
+> generative prior could in principle reorder the operators. That would be a
+> new experiment with new bounds, **not** grounds to reopen this one.
+>
+> **Two live issues from A2:** (a) it added `filter_frame_ac_truncate` as a
+> real operator and made `presley_ai` read `blur_kernel` — which it never did,
+> the mechanical reason F5 could only ever test one blur strength; defaults
+> preserve every existing hash. (b) A NAFNet failure on `bike-packing` (up to
+> −0.154 LPIPS, background *damaged*, both operators, both metrics, scaling
+> inversely with strength) was investigated and judged a restorer failure on
+> that content, not a wiring bug. It decays to −0.016 at the matched rung so it
+> does not carry the headline, but it is unexplained and worth a look.
+>
+> **Method note now in `operational.md`:** a strength sweep under fixed QP moves
+> BG-PSNR 2.3–4.8 dB but bitrate <5% — less than the constant offset between two
+> operators — so F5's matched-*rate* procedure had no overlapping range and was
+> inexecutable. Check the arm actually moves the rate before designing around it.
 >
 > **New gotchas, both of which cost a wasted 23-run pass:**
 > - `--dataset-dir` and `--cache-dir` are relative and must be pointed at the
