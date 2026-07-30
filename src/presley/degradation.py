@@ -461,9 +461,16 @@ def filter_frame_downsample(image: np.ndarray, frame_scores: np.ndarray, block_s
         level_map = np.round(frame_scores).astype(np.int32)
     else:
         level_map = np.clip(np.round(frame_scores * levels), 0, levels).astype(np.int32)
-    if uniform_level > 0:
-        level_map = np.where(level_map > 0, uniform_level, 0).astype(np.int32)
     downsample_maps = _apply_sel_to_map(level_map, sel, 1)
+    # Flatten AFTER the sel floor, not before: with a budgeted ``sel`` the floor
+    # promotes selected-but-level-0 blocks to level 1, so flattening first
+    # leaves those blocks at 1 and the "uniform" probe is not uniform (measured:
+    # 1.4% of all blocks on motorbike, ~5.6% of the degraded footprint). Those
+    # blocks are less damaged than the rest by construction, so they would
+    # inflate the within-level damage spread -- the exact quantity S1b's
+    # early-exit gate turns on.
+    if uniform_level > 0:
+        downsample_maps = np.where(downsample_maps > 0, uniform_level, 0).astype(np.int32)
     processed_blocks = blocks.copy()
     (num_blocks_y, num_blocks_x) = (blocks.shape[0], blocks.shape[1])
     for by in range(num_blocks_y):

@@ -122,6 +122,28 @@ def test_uniform_level_flattens_the_ladder_but_keeps_the_footprint():
     np.testing.assert_array_equal(graded > 0, uniform > 0)
 
 
+def test_uniform_level_beats_the_sel_floor_to_stay_actually_uniform():
+    """With a budgeted `sel`, the floor promotes selected-but-level-0 blocks to
+    level 1. Flattening must happen after that floor, or the probe silently
+    carries a minority of level-1 blocks -- less damaged by construction, so
+    they inflate the within-level spread the S1b gate turns on. Measured at
+    1.4% of all blocks on motorbike before this was fixed."""
+    block_size = 8
+    rng = np.random.default_rng(9)
+    image = rng.integers(0, 256, size=(16, 16, 3), dtype=np.uint8)
+    # 0.0 would floor to level 1 under sel; 0.7 grades to level 2 at levels=3
+    scores = np.array([[0.0, 0.7], [0.0, 0.0]], dtype=np.float32)
+    sel = np.array([[True, True], [False, False]])
+
+    _, level_map = filter_frame_downsample(
+        image, scores, block_size, levels=3, sel=sel, uniform_level=3
+    )
+
+    assert set(np.unique(level_map).tolist()) == {0, 3}, level_map.tolist()
+    assert level_map[0, 0] == 3  # the floored block, not left behind at 1
+    assert level_map[1, 0] == 0  # unselected stays out of the footprint
+
+
 def test_uniform_level_0_is_the_graded_path_unchanged():
     """Default-off must be byte-identical, so no existing hash moves."""
     block_size = 8
