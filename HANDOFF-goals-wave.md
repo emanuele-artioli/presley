@@ -50,12 +50,40 @@
 >    for R). `dogs-jump` is non-monotonic (−0.08 dB, inside noise). Both
 >    recorded in `docs/WAVE1_FALSIFIERS.md`, not glossed.
 >
-> **What S1b still owes:** LPIPS/DISTS backfill on the 16 probes, and the 8
-> Arm-B oracle-assignment runs (match Arm A's per-video level histogram,
-> reassign by measured damage tolerance from `block_damage_s1b.npz`). The gate
-> existed to decide whether those 8 runs are worth spending: **they are.**
+> **S1b IS NOW COMPLETE — and the ceiling test FAILED.** Arm B ran (8 oracle
+> runs, `@0d29638`), LPIPS/DISTS backfilled (48/48, 0 failures). Against plain
+> binary the oracle costs **+2.09% bits on 8/8** (p=0.0078) *and* is worse on
+> **all four** background metrics on **8/8** (BG-LPIPS +0.0110, DISTS +0.0039,
+> PSNR −0.48 dB, SSIM −0.0100; every one `sub_jnd_significant` in the worse
+> direction). Foreground untouched. The pre-registered rule required a win on
+> either axis; it got neither. **Grading is CLOSED. Do NOT build S2's
+> structure-tensor proxy** — its ceiling is measured and sits below binary.
 >
-> **A2 (the O2 re-test) was never started** — it was deliberately queued behind
+> Against Arm A at a matched histogram (bits held fixed at −0.44%, p=0.7266)
+> the oracle leans better on 7/8 for every metric but not unanimously →
+> `no_consistent_direction`, **no claim may be made** about oracle-vs-naive.
+>
+> **Scope limit that must not be dropped:** the oracle is *greedy* and
+> *superblock-resolution*. It upper-bounds any predictor of the same quantity
+> at that granularity — which licenses the transport conclusion — but it is not
+> a proven constrained optimum. Never write "no assignment can win".
+>
+> **The mechanism, and it reframes S1:** at a uniform level, more downsampling
+> costs *fewer* bits. Every graded arm's penalty comes from **mixing** levels,
+> not from strength. Arm B mixes as much as Arm A and pays nearly the same
+> penalty. So **S1's negative was never evidence about the removability score**
+> — graded multi-level downscale is simply the wrong transport, whatever ranks
+> the levels. The paper's mis-specification argument must rest on the *form* of
+> the score plus `tab:ablation`, and was corrected to do so (`56017c6`).
+>
+> **Known defect hit while doing this:** `runner.py` ends by sweeping the whole
+> results tree with `invariants.backfill(force=True)`, which writes a fixed
+> `result.json.tmp` per dir. Two concurrent runners race and the loser dies with
+> `FileNotFoundError` *after its own experiments succeeded* — a completed wave
+> looks failed. Data was not corrupted here, but fix before the next parallel
+> launch (unique tmp name; scope the sweep to the run's own hashes).
+>
+> **A2 (the O2 re-test) is RUNNING** as a subagent in its own worktree as of 2026-07-30 (later). Result not yet in.
 > A1 for the GPU. Still outstanding, still approved, unchanged in scope.
 >
 > **New gotchas, both of which cost a wasted 23-run pass:**
