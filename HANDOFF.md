@@ -1,111 +1,167 @@
-# Handoff — Q7/Q9/Q10 closed; Q6 gated + Q8 blocked (2026-07-29)
+# Handoff — breadth chain confirmed, F1 closed, NAFNet defect found (2026-07-31)
 
-## What triggered this handoff
+Supersedes the 2026-07-29 Q7/Q9/Q10 handoff. **Its still-open items (Q6, Q8,
+standing HOLEs) are carried forward below — they were not dropped.**
 
-Natural session boundary after Wave 1–3 for Q7/Q9/Q10: code merges + GPU
-results + paper folds are committed and pushed. Next session owns the
-remaining open items (Q6 DiffBIR gate, Q8 DC-VSR when upstream lands, plus
-standing paper HOLEs).
+## State (verified at write time)
 
-## One-paragraph summary
+- Code `main` @ **`eeedf98`**, clean, pushed, CI green.
+- Paper @ **`9f8848c`**, pushed to Overleaf.
+- **Nothing running.** No PRESLEY-owned jobs. (`nvidia-smi` may show other
+  users' — check PIDs before assuming a free GPU.)
+- Worktrees: only this session's
+  (`.claude/worktrees/presley-breadth-database-aa9a5f`), branch fully merged —
+  safe to remove.
+- Results DB: **899 runs, 893 citable.** The 6 failures are pre-existing and
+  correct (VBR degradation caught by hard rule 1; 2 restoration-hurt-background).
 
-PRESLEY perceptual compression queue Q1–Q5 and Q7/Q9/Q10 are closed.
-Real-ESRGAN stays the headline conditioned SR (Stream-DiffVSR catalogued, no
-Goal-2 win). Matched-budget noise still costs bits (+77…+83%). Mask morphology
-at radius 4 is within JND vs UFO and does not demo fg_protect defeat — YOLO
-under-cover remains the failure mode. Still open: **Q6 DiffBIR** (needs a
-written mechanism argument before any wire), **Q8 DC-VSR** (HF weights-only;
-no public inference), and paper HOLEs av1/goal2/priced-trade n>2.
+## What landed this session
 
-## Current state (verified)
-
-### Code repo `presley/`
-
-- `main` @ `d46449b` (pushed) — Wave 1 merges (Q7/Q8/Q9/Q10) + queue/
-  HANDOFF refresh; `vendor/` gitignored.
-- Restorers wired: realesrgan, bsrgan, real_hat_gan, stream_diffvsr, dc_vsr
-  (stub), instantir, nafnet, unsharp, inpainters.
-- **Hard rules:** NAFNet / Real-HAT-GAN reject `fp32=False`. Stream-DiffVSR
-  uses isolated env (do not pip into `presley`).
-
-### Paper repo `68e8b6bb11d0dd9e62a67aef/`
-
-- `26cc066` — Q7 Stream-DiffVSR catalogue (`CLAIM(tab:conditioned-stream-diffvsr)`)
-- `9d6de4d` — Q9 noise retire + Q10 `tab:mask-morph` (`HOLE(sec:evaluation)` filled)
-
-### Running now
-
-Nothing PRESLEY-owned. (`nvidia-smi` may show other users' jobs — check PIDs
-before assuming a free GPU.)
-
-## Result hashes (citable; `invariant_failures=[]`)
-
-| ID | Hashes / notes |
+| | outcome |
 |---|---|
-| Q7 | Stream-DiffVSR `85d92dabda4b9907` (bear) / `0bcc99560e456dba` (camel) vs RE `e2cb6bed165d69b1` / `c29c94b5c290f208` |
-| Q9 | noise `f27b0f17` / `4e2d1e22` / `d1e32185` / `65c5aae4`; ds/blur comparators in yaml Q9 section; baselines `21e85db5` / `2214e6bf` / `83cb00c9` / `a2cd5ebc` |
-| Q10 | morph `08cf9e58` / `e802ae0a` / `61ef4d76` / `754b7d6e` / `9d995b6c` / `bee9c70a`; fair baseline UFO none `1dca3441` (bear) / `40e78d87` (camel) — **not** gt |
+| **Rate-matched breadth** | BD-rate BG-LPIPS **−51.4%**, 9/9 clips → chain `presley_ai > elvis` **confirmed at matched rate** outside DAVIS. `tab:breadth-ratematched` |
+| **F1 oracle-bits** | ρ +0.669, capture 0.833 **against a 0.402 random null**, n=8 → `NEXT(sec:implementation)` cleared for **claim (a) only**. `CLAIM(f1-oracle-bits)` |
+| **bike-packing NAFNet** | Reclassified: a **numerical defect** (output diverges, ~8.6% of pixels clipped to 0/255), not a content effect |
+| **B3 fallout** | Fixed a runtime-only `torch`-before-`sqlite3` bug I introduced; `tests/test_import_order.py` pins it |
+| **Worktrees** | 15 → 1 |
 
-## Open questions / decisions
+The two breadth framings are consistent: at fixed QP PRESLEY spends +23%/+15%
+more bits and returns disproportionately more background quality, so **per bit**
+it is far ahead. The premium was a fixed-QP artefact, not a cost of the method.
 
-1. **Q6 DiffBIR:** Do you have a mechanism argument why DiffBIR’s prior would
-   beat NAFNet/unsharp on spatial-Gaussian+CRF blur? NAFNet already ties
-   unsharp with no Goal-2 gain. **If no → leave deferred; do not commission.**
-2. **Q8 DC-VSR:** Re-check HF `Janghyeok/dc-vsr` / author code for a runnable
-   pipeline (VAE + scheduler + SAP/TAP/DSSAG). Until that exists, the stub’s
-   `RuntimeError` is correct — no GPU cells.
-3. **Standing HOLEs** (optional if paper needs them next): av1 n>2,
-   goal2/conditioned n>2, priced-trade shrink_amount.
+---
 
-## Immediate next steps (for the next session)
+## Open items, in the order I would take them
 
-1. Read this file + `docs/EXPERIMENTS_QUEUED.md`. Confirm `git status` clean
-   on both repos (or only expected dirt).
-2. **Ask before Q6.** No mechanism → skip DiffBIR entirely.
-3. **Probe Q8 readiness:** `hf` / WebFetch `Janghyeok/dc-vsr` file list; if
-   inference code appeared, wire for real in a worktree `feat/q8-dc-vsr-infer`
-   then fixed-QP cells; else leave stub.
-4. If paper HOLEs are the priority instead, grep
-   `HOLE(tab:av1|goal2|priced-trade)` and plan cells under fixed QP only.
-5. After any new GPU results: `presley-compare`, bound-before-believing,
-   `/update-paper`, refresh this HANDOFF.
+### 1. Two decisions that need the human
 
-## Ops gotchas
+**(a) The saturation invariant.** NAFNet clipped 8.6% of output pixels to 0/255
+with `invariant_failures` **empty** — nothing checks a restorer's output for
+saturation. A check like *"restoration clipped more than N% of pixels to 0/255
+that its input did not"* catches it on the first run. **Deliberately not
+implemented:** it would mark existing runs uncitable, changing what the paper may
+cite. Decide the threshold and whether to retro-apply. Analysis:
+`research-log/bugs.md`, top entry.
 
-- Filter fixed-QP with **`codec=svtav1`**. Bare `restorer=` rematches VBR dirs.
-- `fg_protect=True`. BG-PSNR never Goal-2 verdict.
-- Q7 lean env: `STREAM_DIFFVSR_ROOT=…/vendor/stream-diffvsr`,
-  `STREAM_DIFFVSR_PYTHON=…/envs/stream-diffvsr/bin/python`. Keep
-  `transformers>=4.45,<5` + `xformers` in that env only.
-- Q10 morph fair A/B is **UFO none**, not gt (camel UFO FG ~1 dB above gt).
+**(b) `baselines` at QP 42/47.** The pre-registered optional second wave, gated
+on the first 36 landing clean — they did. 18 runs, ~35 min. **Not needed** for
+the chain result. Only for keeping the baseline/ELVIS/PRESLEY triple intact at
+the new rungs. Entries are **not** yet in `experiments.yaml`.
+
+### 2. Claim (b) — the last thing blocking `NEXT(sec:implementation)`
+
+The 6.2/8.2 dB **denominator** spread is still computed by
+`tools/mine_block_damage.py` **outside the runner**, so it has no
+`results/<hash>` and may not appear in any reviewer-visible sentence. F1 fixed
+claim (a) only.
+
+Same shape as F1's fix: a `probe_*` component through `presley-run`. **Read
+`src/presley/components/probe_oracle_bits.py` first** — it solves the non-obvious
+blocker: `invariants._check_metrics_present` unconditionally demands FG/BG/overall
+PSNR, and a measurement probe has no reconstructed video. The answer is to publish
+a real encode as `output_video`, **not** to exempt the component.
+
+### 3. Open question 0c — why EVCA is near-chance on `drift-straight`
+
+ρ +0.082, capture 0.510 against a 0.436 null, vs ρ 0.61–0.90 on the other seven.
+**The obvious explanation is already refuted:** its marginal-bit distribution is
+not flat (CV 0.93, mid-pack), and ρ vs CV across the eight correlates at 0.031.
+Unexplained. Resolve before anyone claims the cost model is uniformly adequate.
+Data is in the 8 probe runs — no new GPU time to start.
+
+### 4. Carried forward from 2026-07-29 — still open
+
+- **Q6 DiffBIR — ASK before any wire.** Needs a written mechanism argument for
+  why DiffBIR's prior would beat NAFNet/unsharp on spatial-Gaussian+CRF blur.
+  NAFNet already ties unsharp with no Goal-2 gain. **No argument → leave
+  deferred; do not commission.**
+- **Q8 DC-VSR — blocked upstream.** Re-probed 2026-07-29: HF `Janghyeok/dc-vsr`
+  is weights-only (no `model_index.json`, VAE, scheduler or pipeline code); no
+  official code release. The stub's `RuntimeError` is correct. Only wire if
+  upstream publishes real inference. Evidence in `docs/EXPERIMENTS_QUEUED.md`.
+- **Standing paper HOLEs:** `HOLE(tab:av1)` n>2 videos,
+  `HOLE(tab:goal2)`/`HOLE(tab:conditioned)` n>2, `HOLE(tab:priced-trade)`
+  shrink_amount arm. Fixed QP only.
+
+### 5. Referee 2 "lack of technical insights" — still `[ ] To Do`
+
+Untouched here and much larger than anything above: a narrative/framing job, not
+an experiment. See `reviewers_comments.md`.
+
+---
+
+## Gotchas that will cost you time if rediscovered
+
+**New this session:**
+
+- **`import torch` then `import sqlite3` is fatal on this host** (CXXABI_1.3.15).
+  Fixed at `src/presley/__init__.py` — do not "tidy" that import away. It fails
+  at **runtime**, not import time, for deferred in-function imports.
+- **The Bash tool caps at 120 s regardless of a shell `timeout 900`** — pass the
+  tool's own `timeout` parameter (ms, max 600 000) for anything longer.
+- **A "stopped" background-job notification does not mean the work failed.**
+  Check artifacts (result dirs, mtimes), not the notification. `pgrep -f` matches
+  your own checking command and will lie to you.
+- **`experiments.yaml` is the fragile artifact.** Append as text; never re-dump
+  (destroys `# hash:` comments, risks mid-entry corruption). Verify every time:
+  entry-count delta, first-N hashes byte-identical, all distinct.
+- CI flake seen twice: a run can die at 20 min on a hung `apt-get install ffmpeg`
+  **without reaching the tests**. Infrastructure, not code — the next run is the
+  real verdict.
+
+**Carried forward:**
+
+- Filter fixed-QP with **`codec=svtav1`**; bare `restorer=` rematches VBR dirs.
+- NAFNet / Real-HAT-GAN reject `fp32=False`.
+- Stream-DiffVSR uses an isolated env — never pip into `presley`.
+- Q10 morph fair A/B is **UFO none**, not gt.
+- `fg_protect=True`; BG-PSNR is never the Goal-2 verdict.
+- Benign log noise: `[av1] Missing Sequence Header`, `Failed to get pixel
+  format`, SVT-AV1 banner.
 - Substantive code → worktree + branch. Run-only stays on this checkout.
 - Never `rm` wholesale `results/` / `dataset/` / `cache/`.
+
+## Tools written this session
+
+- `tools/analyze_ratematched.py` — BD-rate over the 4 rungs. **Refuses to run on
+  incomplete curves**; forbids quoting a BD number when quality ranges are
+  disjoint.
+- `tools/analyze_f1_oracle.py` — F1; prints the random null and flags
+  near-chance videos.
+
+Both apply their pre-registered decision rules mechanically and label breaches
+`*** BREACH ***` rather than leaving it to the reader.
 
 ## Prompt for the next session
 
 ```
 Pick up HANDOFF.md in /home/itec/emanuele/presley.
 
-Q1–Q5 and Q7/Q9/Q10 are closed and pushed (code Wave-1 merges + paper
-9d6de4d/26cc066). Real-ESRGAN stays headline; Stream-DiffVSR catalogued (no
-Goal-2 win). Matched-budget noise +77…+83% bits. Mask morph r=4 within JND.
+Done and pushed: rate-matched breadth (chain presley_ai > elvis CONFIRMED
+outside DAVIS, BD-rate -51.4% on BG-LPIPS, 9/9); F1 oracle-bits (claim (a) now
+CLAIM-grade, capture 0.833 vs a 0.402 random null); bike-packing NAFNet
+reclassified as a numerical defect.
 
-Still open:
-1. Q6 DiffBIR — ASK for a mechanism argument before any wire; else skip.
-2. Q8 DC-VSR — only if upstream published inference (not weights-only);
-   otherwise leave the RuntimeError stub.
-3. Optional paper HOLEs: av1 / goal2-conditioned n>2 / priced-trade shrink.
+Two decisions need you before agent work:
+  (a) the saturation invariant — would mark existing runs uncitable
+  (b) whether to run baselines at QP 42/47 (optional second wave)
 
-Read docs/EXPERIMENTS_QUEUED.md. Filter tip: codec=svtav1. fp32 for NAFNet/HAT.
+Then, in order: claim (b) via a probe_* component (read
+src/presley/components/probe_oracle_bits.py first — the citability trap is
+solved there); open question 0c (drift-straight near-chance, unexplained);
+carried-forward Q6 (ASK first) / Q8 (blocked upstream) / standing HOLEs.
+
+Gotcha: never import torch before sqlite3 on this host.
 ```
 
 ## Landmarks
 
 | Path | Why |
 |---|---|
-| `docs/EXPERIMENTS_QUEUED.md` | Queue status |
-| `src/presley/stream_diffvsr.py` / `dc_vsr.py` | Q7/Q8 glue |
-| `src/presley/preprocessing.py` | Q10 mask morph |
-| Paper `CLAIM(tab:conditioned-stream-diffvsr)` / `tab:mask-morph` / `CLAIM(sec:noise-retire)` | Landed claims |
-| `vendor/stream-diffvsr` + conda `stream-diffvsr` | Q7 runtime (gitignored vendor) |
-| Real-ESRGAN hashes `e2cb6bed…` / `c29c94b5…` | Q7 comparators |
+| `docs/RATEMATCHED_BREADTH.md` | Rate-matched design, bounds, result |
+| `docs/F1_ORACLE_BITS.md` | F1 design, bounds, corrections, result |
+| `src/presley/components/probe_oracle_bits.py` | Template for any future measurement probe |
+| `src/presley/__init__.py` | The sqlite3/torch ordering fix — load-bearing |
+| `research-log/bugs.md` | NAFNet defect (top entry) |
+| `research-log/open-questions.md` | Items 0/0b/0c |
+| `docs/EXPERIMENTS_QUEUED.md` | Q6/Q8 queue status |
