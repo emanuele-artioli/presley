@@ -12411,6 +12411,7 @@ experiments:
 # F1 oracle-bits probe (W2, 2026-07-31): EVCA vs a true leave-one-superblock-out
 # bit oracle under INTER coding, on the n=8 probe set. The old 93-99% figure was
 # all-intra and near-tautological. Bounds pre-registered in docs/F1_ORACLE_BITS.md.
+# hash: 8925be20182b9967
 - component: probe_oracle_bits
   video: motorbike
   width: 640
@@ -12423,6 +12424,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: cdcc94a99f222a90
 - component: probe_oracle_bits
   video: drift-straight
   width: 640
@@ -12435,6 +12437,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 5d5a825d96490d1c
 - component: probe_oracle_bits
   video: drift-turn
   width: 640
@@ -12447,6 +12450,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: efaa2a75e3b4f05d
 - component: probe_oracle_bits
   video: color-run
   width: 640
@@ -12459,6 +12463,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 1fc429d1207c8dbb
 - component: probe_oracle_bits
   video: dancing
   width: 640
@@ -12471,6 +12476,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: b906d4cbb03fdbd1
 - component: probe_oracle_bits
   video: dogs-jump
   width: 640
@@ -12483,6 +12489,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 86e77a55a5c35e5a
 - component: probe_oracle_bits
   video: bike-packing
   width: 640
@@ -12495,6 +12502,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 7faf160138a5053b
 - component: probe_oracle_bits
   video: bear
   width: 640
@@ -12507,3 +12515,183 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 12c8b82e3a0a3846
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: mosev2/8i1uo3x9
+  width: 640
+# hash: 8886a0e294ad7dec
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: mosev2/8i1uo3x9
+  width: 640
+# hash: dcd01a84ec80871e
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: mosev2/fii86rku
+  width: 640
+# hash: df03249f5d9f5eb6
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: mosev2/fii86rku
+  width: 640
+# hash: 6d3045f12a8841a9
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: mosev2/jxmcdk8k
+  width: 640
+# hash: afa06fa2137af5f2
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: mosev2/jxmcdk8k
+  width: 640
+# hash: 68087aae48f94fee
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 640
+  target_bitrate: 0
+  video: mosev2/ptq7rtia
+  width: 360
+# hash: 1e1adbe0cc770f1c
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 640
+  target_bitrate: 0
+  video: mosev2/ptq7rtia
+  width: 360
+# hash: 5bb6dadd80a9a310
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: mosev2/zofozj6l
+  width: 640
+# hash: c38fed3c9f9ffe96
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: mosev2/zofozj6l
+  width: 640
+# hash: b9bde9bebeb94c73
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 480
+  target_bitrate: 0
+  video: youtube_vos/0e4068b53f
+  width: 640
+# hash: 00bb0e2244cea0f4
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 480
+  target_bitrate: 0
+  video: youtube_vos/0e4068b53f
+  width: 640
+# hash: 1937e9b940148550
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: youtube_vos/282651c6f7
+  width: 640
+# hash: 27acf7f41e602bf1
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: youtube_vos/282651c6f7
+  width: 640
+# hash: 3aef8c96a12d8c5a
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: youtube_vos/30fe0ed0ce
+  width: 640
+# hash: 17afbdbddfedc53c
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: youtube_vos/30fe0ed0ce
+  width: 640
+# hash: a5218788fe431e35
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 42
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: youtube_vos/b1a8a404ad
+  width: 640
+# hash: 2ddbea4ebc00ee6f
+- codec: x265
+  codec_params:
+    preset: medium
+    qp: 47
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: youtube_vos/b1a8a404ad
+  width: 640
