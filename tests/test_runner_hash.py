@@ -197,8 +197,14 @@ def test_unknown_component_is_rejected_by_name():
 
 
 def test_dispatch_table_covers_the_shipped_components():
-    # probe_oracle_bits is a measurement probe, not a transport: it produces no
-    # restored video and never belongs in a baseline/roi/elvis/presley_ai chain
-    # comparison. It is in the table only so its numbers carry a results/<hash>.
+    # The two probe_* entries are measurements, not transports, and never belong
+    # in a baseline/roi/elvis/presley_ai chain comparison. They are in the table
+    # only so their numbers carry a results/<hash>.
+    #
+    # probe_block_damage needs the sharper warning of the two: unlike
+    # probe_oracle_bits it DOES produce a restored video, because it wraps a real
+    # presley_ai run, so a `--group-by component` sweep that treats every
+    # component as an arm will silently pool it as if it were one.
     assert set(COMPONENT_RUNNERS) == {
-        "baselines", "roi", "elvis", "presley_ai", "probe_oracle_bits"}
+        "baselines", "roi", "elvis", "presley_ai",
+        "probe_oracle_bits", "probe_block_damage"}
