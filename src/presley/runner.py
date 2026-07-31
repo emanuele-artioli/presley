@@ -136,6 +136,9 @@ COMPONENT_RUNNERS: Dict[str, tuple] = {
     # through the runner rather than as a script purely so its numbers carry a
     # results/<hash> and can be cited -- provenance is the whole reason it exists.
     'probe_oracle_bits': ('presley.components.probe_oracle_bits', 'run_probe_oracle_bits'),
+    # Claim (b), the other half of the same objective (docs/CLAIM_B_BLOCK_DAMAGE.md).
+    # It wraps a real presley_ai run rather than reimplementing one.
+    'probe_block_damage': ('presley.components.probe_block_damage', 'run_probe_block_damage'),
 }
 
 def dispatch_component(component_name: str, experiment: Dict[str, Any], dataset_dir: str,
