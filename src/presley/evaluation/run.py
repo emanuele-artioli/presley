@@ -79,6 +79,14 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     fg_psnr, fg_ssim, fg_mse = [], [], []
     bg_psnr, bg_ssim, bg_mse = [], [], []
     ov_psnr, ov_ssim, ov_mse = [], [], []
+
+    # Clipped-pixel bookkeeping. A restorer that diverges numerically does not
+    # write NaNs into a video — the garbage is clipped to the 8-bit limits and
+    # the result looks like a well-formed run with a bad score (NAFNet on
+    # bike-packing, research-log/bugs.md). Counting how many pixels sit exactly
+    # at 0/255 in the output and in the input it was given costs one comparison
+    # per frame and makes that failure mode self-announcing.
+    sat_out, sat_trans, sat_pixels = 0, 0, 0
     
     transmitted_video = data.get('transmitted_video')
     has_transmitted = transmitted_video and os.path.exists(transmitted_video)
@@ -124,6 +132,12 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         bg_mse.append(_masked_mse(r, d, ~m))
         ov_psnr.append(_masked_psnr(r, d))
         ov_mse.append(_masked_mse(r, d))
+
+        sat_pixels += int(d.size)
+        sat_out += int(np.count_nonzero((d == 0) | (d == 255)))
+        if has_transmitted:
+            _td = trans_decs[i]
+            sat_trans += int(np.count_nonzero((_td == 0) | (_td == 255)))
 
         if fast:
             if has_transmitted:
@@ -198,6 +212,17 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
             "background": _block(t_bg_psnr, t_bg_ssim, t_bg_mse),
             "overall": _block(t_ov_psnr, t_ov_ssim, t_ov_mse),
         }
+
+    if sat_pixels:
+        # Fractions, not counts: the invariant compares them against a threshold
+        # and against each other, and neither is meaningful per-pixel-count when
+        # clips differ in length and resolution.
+        metrics["saturation"] = {
+            "output_clipped_frac": sat_out / sat_pixels,
+            "pixels": sat_pixels,
+        }
+        if has_transmitted:
+            metrics["saturation"]["transmitted_clipped_frac"] = sat_trans / sat_pixels
 
     if fast:
         metrics["fast_only"] = True

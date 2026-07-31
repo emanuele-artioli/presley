@@ -33,6 +33,11 @@ FIXED_QUALITY_MODES = {"cqp", "crf"}
 
 REGIONS = ("foreground", "background", "overall")
 
+# How much more of the output a restorer may clip to 0/255 than its own input
+# did, before the run stops being evidence about the method. See
+# `_check_output_not_saturated` for where 0.5 pp comes from.
+SATURATION_EXCESS_LIMIT = 0.005
+
 
 def _is_bad_number(value: Any) -> bool:
     """True when the value is absent or not a real measurement.
@@ -55,6 +60,7 @@ def check_result(result: Dict[str, Any]) -> List[str]:
     failures += _check_bitrate_accounting(result)
     failures += _check_fixed_qp_mandate(result, component, config)
     failures += _check_restoration_did_not_hurt(result, config)
+    failures += _check_output_not_saturated(result, config)
     return failures
 
 
@@ -163,6 +169,56 @@ def _check_restoration_did_not_hurt(
             f"restoration left the background perceptually worse than the degraded "
             f"input it received (BG LPIPS {restored:.4f} vs transmitted {degraded:.4f}; "
             f"lower is better)"
+        ]
+    return []
+
+
+def _check_output_not_saturated(
+    result: Dict[str, Any], config: Dict[str, Any]
+) -> List[str]:
+    """A restorer must not clip a meaningful share of pixels it was handed clean.
+
+    A model that diverges numerically writes no NaN and no missing field: the
+    garbage lands at the 8-bit limits and the run reads as well-formed with a
+    merely disappointing score. NAFNet did exactly this on bike-packing —
+    4.31%/4.35% of pixels at 0/255 against 0.03%/0.11% in its own transmitted
+    input, 6.79 dB of BG-PSNR destroyed, `invariant_failures` empty
+    (research-log/bugs.md, top entry).
+
+    Judged as an *excess* over the transmitted input rather than an absolute
+    level, because legitimately dark or blown-out content saturates on both
+    sides and is not a defect. The threshold is 0.5 percentage points: the three
+    damaged bike-packing runs sit at 8.7 / 6.5 / 1.1 pp of excess (the mildest
+    still costing 0.86 dB) while the healthy control is at 0.05 pp, so the gap
+    between "diverged" and "fine" is two orders of magnitude wide and the exact
+    cut is not load-bearing.
+
+    **Applies to new runs only, by construction.** `metrics.saturation` is
+    written by `evaluation.run`, so results evaluated before that existed carry
+    no saturation block and this check stays silent on them — they keep the
+    citability status they were assessed under. That is a deliberate decision,
+    not an oversight: re-judging already-cited runs is a separate call. Re-run
+    an old experiment's evaluation if you want it covered.
+    """
+    if not config.get("restorer"):
+        return []
+
+    saturation = result.get("metrics", {}).get("saturation")
+    if not saturation:
+        return []
+
+    output = saturation.get("output_clipped_frac")
+    transmitted = saturation.get("transmitted_clipped_frac")
+    if _is_bad_number(output) or _is_bad_number(transmitted):
+        return []
+
+    excess = output - transmitted
+    if excess > SATURATION_EXCESS_LIMIT:
+        return [
+            f"restoration clipped {output:.2%} of output pixels to 0/255 against "
+            f"{transmitted:.2%} in the input it received (+{excess:.2%}, limit "
+            f"{SATURATION_EXCESS_LIMIT:.2%}); this is the signature of a numerical "
+            f"divergence, not of a restorer that merely underperformed"
         ]
     return []
 

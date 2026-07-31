@@ -175,6 +175,76 @@ def test_restoration_check_is_skipped_without_a_restorer():
     assert check_result(result) == []
 
 
+# --- saturation ----------------------------------------------------------------
+
+
+def saturated(output_frac, transmitted_frac, **config):
+    result = good_result(config={"component": "presley_ai", "restorer": "nafnet", **config})
+    result["metrics"]["saturation"] = {
+        "output_clipped_frac": output_frac,
+        "transmitted_clipped_frac": transmitted_frac,
+        "pixels": 30 * 640 * 360 * 3,
+    }
+    return result
+
+
+def test_the_nafnet_divergence_is_flagged():
+    """The exact run the check exists for: `6ccb1ab63e10b7d6`, bike-packing k=7.
+
+    8.66% of output pixels at 0/255 against 0.14% in its transmitted input, and
+    6.79 dB of BG-PSNR destroyed, with `invariant_failures` empty at the time.
+    """
+    failures = check_result(saturated(0.0866, 0.0014))
+    assert any("clipped" in f for f in failures)
+
+
+def test_the_mildest_damaged_run_is_still_flagged():
+    """k=31, `0e16465e6d71cc84`: 1.12% vs 0.14%, and still costs 0.86 dB.
+
+    The threshold has to sit below this one — a divergence that only shows up
+    on 2 frames of 69 is exactly the case a human reading a table would miss.
+    """
+    assert check_result(saturated(0.0112, 0.0014))
+
+
+def test_content_that_was_already_saturated_passes():
+    """Dark or blown-out source content saturates on both sides and is not a defect.
+
+    Judged on the excess, so a 30%-black clip is not penalised for being black —
+    only for the restorer adding clipping the input did not have.
+    """
+    assert check_result(saturated(0.302, 0.300)) == []
+
+
+def test_the_healthy_control_passes():
+    """`bear` at the same k=7 NAFNet setting: 0.09% out, 0.04% in, +0.13 dB."""
+    assert check_result(saturated(0.0009, 0.0004)) == []
+
+
+def test_a_run_evaluated_before_the_check_existed_is_left_alone():
+    """The decision was to apply this to new runs only.
+
+    Old results carry no `metrics.saturation`, so they keep the citability
+    status they were assessed under rather than silently going uncitable.
+    """
+    result = good_result(config={"component": "presley_ai", "restorer": "nafnet"})
+    assert check_result(result) == []
+
+
+def test_saturation_without_a_transmitted_side_is_not_judged():
+    """No input to compare against means no way to tell divergence from content."""
+    result = good_result(config={"component": "presley_ai", "restorer": "nafnet"})
+    result["metrics"]["saturation"] = {"output_clipped_frac": 0.5, "pixels": 100}
+    assert check_result(result) == []
+
+
+def test_saturation_check_is_skipped_without_a_restorer():
+    """A blackout degradation writes whole black blocks — 0/255 by design."""
+    result = saturated(0.40, 0.001, component="elvis")
+    result["config"].pop("restorer")
+    assert check_result(result) == []
+
+
 # --- Goal 1 --------------------------------------------------------------------
 
 
