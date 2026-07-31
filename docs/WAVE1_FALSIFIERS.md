@@ -1452,6 +1452,24 @@ restorer failure on that content, not a wiring bug. It does not carry the
 headline: the matched rung is the strongest rung, where the failure has
 decayed to −0.016/−0.008.
 
+> **SUPERSEDED 2026-07-31 — "a restorer failure on that content, not a wiring
+> bug" was WRONG.** It is a numerical defect. Diagnosed by magnitude first: on
+> the other 7 videos NAFNet moves BG-PSNR by at most ±0.21 dB, while on
+> bike-packing it destroys 0.86–6.79 dB — a restorer being unhelpful on hard
+> content costs tenths of a dB, not 6.8. Confirmed from the stored outputs: the
+> restored video has **4.31% of pixels at exactly 0 and 4.35% at exactly 255**
+> (blur k=7) against 0.03%/0.11% in its own transmitted input, with the first
+> ~21 frames clean and then 22 of 69 blowing up. NAFNet's output diverges and
+> the garbage is silently clipped to the 8-bit limits. Saturation tracks the
+> damage across the whole ladder, which also **explains the inverse-with-
+> strength puzzle**: stronger blur removes the high-frequency content that
+> drives the divergence. A hypothesis that bike-packing's background is simply
+> unusually high-frequency was tested and **refuted** — bear's background SC is
+> higher (159.3 vs 120.2) and NAFNet helps there. Full entry, scope and the
+> missing-invariant note: `research-log/bugs.md`. The headline conclusion above
+> still stands (the matched rung is the strongest rung), but any NAFNet
+> aggregate pooling the weak rungs is contaminated by a bug, not by content.
+
 #### Limitations
 
 The prior is NAFNet, deliberately (a cheap CNN gauge, the same prior on both
