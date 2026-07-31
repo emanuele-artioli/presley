@@ -86,3 +86,57 @@ mismatch, but an aligned-yet-wrong grid would not raise), a diverging restorer
 (now caught independently by the saturation invariant), and frame-count
 mismatch between the restored output and the baseline encode, before any number
 is written down.
+
+## Result, 2026-08-01
+
+All 8 ran; all 8 carry empty `invariant_failures`.
+
+| video | restorer | **spread p90–p10** | median | p10 | p90 | untouched median | hash |
+|---|---|---|---|---|---|---|---|
+| bear | realesrgan | **4.24** | 6.80 | 4.96 | 9.20 | 0.41 | `cb9df986c50804f7` |
+| camel | realesrgan | **4.02** | 8.04 | 5.96 | 9.98 | 0.28 | `b83799cff130f30a` |
+| bike-packing | realesrgan | **7.19** | 5.85 | 2.70 | 9.90 | 0.35 | `c17def7923c57344` |
+| dogs-jump | realesrgan | **4.26** | 4.14 | 2.34 | 6.61 | 1.31 | `57745cf0c8c23ae1` |
+| bear | propainter | **7.52** | 10.89 | 7.56 | 15.08 | 0.30 | `78c9aeb8538febd9` |
+| camel | propainter | **6.87** | 12.35 | 9.93 | 16.80 | 0.22 | `55e54f2078f8f3ca` |
+| bike-packing | propainter | **13.47** | 12.17 | 5.50 | 18.97 | 0.28 | `06ad683ebec8861a` |
+| dogs-jump | propainter | **5.88** | 5.05 | 2.48 | 8.36 | 1.19 | `2594a6a1d86c3e8a` |
+
+All values in dB. **Mean within-run spread: 4.93 dB (realesrgan), 8.43 dB
+(propainter)**, n=4 each. Degraded-SB fraction 0.20–0.30 throughout, and the
+untouched-side spread is below the degraded-side spread in every run (largest
+ratio 2.2×), so the dispersion is attributable to selection rather than to
+neighbour bleed. **Claim (b) is reproduced**: against the 0.03–0.05 dB that
+alpha/beta move FG-PSNR, the denominator's within-run dispersion is two orders
+of magnitude larger.
+
+### The numbers to quote are these, not the mined 6.2/8.2 dB
+
+The mined figures **pool across runs**, so they carry between-run variance that
+a within-run statement does not. Re-mining today over 143 pairs gives 11.21 dB
+(realesrgan) and 15.81 dB (propainter) — larger still, and further from what
+the claim asserts. The honest within-run numbers are 4.9 and 8.4 dB. The claim
+survives; the figures attached to it change.
+
+### Two alarms fired, and both were my bounds, not the measurement
+
+Reported rather than quietly re-fitted, per the bounds rule.
+
+1. **Median damage > 10 dB on three ProPainter runs** (10.89, 12.35, 12.17)
+   against an alarm line of 10. **Closed:** `tools/mine_block_damage.py`, an
+   independent measurement of the same quantity over 143 pre-existing pairs,
+   puts the median at **9.34 dB (realesrgan) and 17.33 dB (propainter)**. Every
+   probe median sits *below* those. The 0–6 dB plausible band was set from the
+   spread's magnitude without consulting the median's own prior, which existed
+   and was in the mining tool's own summary output. **Revised: plausible 3–18 dB,
+   alarm > 25 dB.**
+2. **Untouched-SB median > 1 dB on both dogs-jump runs** (1.31, 1.19) against a
+   1 dB line. **Closed:** in the pre-existing runs alone (excluding these 8),
+   dogs-jump's clean-side damage is **1.26 dB** — agreement to ~0.05 dB, so this
+   is a property of that clip's inter prediction, not a probe defect. bear (1.30)
+   and pigs (1.83) also exceed 1 dB there. **Revised: alarm when the untouched
+   median exceeds 2 dB *or* the untouched spread reaches the degraded spread** —
+   the ratio, not the absolute level, is what the contamination check needs.
+
+That 0.05 dB agreement on the one directly comparable quantity is also the best
+available cross-validation that the probe's geometry matches the mining tool's.

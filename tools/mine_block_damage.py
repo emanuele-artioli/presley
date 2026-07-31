@@ -46,46 +46,12 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from presley.blockdamage import pool_to_superblocks, psnr_from_mse as _psnr  # noqa: E402
 from presley.sidechannel import load_level_masks  # noqa: E402
 
-SB = 64          # superblock side in pixels; see plan -- AV1 SB == kvazaar CTU == LPIPS patch
-MAX_I = 255.0    # 8-bit peak signal, matching the evaluation code's PSNR convention
-
-
-def _pool_weights(n_blocks: int, block_size: int, extent: int) -> np.ndarray:
-    """Area-overlap matrix mapping a block axis onto the 64-pixel SB axis.
-
-    Returns (n_sb, n_blocks) where entry [s, b] is the number of pixels block b
-    contributes to superblock s. Exact for any block_size, including ones that
-    do not divide 64, and for a trailing partial superblock.
-    """
-    n_sb = (extent + SB - 1) // SB
-    w = np.zeros((n_sb, n_blocks), dtype=np.float64)
-    for b in range(n_blocks):
-        b0, b1 = b * block_size, min((b + 1) * block_size, extent)
-        if b1 <= b0:
-            continue
-        for s in range(max(0, b0 // SB), min(n_sb, (b1 - 1) // SB + 1)):
-            s0, s1 = s * SB, min((s + 1) * SB, extent)
-            overlap = min(b1, s1) - max(b0, s0)
-            if overlap > 0:
-                w[s, b] = overlap
-    return w
-
-
-def pool_to_superblocks(arr: np.ndarray, block_size: int, height: int, width: int) -> np.ndarray:
-    """Area-weighted mean of a (F, BY, BX) block array onto a (F, SY, SX) SB grid."""
-    _, by, bx = arr.shape
-    wy = _pool_weights(by, block_size, height)
-    wx = _pool_weights(bx, block_size, width)
-    # (SY,BY) @ (F,BY,BX) @ (BX,SX), normalized by the pooled pixel area.
-    num = np.einsum("yb,fbc,xc->fyx", wy, arr.astype(np.float64), wx)
-    den = np.einsum("yb,xc->yx", wy, wx)[None, :, :]
-    return num / np.maximum(den, 1e-12)
-
-
-def _psnr(mse: np.ndarray) -> np.ndarray:
-    return 10.0 * np.log10((MAX_I ** 2) / np.maximum(mse, 1e-12))
+# SB geometry, the PSNR convention and the pooling all live in
+# presley.blockdamage, shared with the probe_block_damage component: the two
+# must not disagree about where superblock boundaries fall.
 
 
 def _load(path: Path) -> np.ndarray | None:
