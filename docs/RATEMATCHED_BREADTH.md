@@ -142,3 +142,62 @@ mode the previous session hit was an *underspecified* rule, not a broken one.
 In every branch the result lands with its `results/<hash>` set, and
 `NEXT(tab:breadth-ext-presley)` plus `open-questions.md` item 0 are cleared only
 by the edit that lands the data.
+
+---
+
+# RESULT (2026-07-31, n=9, all 36 runs citable)
+
+`tools/analyze_ratematched.py`. All 36 runs have **empty `invariant_failures`**,
+no missing LPIPS and no NaN.
+
+| clip | BD-rate BG-LPIPS | BD-rate FG-LPIPS | overlap | QP47/QP32 |
+|---|---|---|---|---|
+| mosev2/8i1uo3x9 | −20.50% | +28.03% | 0.89 | 0.05 |
+| mosev2/fii86rku | −43.36% | +1.55% | 0.89 | 0.09 |
+| mosev2/jxmcdk8k | −59.46% | −24.34% | 0.69 | 0.25 |
+| mosev2/ptq7rtia | −52.81% | +12.67% | 0.86 | 0.15 |
+| mosev2/zofozj6l | −39.24% | +16.99% | 0.83 | 0.11 |
+| youtube_vos/0e4068b53f | −61.62% | −22.60% | 0.70 | 0.26 |
+| youtube_vos/282651c6f7 | −67.65% | −3.26% | 0.88 | 0.13 |
+| youtube_vos/30fe0ed0ce | −43.02% | +9.42% | 0.79 | 0.09 |
+| youtube_vos/b1a8a404ad | −74.80% | −10.81% | 0.72 | 0.16 |
+
+**Every bound held; nothing breached.**
+
+- **BD-rate BG-LPIPS mean −51.38%, 9/9 clips favour PRESLEY** (band −70…−20).
+- **BD-rate FG-LPIPS mean +0.85%** (band −15…+15) — a wash, exactly as predicted:
+  both arms run `fg_protect` + `composite_output`, so foreground is passthrough
+  in both.
+- Rate `overlap_fraction` mean **0.81** (band ≥ 0.5); every clip's BG-LPIPS
+  ranges overlap, so these are interpolations, not extrapolations.
+- Monotonicity clean on all 18 curves.
+- QP47 costs **0.14×** QP32's bitrate (band ≤ 0.5) — the new rungs really are in
+  the starved regime they were added for.
+- **The two datasets agree in sign** (MOSEv2 −43.07% on 5/5, YouTube-VOS −61.77%
+  on 4/4), so pooling is permitted under the pre-registration.
+
+## Bound 2's failure mode was checked directly, and did not occur
+
+The pre-registered worry was that ELVIS in-paints its background, so its BG-LPIPS
+might be nearly flat in rate — which would make a BD number authoritative-looking
+extrapolation. Measured across the four rungs, the mean BG-LPIPS span is **0.2395
+for ELVIS** and **0.2548 for PRESLEY**, against a JND of 0.05. **Zero of 18 curves
+have a sub-JND span.** Both arms are genuinely rate-responsive and the fits are
+well-conditioned.
+
+## Decision rule, applied
+
+BD-rate(BG-LPIPS) = **−51.38% ≤ −20%** with overlapping quality ranges →
+**the chain is CONFIRMED at matched rate on non-DAVIS data.** The paper may state
+that `presley_ai > elvis` holds outside DAVIS, quoting the BD-rate and its
+overlap.
+
+## How this resolves the same-QP result, which is not contradicted
+
+`tab:breadth-ext-presley` reported PRESLEY beating ELVIS on background quality
+while spending **+23.1%/+14.9% more bits** at the same QP. Both statements are
+true and consistent: at a fixed QP PRESLEY spends more bits and returns
+disproportionately more background quality, so **per bit** it is far ahead. The
+matched-rate view is the one the chain is defined on, and it says PRESLEY reaches
+ELVIS's background quality for **about half the bitrate**, with no foreground
+difference. The bitrate premium is a fixed-QP artefact, not a cost of the method.
