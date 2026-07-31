@@ -5,7 +5,46 @@ this document was written after looking at a number, because there is nothing to
 look at yet — the re-run has not been launched. Per the bound-before-believing
 rule, this file is committed *before* the campaign.
 
-**Status: DESIGNED, NOT LAUNCHED.** The next session executes it.
+**Status: IMPLEMENTED 2026-07-31** as `component: probe_oracle_bits`
+(`src/presley/components/probe_oracle_bits.py`). The bounds and decision rule
+below are **unchanged and still binding** — they were pre-registered before any
+number existed and are not revised now that implementation details have shifted.
+
+## Corrections to this design, found during implementation
+
+Two things above were wrong. Both are recorded rather than quietly edited,
+because the corrections change what the run costs and whether it could have been
+cited at all.
+
+**1. The probe would have been uncitable by construction.**
+`invariants._check_metrics_present` (`src/presley/invariants.py:61-77`)
+unconditionally requires `metrics.{foreground,background,overall}.psnr_mean` and
+has **no exemption** for components that produce no reconstructed video. A pure
+bit-accounting probe would therefore carry a permanent non-empty
+`invariant_failures` and never be citable — which defeats the entire purpose,
+since provenance is the only reason this re-run exists.
+
+*Resolution:* the probe publishes its **reference encode** as `output_video`, and
+the normal `evaluate_all` pass scores it against the original like any other run.
+The metrics are then real measurements of real frames (the pristine quality of
+that clip at that QP), not fabricated numbers. *Rejected:* adding a probe
+exemption to `invariants.py` — the invariant file is the scientific failsafe, and
+carving a hole other components could later slip through costs more than it saves.
+
+**2. The superblock count is 50, not 60.** `get_evca_scores` tiles with
+`width // block_size` (**floor**, not ceil), so 640x360 at 64x64 gives 10x5 = 50
+full superblocks and the bottom 40-row strip is uncovered. This is adopted as the
+definition rather than worked around: `filter_frame_mean_fill` derives its
+geometry from the same array shape, so the score vector and `marginal_bits` are
+aligned index-for-index **structurally**, and an off-by-one — the most likely
+silent defect here — cannot arise. Revised cost: **8 x (50 + 1) = 408 encodes**,
+measured at **~136 s per video**, so **~20 min total**, not 1–2 h.
+
+**3. One clarification, not a correction.** The blended score omits the x10
+background boost that `get_removability_scores` applies via the UFO mask. That
+boost is a *selection policy*, not a cost model; including it would conflate "does
+the complexity blend predict bits" with "does foreground protection change what we
+pick". Only the former is in question here.
 
 ## Why this experiment exists
 

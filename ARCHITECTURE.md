@@ -9,7 +9,7 @@ module under `src/presley/` appears here, so this cannot quietly go stale.
 experiments.yaml
    │  each entry hashed (runner.compute_experiment_hash) -> results/<hash>/
    ▼
-runner.dispatch_component  ──►  components/{baselines,roi,elvis,presley_ai}
+runner.dispatch_component  ──►  components/{baselines,roi,elvis,presley_ai,probe_oracle_bits}
    │                                    │
    │                          preprocessing: reference frames, EVCA scores, UFO masks
    │                                    │
@@ -44,6 +44,7 @@ evaluation/  ──►  metrics per region  ──►  invariants.check_result
 | `components/roi.py` | Codec-native ROI (kvazaar, x265 AQ, SVT-AV1) and the presley_* pixel degradations. |
 | `components/elvis.py` | Block removal plus client-side in-painting (the NOSSDAV method). |
 | `components/presley_ai.py` | Mask-driven degradation with generative restoration. |
+| `components/probe_oracle_bits.py` | F1 measurement probe, not a transport: leave-one-superblock-out marginal bit cost vs the EVCA proxy, under inter coding. Runs through the runner only so its numbers carry a `results/<hash>`. |
 
 ### Pipeline stages
 | Module | Responsibility |

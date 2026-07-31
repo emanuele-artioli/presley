@@ -12407,3 +12407,103 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+
+# F1 oracle-bits probe (W2, 2026-07-31): EVCA vs a true leave-one-superblock-out
+# bit oracle under INTER coding, on the n=8 probe set. The old 93-99% figure was
+# all-intra and near-tautological. Bounds pre-registered in docs/F1_ORACLE_BITS.md.
+- component: probe_oracle_bits
+  video: motorbike
+  width: 640
+  height: 360
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    preset: '8'
+    qp: 43
+- component: probe_oracle_bits
+  video: drift-straight
+  width: 640
+  height: 360
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    preset: '8'
+    qp: 43
+- component: probe_oracle_bits
+  video: drift-turn
+  width: 640
+  height: 360
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    preset: '8'
+    qp: 43
+- component: probe_oracle_bits
+  video: color-run
+  width: 640
+  height: 360
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    preset: '8'
+    qp: 43
+- component: probe_oracle_bits
+  video: dancing
+  width: 640
+  height: 360
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    preset: '8'
+    qp: 43
+- component: probe_oracle_bits
+  video: dogs-jump
+  width: 640
+  height: 360
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    preset: '8'
+    qp: 43
+- component: probe_oracle_bits
+  video: bike-packing
+  width: 640
+  height: 360
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    preset: '8'
+    qp: 43
+- component: probe_oracle_bits
+  video: bear
+  width: 640
+  height: 360
+  block_size: 64
+  alpha: 0.5
+  beta: 0.5
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    preset: '8'
+    qp: 43

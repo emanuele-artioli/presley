@@ -183,6 +183,10 @@ workflow should also auto-trigger from a description match.
   **not** carry `context_usage_percent` (see `~/.cursor/stop-probe.log`);
   medium nudges use the stop-count proxy. `stop` still appends payload keys
   to the probe log in case that changes.
+- PreCompact also writes a resume stub under `../var/precompact/` (template
+  only — the hook has no transcript). SessionStart re-surfaces a recent stub
+  or project `HANDOFF.md`. Keep always-on rules session-stable; put volatile
+  reminders in hook `additional_context` only (see README).
 - Architecture diagrams: `../scripts/render_architecture.py` (`--check`
   freshness gate, standalone from `install.py`).
 - Enforceable rules register: `../enforceable-rules.md`. Soft plan-wave

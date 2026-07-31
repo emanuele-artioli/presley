@@ -132,6 +132,10 @@ COMPONENT_RUNNERS: Dict[str, tuple] = {
     'roi': ('presley.components.roi', 'run_roi'),
     'elvis': ('presley.components.elvis', 'run_elvis'),
     'presley_ai': ('presley.components.presley_ai', 'run_presley_ai'),
+    # Not a transport: a measurement probe (F1, docs/F1_ORACLE_BITS.md). It runs
+    # through the runner rather than as a script purely so its numbers carry a
+    # results/<hash> and can be cited -- provenance is the whole reason it exists.
+    'probe_oracle_bits': ('presley.components.probe_oracle_bits', 'run_probe_oracle_bits'),
 }
 
 def dispatch_component(component_name: str, experiment: Dict[str, Any], dataset_dir: str,

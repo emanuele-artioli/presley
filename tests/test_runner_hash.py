@@ -197,4 +197,8 @@ def test_unknown_component_is_rejected_by_name():
 
 
 def test_dispatch_table_covers_the_shipped_components():
-    assert set(COMPONENT_RUNNERS) == {"baselines", "roi", "elvis", "presley_ai"}
+    # probe_oracle_bits is a measurement probe, not a transport: it produces no
+    # restored video and never belongs in a baseline/roi/elvis/presley_ai chain
+    # comparison. It is in the table only so its numbers carry a results/<hash>.
+    assert set(COMPONENT_RUNNERS) == {
+        "baselines", "roi", "elvis", "presley_ai", "probe_oracle_bits"}
