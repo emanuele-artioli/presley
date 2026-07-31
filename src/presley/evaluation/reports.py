@@ -224,9 +224,10 @@ def fid_validity_report(experiment_hash: str, results_dir: str, cache_dir: str,
     and the existing per-experiment `overall.fid` carries the same warning.
     """
     from torchmetrics.image.fid import FrechetInceptionDistance
-    result_path = os.path.join(results_dir, experiment_hash, "result.json")
-    with open(result_path) as f:
-        data = json.load(f)
+    from presley import db as _db
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        raise FileNotFoundError(f"no result on record for {experiment_hash}")
     cfg = data['config']
     video_name, width, height = cfg['video'], cfg['width'], cfg['height']
     _, refs, _ = _get_refs_cached(video_name, width, height, dataset_dir, cache_dir)

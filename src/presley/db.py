@@ -50,6 +50,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import time
 from typing import Any, Dict, Iterable, Iterator, List, Optional
 
 SCHEMA_VERSION = 1
@@ -140,14 +141,46 @@ def db_path(results_dir: str) -> str:
     return os.path.join(results_dir, DB_FILENAME)
 
 
+def _ensure_wal(conn: sqlite3.Connection, attempts: int = 60) -> None:
+    """Put the database in WAL mode, tolerating a concurrent connection doing
+    the same.
+
+    `PRAGMA journal_mode=WAL` needs a brief exclusive lock, and SQLite does
+    **not** route that acquisition through the busy handler -- so it raises
+    "database is locked" immediately rather than waiting out `busy_timeout`,
+    however generous that is. Two tree sweeps opening a connection per run hit
+    this constantly on a fresh DB.
+
+    Two things make the retry safe. The mode is a persistent property of the
+    file, so the check is a no-op on every connection after the first. And a
+    loser of the race only has to wait for the winner: once anyone succeeds,
+    the read below sees `wal` and returns.
+    """
+    for attempt in range(attempts):
+        if (conn.execute("PRAGMA journal_mode").fetchone()[0] or "").lower() == "wal":
+            return
+        try:
+            conn.execute("PRAGMA journal_mode=WAL")
+            return
+        except sqlite3.OperationalError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(0.05)
+
+
 def connect(results_dir: str = "results", *, read_only: bool = False) -> sqlite3.Connection:
     """Open (creating if needed) the results DB with concurrency-safe pragmas."""
     path = db_path(results_dir)
     os.makedirs(results_dir, exist_ok=True)
     conn = sqlite3.connect(path, timeout=30.0)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")     # two runners is a real workflow here
+    # busy_timeout FIRST. `PRAGMA journal_mode=WAL` needs a brief exclusive lock,
+    # and a pragma issued before the busy handler is installed fails outright
+    # with "database is locked" instead of waiting — which is exactly how two
+    # concurrent tree sweeps broke once the readers started opening a connection
+    # per run.
     conn.execute("PRAGMA busy_timeout=30000")
+    _ensure_wal(conn)
     conn.execute("PRAGMA foreign_keys=ON")
     if not read_only:
         init_schema(conn)
@@ -155,6 +188,14 @@ def connect(results_dir: str = "results", *, read_only: bool = False) -> sqlite3
 
 
 def init_schema(conn: sqlite3.Connection) -> None:
+    # Fast path: the DDL is idempotent but still takes a write lock, and every
+    # connect() would otherwise pay it and contend with a concurrent writer.
+    try:
+        row = conn.execute("SELECT version FROM schema_version").fetchone()
+        if row is not None and row["version"] == SCHEMA_VERSION:
+            return
+    except sqlite3.OperationalError:
+        pass                                    # no schema yet — fall through and create it
     conn.executescript(SCHEMA)
     conn.executescript(V_CITABLE + V_FG_METRICS + V_RATE)
     row = conn.execute("SELECT version FROM schema_version").fetchone()
@@ -287,6 +328,64 @@ def get_run(conn: sqlite3.Connection, run_hash: str) -> Optional[Dict[str, Any]]
 def iter_runs(conn: sqlite3.Connection, where: str = "", params: Iterable = ()) -> List[Dict[str, Any]]:
     sql = "SELECT doc FROM runs" + (f" WHERE {where}" if where else "") + " ORDER BY hash"
     return [json.loads(r["doc"]) for r in conn.execute(sql, tuple(params))]
+
+
+def db_mtime(results_dir: str) -> float:
+    """Newest mtime across the DB and its WAL sidecar.
+
+    Under WAL a commit lands in `-wal` first, so the main file's mtime can lag
+    behind the data. Taking the max keeps this conservative in the safe
+    direction: a lagging estimate causes a redundant re-import, never a missed
+    one. Returns 0.0 when no DB exists yet.
+    """
+    newest = 0.0
+    for suffix in ("", "-wal"):
+        try:
+            newest = max(newest, os.path.getmtime(db_path(results_dir) + suffix))
+        except OSError:
+            pass
+    return newest
+
+
+def load_run(results_dir: str, run_hash: str) -> Optional[Dict[str, Any]]:
+    """Read one run, DB first, falling back to (and healing from) the mirror.
+
+    Every read-modify-write site goes through this so the document being
+    modified is the authoritative one. The mirror fallback matters for a run
+    written before the DB existed, or by a tool that has not been migrated: a
+    reader must never silently see an *older* document than the file on disk.
+    """
+    conn = connect(results_dir)
+    try:
+        doc = get_run(conn, run_hash)
+        path = os.path.join(results_dir, run_hash, "result.json")
+        if doc is not None and not (os.path.isfile(path)
+                                    and os.path.getmtime(path) > db_mtime(results_dir)):
+            return doc
+        if not os.path.isfile(path):
+            return doc
+        with open(path) as fh:                       # mirror is ahead — adopt and heal
+            doc = json.load(fh)
+        upsert_run(conn, doc, doc.get("experiment_hash") or run_hash)
+        return doc
+    finally:
+        conn.close()
+
+
+def save_run(results_dir: str, run_hash: str, result: Dict[str, Any]) -> None:
+    """Write one run to both stores: DB (truth) and result.json (mirror).
+
+    Mirror first, DB second, matching the ordering argument at the evaluation
+    write site: a crash between the two leaves the mirror ahead, which
+    `load_run`/`import_json_tree` reconcile, whereas the reverse would leave
+    the DB claiming metrics no file records.
+    """
+    write_mirror(result, os.path.join(results_dir, run_hash, "result.json"))
+    conn = connect(results_dir)
+    try:
+        upsert_run(conn, result, result.get("experiment_hash") or run_hash)
+    finally:
+        conn.close()
 
 
 def import_json_tree(conn: sqlite3.Connection, results_dir: str = "results") -> Dict[str, int]:

@@ -27,12 +27,11 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     exp_results_dir = os.path.join(results_dir, experiment_hash)
     result_path = os.path.join(exp_results_dir, "result.json")
 
-    if not os.path.exists(result_path):
-        print(f"Result JSON not found for {experiment_hash}")
+    from presley import db as _db
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        print(f"No result on record for {experiment_hash}")
         return
-
-    with open(result_path, 'r') as f:
-        data = json.load(f)
 
     if "metrics" in data:
         if fast or not data["metrics"].get("fast_only"):
@@ -44,10 +43,11 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
             failures = check_result(data)
             if data.get("invariant_failures") != failures:
                 data["invariant_failures"] = failures
-                tmp_path = result_path + ".tmp"
-                with open(tmp_path, 'w') as f:
-                    json.dump(data, f, indent=2)
-                os.replace(tmp_path, result_path)
+                # A FOURTH instance of the deterministic-`<path>.tmp` race
+                # (research-log/bugs.md) lived here, and it also left the DB
+                # holding the stale verdict. save_run does both stores with a
+                # unique temp name.
+                _db.save_run(results_dir, experiment_hash, data)
                 print(f"Refreshed invariant_failures for {experiment_hash}: {failures}")
             return
         print(f"Upgrading fast-only metrics to full for {experiment_hash}")
@@ -229,19 +229,16 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     # FileNotFoundError. `write_mirror` uses tempfile.mkstemp in the target
     # directory: unique per process, and os.replace stays atomic on one
     # filesystem.
-    from presley import db as _db
-    _db.write_mirror(data, result_path)
-
     # The DB is the source of truth for run metadata and result.json is its
-    # derived mirror. Written after the mirror, so a crash between the two leaves
-    # the mirror ahead — a state import_json_tree can always reconcile, whereas
-    # the reverse would leave the DB claiming metrics no file records.
+    # derived mirror. save_run writes the mirror first, so a crash between the
+    # two leaves the mirror ahead — a state load_run/import_json_tree can always
+    # reconcile, whereas the reverse would leave the DB claiming metrics no file
+    # records.
     try:
-        conn = _db.connect(os.path.dirname(os.path.dirname(result_path)))
-        _db.upsert_run(conn, data, experiment_hash)
-        conn.close()
+        _db.save_run(results_dir, experiment_hash, data)
     except Exception as exc:  # bookkeeping must never lose a completed evaluation
-        print(f"warning: could not update results DB for {experiment_hash}: {exc}")
+        print(f"warning: could not persist result for {experiment_hash}: {exc}")
+        _db.write_mirror(data, result_path)
 
     print(f"Evaluated metrics for {experiment_hash}")
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:

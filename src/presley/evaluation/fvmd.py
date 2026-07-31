@@ -83,10 +83,10 @@ def _fvmd_rows_cached(experiment_hash, results_dir, cache_dir, dataset_dir):
 
     Returns `(None, None, None)` if the experiment can't contribute.
     """
-    result_path = os.path.join(results_dir, experiment_hash, "result.json")
-    if not os.path.exists(result_path):
-        print(f"  FVMD skip {experiment_hash}: no result.json"); return None, None, None
-    data = json.load(open(result_path))
+    from presley import db as _db
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        print(f"  FVMD skip {experiment_hash}: no result on record"); return None, None, None
     cfg = data['config']
     video_name, width, height = cfg['video'], cfg['width'], cfg['height']
     output_video = data.get('output_video')

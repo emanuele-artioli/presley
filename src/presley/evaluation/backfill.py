@@ -10,6 +10,7 @@ import json
 import numpy as np
 import torch
 from typing import Dict, Any, List
+from presley import db as _db
 from presley.preprocessing import get_reference_frames, get_ufo_masks
 from presley.encode_utils import load_frames_from_video
 _REF_CACHE: Dict[Any, Any] = {}
@@ -32,12 +33,9 @@ def backfill_lpips(experiment_hash: str, results_dir: str, cache_dir: str, datas
     too. Skips experiments that already carry a foreground LPIPS unless force=True.
     Returns a one-line status string.
     """
-    exp_results_dir = os.path.join(results_dir, experiment_hash)
-    result_path = os.path.join(exp_results_dir, "result.json")
-    if not os.path.exists(result_path):
-        return f"{experiment_hash}: no result.json"
-    with open(result_path, 'r') as f:
-        data = json.load(f)
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        return f"{experiment_hash}: no result on record"
     if "metrics" not in data:
         return f"{experiment_hash}: no metrics yet (run eval first)"
     if not force and "lpips_mean" in data["metrics"].get("foreground", {}):
@@ -73,10 +71,7 @@ def backfill_lpips(experiment_hash: str, results_dir: str, cache_dir: str, datas
             data["metrics"][region]["lpips_std"] = None
         data["metrics"][region]["lpips_n_valid"] = int(np.count_nonzero(~np.isnan(vals)))
 
-    tmp = result_path + ".tmp"
-    with open(tmp, 'w') as f:
-        json.dump(data, f, indent=2)
-    os.replace(tmp, result_path)
+    _db.save_run(results_dir, experiment_hash, data)
 
     def _f(region):
         v = data["metrics"][region]["lpips_mean"]
@@ -100,12 +95,9 @@ def backfill_vmaf(experiment_hash: str, results_dir: str, cache_dir: str, datase
     enhancement/sharpening gains; reporting both makes the
     sharpening-vs-fidelity split explicit.
     """
-    exp_results_dir = os.path.join(results_dir, experiment_hash)
-    result_path = os.path.join(exp_results_dir, "result.json")
-    if not os.path.exists(result_path):
-        return f"{experiment_hash}: no result.json"
-    with open(result_path, 'r') as f:
-        data = json.load(f)
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        return f"{experiment_hash}: no result on record"
     if "metrics" not in data:
         return f"{experiment_hash}: no metrics yet (run eval first)"
     if not force and "vmaf_fg_bbox" in data["metrics"].get("foreground", {}):
@@ -150,10 +142,7 @@ def backfill_vmaf(experiment_hash: str, results_dir: str, cache_dir: str, datase
     m["foreground"]["vmaf_std_fg_bbox"] = fg["std"]
     m["foreground"]["vmaf_neg_fg_bbox"] = fg_neg["mean"]
 
-    tmp = result_path + ".tmp"
-    with open(tmp, 'w') as f:
-        json.dump(data, f, indent=2)
-    os.replace(tmp, result_path)
+    _db.save_run(results_dir, experiment_hash, data)
     return (f"{experiment_hash}: OV-VMAF={ov['mean']:.2f} (neg {ov_neg['mean']:.2f}) "
             f"FG-VMAF={fg['mean']:.2f} (neg {fg_neg['mean']:.2f})")
 def backfill_vmaf_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> None:
@@ -171,10 +160,9 @@ def backfill_dists(experiment_hash: str, results_dir: str, cache_dir: str, datas
     separately by `drop_unionbbox_keys`. The sentinel below changed with it, so the
     corpus recomputes once naturally -- no --force needed.
     """
-    exp_results_dir = os.path.join(results_dir, experiment_hash)
-    result_path = os.path.join(exp_results_dir, "result.json")
-    if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
-    with open(result_path, 'r') as f: data = json.load(f)
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        return f"{experiment_hash}: no result on record"
     if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
     if not force and "dists_fg" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: masked FG-DISTS already present"
 
@@ -217,9 +205,7 @@ def backfill_dists(experiment_hash: str, results_dir: str, cache_dir: str, datas
     bgm = m.setdefault("background", {})
     bgm["dists_bg"], bgm["dists_bg_std"] = _agg(ds["background"])
 
-    tmp = result_path + ".tmp"
-    with open(tmp, 'w') as f: json.dump(data, f, indent=2)
-    os.replace(tmp, result_path)
+    _db.save_run(results_dir, experiment_hash, data)
     def _f(x):
         return "n/a" if x is None else f"{x:.4f}"
     return (f"{experiment_hash}: OV-DISTS={_f(m['overall']['dists_mean'])} "
@@ -243,10 +229,9 @@ def backfill_transmitted_perceptual(experiment_hash: str, results_dir: str, cach
     video (elvis shrink packs blocks into a smaller rectangle; the FG/BG mask
     is not pixel-comparable to that geometry -- same skip as run_evaluation).
     """
-    exp_results_dir = os.path.join(results_dir, experiment_hash)
-    result_path = os.path.join(exp_results_dir, "result.json")
-    if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
-    with open(result_path, 'r') as f: data = json.load(f)
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        return f"{experiment_hash}: no result on record"
     if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
     transmitted_video = data.get('transmitted_video')
     if not transmitted_video or not os.path.exists(transmitted_video):
@@ -294,9 +279,7 @@ def backfill_transmitted_perceptual(experiment_hash: str, results_dir: str, cach
     trans["background"]["dists_bg"], trans["background"]["dists_bg_std"] = _agg(ds["background"])
     trans["overall"]["dists_mean"], trans["overall"]["dists_std"] = _agg(ds["overall"])
 
-    tmp = result_path + ".tmp"
-    with open(tmp, 'w') as f: json.dump(data, f, indent=2)
-    os.replace(tmp, result_path)
+    _db.save_run(results_dir, experiment_hash, data)
     def _f(x):
         return "n/a" if x is None else f"{x:.4f}"
     return (f"{experiment_hash}: transmitted BG-LPIPS={_f(trans['background']['lpips_mean'])} "
@@ -324,31 +307,25 @@ def drop_unionbbox_keys(experiment_hash: str, results_dir: str) -> str:
     `metrics.overall.dists_mean`/`dists_std`/`fid` are legitimate whole-frame metrics and
     are NOT touched. Idempotent; a no-op once the keys are gone. No recomputation.
     """
-    result_path = os.path.join(results_dir, experiment_hash, "result.json")
-    if not os.path.exists(result_path):
-        return f"{experiment_hash}: no result.json"
-    with open(result_path, 'r') as f:
-        data = json.load(f)
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        return f"{experiment_hash}: no result on record"
     fg = data.get("metrics", {}).get("foreground", {})
     dropped = [k for k in ("dists_mean", "fid") if k in fg]
     if not dropped:
         return f"{experiment_hash}: no union-bbox FG keys (already dropped)"
     for k in dropped:
         del fg[k]
-    tmp = result_path + ".tmp"
-    with open(tmp, 'w') as f:
-        json.dump(data, f, indent=2)
-    os.replace(tmp, result_path)
+    _db.save_run(results_dir, experiment_hash, data)
     return f"{experiment_hash}: dropped foreground.{', foreground.'.join(dropped)}"
 def drop_unionbbox_keys_all(results_dir: str) -> None:
     for entry in sorted(os.listdir(results_dir)):
         if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
             print(drop_unionbbox_keys(entry, results_dir))
 def backfill_fid(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> str:
-    exp_results_dir = os.path.join(results_dir, experiment_hash)
-    result_path = os.path.join(exp_results_dir, "result.json")
-    if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
-    with open(result_path, 'r') as f: data = json.load(f)
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        return f"{experiment_hash}: no result on record"
     if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
     if not force and "fid_fg_bbox" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: fid_fg_bbox already present"
 
@@ -389,9 +366,7 @@ def backfill_fid(experiment_hash: str, results_dir: str, cache_dir: str, dataset
     fg["fid_fg_bbox_n_used"] = int(bx["n_used"])
     fg["fid_fg_bbox_n_skipped_empty"] = int(bx["n_skipped_empty"])
 
-    tmp = result_path + ".tmp"
-    with open(tmp, 'w') as f: json.dump(data, f, indent=2)
-    os.replace(tmp, result_path)
+    _db.save_run(results_dir, experiment_hash, data)
     if not bx["n_used"]:
         return f"{experiment_hash}: OV-FID={ov_fid:.2f} fid_fg_bbox=n/a (no non-empty FG masks)"
     return (f"{experiment_hash}: OV-FID={ov_fid:.2f} fid_fg_bbox={bx['fid']:.2f} "
@@ -402,10 +377,9 @@ def backfill_fid_all(results_dir: str, cache_dir: str, dataset_dir: str, force: 
         if os.path.isdir(os.path.join(results_dir, entry)) and not entry.startswith('_'):
             print(backfill_fid(entry, results_dir, cache_dir, dataset_dir, force=force))
 def backfill_fvmd(experiment_hash: str, results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False) -> str:
-    exp_results_dir = os.path.join(results_dir, experiment_hash)
-    result_path = os.path.join(exp_results_dir, "result.json")
-    if not os.path.exists(result_path): return f"{experiment_hash}: no result.json"
-    with open(result_path, 'r') as f: data = json.load(f)
+    data = _db.load_run(results_dir, experiment_hash)
+    if data is None:
+        return f"{experiment_hash}: no result on record"
     if "metrics" not in data: return f"{experiment_hash}: no metrics yet"
     if not force and "fvmd" in data["metrics"].get("foreground", {}): return f"{experiment_hash}: FG-FVMD already present"
     
@@ -441,9 +415,7 @@ def backfill_fvmd(experiment_hash: str, results_dir: str, cache_dir: str, datase
     m.setdefault("overall", {})["fvmd"] = _clean(ov_fvmd)
     m.setdefault("foreground", {})["fvmd"] = _clean(fg_fvmd)
 
-    tmp = result_path + ".tmp"
-    with open(tmp, 'w') as f: json.dump(data, f, indent=2)
-    os.replace(tmp, result_path)
+    _db.save_run(results_dir, experiment_hash, data)
     return f"{experiment_hash}: OV-FVMD={ov_fvmd} FG-FVMD={fg_fvmd}"
 def backfill_fvmd_all(results_dir: str, cache_dir: str, dataset_dir: str, force: bool = False, shard: str = None) -> None:
     import concurrent.futures

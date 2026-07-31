@@ -179,19 +179,26 @@ def backfill(results_dir: str = "results", force: bool = False) -> Dict[str, Lis
 
     Returns the offending hashes and their failures.
     """
-    import json
     import os
-    import tempfile
 
+    from presley import db as _db
+
+    # Still driven by the on-disk directory listing rather than by the DB: this
+    # sweep's whole job is to reach runs the bookkeeping has not caught up with,
+    # including ones written before the DB existed. Reads and writes go through
+    # the DB helpers, so the verdict lands in both stores and the unique-temp-name
+    # write (the race in research-log/bugs.md) is handled once inside write_mirror.
     offenders: Dict[str, List[str]] = {}
     for entry in sorted(os.listdir(results_dir)):
-        path = os.path.join(results_dir, entry, "result.json")
-        if not os.path.isfile(path):
+        if entry.startswith("_") or entry.startswith("."):
+            continue
+        if not os.path.isfile(os.path.join(results_dir, entry, "result.json")):
             continue
         try:
-            with open(path) as handle:
-                result = json.load(handle)
-        except (json.JSONDecodeError, OSError):
+            result = _db.load_run(results_dir, entry)
+        except (ValueError, OSError):
+            continue
+        if result is None:
             continue
         if "invariant_failures" in result and not force:
             if result["invariant_failures"]:
@@ -199,21 +206,7 @@ def backfill(results_dir: str = "results", force: bool = False) -> Dict[str, Lis
             continue
         failures = check_result(result)
         result["invariant_failures"] = failures
-        # Unique temp name per pass: two runners sweeping the same shared tree
-        # (separate worktrees, one results/) used to pick the same `<path>.tmp`,
-        # and whichever replaced first left the other with FileNotFoundError.
-        # Same directory, so os.replace stays atomic on the same filesystem.
-        fd, tmp = tempfile.mkstemp(
-            dir=os.path.dirname(path), prefix="result.json.", suffix=".tmp"
-        )
-        try:
-            with os.fdopen(fd, "w") as handle:
-                json.dump(result, handle, indent=2)
-            os.replace(tmp, path)
-        except BaseException:
-            if os.path.exists(tmp):
-                os.unlink(tmp)
-            raise
+        _db.save_run(results_dir, entry, result)
         if failures:
             offenders[entry] = failures
     return offenders

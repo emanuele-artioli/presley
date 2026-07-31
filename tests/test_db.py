@@ -265,3 +265,122 @@ def test_compare_refuses_an_ambiguous_pairing(tmp_path, monkeypatch):
     args.a_where += " AND width = 640"
     rows = qr.cmd_compare(conn, args)
     assert len(rows) == 1
+
+
+# --------------------------------------------------------------------------
+# Reader cutover (B3): the DB answers, but is never allowed to answer *stale*
+# --------------------------------------------------------------------------
+
+def _mirror(results_dir, doc):
+    """Write only the result.json mirror, as an un-migrated tool would."""
+    path = os.path.join(str(results_dir), doc["experiment_hash"], "result.json")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        json.dump(doc, fh, indent=2)
+    return path
+
+
+def test_scan_results_finds_a_run_the_db_has_never_seen(tmp_path):
+    """The failure this cutover exists to prevent: a stale index does not error,
+    it answers *wrongly*. tools/analyze_breadth.py once reported "presley_ai=0,
+    no paired videos" for 18 runs that were complete on disk."""
+    from presley.compare import scan_results
+
+    db.connect(str(tmp_path)).close()            # DB exists, and is empty
+    _mirror(tmp_path, _result(h="0" * 16, video="camel"))
+
+    found = scan_results(str(tmp_path))
+    assert [r["experiment_hash"] for r in found] == ["0" * 16]
+
+
+def test_scan_results_prefers_a_mirror_written_after_the_db(tmp_path):
+    """A backfill by an un-migrated tool rewrites result.json in place. Returning
+    the DB's older copy would silently drop the metric that was just computed."""
+    from presley.compare import scan_results
+
+    doc = _result(h="1" * 16)
+    db.save_run(str(tmp_path), doc["experiment_hash"], doc)
+
+    fresh = json.loads(json.dumps(doc))
+    fresh["metrics"]["foreground"]["dists_fg"] = 0.0123   # the "new" measurement
+    path = _mirror(tmp_path, fresh)
+    os.utime(path, (db.db_mtime(str(tmp_path)) + 10,) * 2)
+
+    (found,) = scan_results(str(tmp_path))
+    assert found["metrics"]["foreground"]["dists_fg"] == 0.0123
+
+
+def test_load_run_heals_the_db_from_a_newer_mirror(tmp_path):
+    """Adopting the newer document is not enough — the DB must also be corrected,
+    or every subsequent query keeps returning the stale value."""
+    doc = _result(h="2" * 16)
+    db.save_run(str(tmp_path), doc["experiment_hash"], doc)
+
+    fresh = json.loads(json.dumps(doc))
+    fresh["metrics"]["background"]["lpips_mean"] = 0.9
+    path = _mirror(tmp_path, fresh)
+    os.utime(path, (db.db_mtime(str(tmp_path)) + 10,) * 2)
+
+    assert db.load_run(str(tmp_path), doc["experiment_hash"])[
+        "metrics"]["background"]["lpips_mean"] == 0.9
+
+    conn = db.connect(str(tmp_path))
+    row = conn.execute(
+        "SELECT value FROM metrics WHERE hash=? AND region='background' AND metric='lpips_mean'",
+        (doc["experiment_hash"],)).fetchone()
+    conn.close()
+    assert row["value"] == 0.9, "the DB kept the stale value after load_run adopted the mirror"
+
+
+def test_save_run_writes_both_stores(tmp_path):
+    doc = _result(h="3" * 16)
+    db.save_run(str(tmp_path), doc["experiment_hash"], doc)
+
+    with open(os.path.join(str(tmp_path), doc["experiment_hash"], "result.json")) as fh:
+        assert json.load(fh) == doc
+    conn = db.connect(str(tmp_path))
+    assert db.get_run(conn, doc["experiment_hash"]) == doc
+    conn.close()
+
+
+def test_load_run_returns_none_for_an_unknown_hash(tmp_path):
+    assert db.load_run(str(tmp_path), "f" * 16) is None
+
+
+def _wal_worker(results_dir, ready, go, errors):
+    """Open a connection the way every migrated reader now does: one per run."""
+    try:
+        ready.set()
+        go.wait(timeout=30)
+        for _ in range(40):
+            db.connect(results_dir).close()
+    except BaseException as exc:  # pragma: no cover - reported via the queue
+        errors.put(f"{type(exc).__name__}: {exc}")
+
+
+def test_concurrent_connects_survive_the_wal_pragma_race(tmp_path):
+    """`PRAGMA journal_mode=WAL` needs an exclusive lock and is NOT routed through
+    the busy handler, so it raises "database is locked" outright rather than
+    waiting out busy_timeout. Once the readers moved to a connection per run this
+    fired constantly on a fresh DB."""
+    results_dir = str(tmp_path / "results")
+    os.makedirs(results_dir)
+
+    ctx = multiprocessing.get_context("fork")
+    errors = ctx.Queue()
+    go = ctx.Event()
+    ready = [ctx.Event(), ctx.Event()]
+    procs = [ctx.Process(target=_wal_worker, args=(results_dir, r, go, errors)) for r in ready]
+    for proc in procs:
+        proc.start()
+    for r in ready:
+        assert r.wait(timeout=30), "a connect worker never started"
+    go.set()
+    for proc in procs:
+        proc.join(timeout=120)
+
+    reported = []
+    while not errors.empty():
+        reported.append(errors.get())
+    assert reported == [], f"concurrent connect failed: {reported}"
+    assert [p.exitcode for p in procs] == [0, 0]

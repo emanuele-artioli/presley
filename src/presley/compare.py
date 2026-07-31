@@ -255,18 +255,36 @@ def same_quality_by_hash(hash_a: str, hash_b: str, results_dir: str = "results",
 # Group scan
 # --------------------------------------------------------------------------
 
-def scan_results(results_dir: str = "results") -> List[Dict[str, Any]]:
-    """Load every results/<hash>/result.json with a metrics block. Isolates
-    bad/unreadable entries (warns, skips) rather than crashing the whole scan,
-    matching evaluate_all's per-experiment isolation."""
-    out = []
-    if not os.path.isdir(results_dir):
-        return out
+def _sync_db_from_disk(conn, results_dir: str) -> int:
+    """Import any results/<hash>/result.json the DB has not seen yet.
+
+    This exists because of a failure this codebase has already had: a stale
+    index does NOT error, it *answers wrongly*. tools/analyze_breadth.py once
+    reported "presley_ai=0, no paired videos" for 18 runs that were complete on
+    disk, purely because the DB had not been told about them -- a silently
+    wrong analysis is far worse than a crash. scan_results is the single choke
+    point for every reader, so the reconciliation belongs here rather than in
+    each caller: the DB is authoritative, but it is never allowed to be quietly
+    behind the mirror it was derived from.
+
+    Cheap in the common case -- one listdir plus a set difference; only the
+    JSONs actually missing from the DB are opened and parsed.
+    """
+    from . import db as _db
+
+    known = {r["hash"] for r in conn.execute("SELECT hash FROM runs")}
+    db_at = _db.db_mtime(results_dir)
+    imported = 0
     for entry in sorted(os.listdir(results_dir)):
-        if entry.startswith("_"):
+        if entry.startswith("_") or entry.startswith("."):
             continue
         path = os.path.join(results_dir, entry, "result.json")
         if not os.path.isfile(path):
+            continue
+        # Unknown to the DB, or the mirror was touched after the DB last
+        # changed (an un-migrated tool, or a hand edit). Both mean the DB's
+        # answer would be wrong rather than merely absent.
+        if entry in known and os.path.getmtime(path) <= db_at:
             continue
         try:
             with open(path) as f:
@@ -274,10 +292,39 @@ def scan_results(results_dir: str = "results") -> List[Dict[str, Any]]:
         except (json.JSONDecodeError, OSError) as e:
             print(f"presley-compare: skipping {path}: {e}")
             continue
-        if "metrics" not in data:
+        try:
+            _db.upsert_run(conn, data, data.get("experiment_hash") or entry, commit=False)
+        except ValueError as e:                      # no usable hash; not indexable
+            print(f"presley-compare: skipping {path}: {e}")
             continue
-        out.append(data)
-    return out
+        imported += 1
+    if imported:
+        conn.commit()
+    return imported
+
+
+def scan_results(results_dir: str = "results") -> List[Dict[str, Any]]:
+    """Every run with a metrics block, read from the results DB.
+
+    Returns the same shape it always did -- a list of `result.json` documents,
+    ordered by hash -- so `compare_groups`, `suite.py`, `collect_pairs` and
+    `assess_metric` are unaffected by where the documents come from.
+
+    The DB is the source of truth, but any run present on disk and absent from
+    the DB is imported first (see `_sync_db_from_disk`); bad/unreadable entries
+    are warned about and skipped rather than crashing the whole scan, matching
+    evaluate_all's per-experiment isolation.
+    """
+    from . import db as _db
+
+    if not os.path.isdir(results_dir):
+        return []
+    conn = _db.connect(results_dir)
+    try:
+        _sync_db_from_disk(conn, results_dir)
+        return [doc for doc in _db.iter_runs(conn) if "metrics" in doc]
+    finally:
+        conn.close()
 
 
 def _config_value(config: Dict[str, Any], dotted_key: str) -> Any:
