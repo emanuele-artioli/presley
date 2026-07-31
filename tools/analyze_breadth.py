@@ -83,6 +83,13 @@ def main() -> int:
     ap.add_argument("--results-dir", default=str(REPO_ROOT / "results"))
     args = ap.parse_args()
     conn = db.connect(args.results_dir)
+    # Refresh before reading. Skipping this produced a silent "presley_ai=0" and
+    # nine "no paired videos" lines on a set of runs that were complete on disk:
+    # they predated the dual-write, so the DB simply had not seen them. A stale
+    # index does not error, it answers wrongly, which is the worst failure a
+    # results query can have.
+    stats = db.import_json_tree(conn, args.results_dir)
+    print(f"(indexed {stats['imported']} runs, {stats['skipped']} unreadable)")
 
     for qp in (32, 37):
         a = arms(conn, qp)
