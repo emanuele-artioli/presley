@@ -7,10 +7,12 @@ skip results that already carry the metric unless forced."""
 
 import os
 import json
+# Before torch: see the CXXABI note in presley/__init__.py. `presley.db` pulls
+# sqlite3, and torch-then-sqlite3 is the broken order on this host.
+from presley import db as _db
 import numpy as np
 import torch
 from typing import Dict, Any, List
-from presley import db as _db
 from presley.preprocessing import get_reference_frames, get_ufo_masks
 from presley.encode_utils import load_frames_from_video
 _REF_CACHE: Dict[Any, Any] = {}
