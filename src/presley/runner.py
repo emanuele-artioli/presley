@@ -200,8 +200,17 @@ def run_single_experiment(experiment: Dict[str, Any], dataset_dir: str, results_
         failures = check_result(result)
         result['invariant_failures'] = failures
 
-        with open(result_json_path, 'w') as f:
-            json.dump(result, f, indent=2)
+        # The DB is the source of truth for run metadata; result.json is its
+        # derived mirror. The mirror is written first so a crash between the two
+        # leaves it ahead of the DB, which import_json_tree can reconcile.
+        from presley import db as _db
+        _db.write_mirror(result, result_json_path)
+        try:
+            conn = _db.connect(results_dir)
+            _db.upsert_run(conn, result, exp_hash)
+            conn.close()
+        except Exception as exc:  # never lose an hours-long run to bookkeeping
+            print(f"  warning: could not update results DB: {exc}", file=sys.stderr)
 
         print(f"  -> Saved {result_json_path}")
         if failures:

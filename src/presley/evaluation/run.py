@@ -221,10 +221,27 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
     data["invariant_failures"] = check_result(data)
     # Atomic write: a crash mid-rewrite would otherwise truncate result.json and
     # force a full re-run of a potentially hours-long experiment.
-    tmp_path = result_path + ".tmp"
-    with open(tmp_path, 'w') as f:
-        json.dump(data, f, indent=2)
-    os.replace(tmp_path, result_path)
+    #
+    # SECOND INSTANCE of the fixed-temp-name race fixed in invariants.py
+    # (research-log/bugs.md). This site also used a deterministic
+    # `result_path + ".tmp"`, so two runners evaluating one shared tree could
+    # choose the same temp path and whichever replaced first left the other with
+    # FileNotFoundError. `write_mirror` uses tempfile.mkstemp in the target
+    # directory: unique per process, and os.replace stays atomic on one
+    # filesystem.
+    from presley import db as _db
+    _db.write_mirror(data, result_path)
+
+    # The DB is the source of truth for run metadata and result.json is its
+    # derived mirror. Written after the mirror, so a crash between the two leaves
+    # the mirror ahead — a state import_json_tree can always reconcile, whereas
+    # the reverse would leave the DB claiming metrics no file records.
+    try:
+        conn = _db.connect(os.path.dirname(os.path.dirname(result_path)))
+        _db.upsert_run(conn, data, experiment_hash)
+        conn.close()
+    except Exception as exc:  # bookkeeping must never lose a completed evaluation
+        print(f"warning: could not update results DB for {experiment_hash}: {exc}")
 
     print(f"Evaluated metrics for {experiment_hash}")
 def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
