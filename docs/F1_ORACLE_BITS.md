@@ -208,3 +208,69 @@ motion. A drop is the expected outcome and is a perfectly reportable result.
 
 In every branch the result lands with its `results/<hash>` set, and
 `NEXT(sec:implementation)` is cleared only by the edit that lands the data.
+
+---
+
+# RESULT (2026-07-31, n=8, all runs citable)
+
+`tools/analyze_f1_oracle.py`, over 8 `results/<hash>` with **empty
+`invariant_failures`** — the citability fix works, which was the point of routing
+this through the runner at all.
+
+| video | rho SC | rho blend | cap SC | cap blend | random null | cap − null |
+|---|---|---|---|---|---|---|
+| bear | 0.704 | 0.710 | 0.765 | 0.765 | 0.353 | +0.412 |
+| bike-packing | 0.886 | 0.929 | 0.881 | 1.000 | 0.382 | +0.499 |
+| color-run | 0.896 | 0.909 | 0.940 | 0.927 | 0.546 | +0.394 |
+| dancing | 0.713 | 0.824 | 0.922 | 0.952 | 0.533 | +0.388 |
+| dogs-jump | 0.784 | 0.846 | 0.917 | 0.980 | 0.255 | +0.661 |
+| **drift-straight** | **0.082** | 0.101 | **0.510** | 0.510 | 0.436 | **+0.075** |
+| drift-turn | 0.681 | 0.674 | 0.909 | 0.918 | 0.416 | +0.493 |
+| motorbike | 0.606 | 0.618 | 0.824 | 0.785 | 0.298 | +0.526 |
+
+**Means are all in bounds and no alarm fired**: mean rho **+0.669** (band
+0.45–0.75), mean capture **0.833** (band 0.70–0.95), mean oracle share **0.301**
+(band 0.10–0.45). By the pre-registered decision rule (capture >= 0.70 **and**
+rho >= +0.45) the numerator claim **survives inter coding**.
+
+## Two per-video bounds BREACHED, both recorded rather than smoothed
+
+**1. `drift-straight` breaches low on both statistics** — rho **+0.082** against a
+0.30–0.85 band, capture **0.510** against 0.70–0.95. Investigated before
+reporting, per the rule.
+*A hypothesis was tested and refuted:* that its marginal-bit distribution is flat,
+so the ranking cannot matter. Its coefficient of variation is 0.93 — mid-pack
+(bear 1.24, color-run 0.68) — and rho vs CV across the eight videos correlates at
+**0.031**, i.e. not at all. **The failure is not explained.** On this one video
+the EVCA proxy carries essentially no information about which superblocks are
+expensive, and the honest statement is that we do not know why.
+
+**2. Two videos breach high** (`color-run` 0.896, `bike-packing` 0.886 vs a 0.85
+ceiling). Minor, and in the direction the band was guarding against
+(tautology) — but the tautology alarm at +0.95 did **not** fire, and these sit
+well inside the all-intra range of +0.754..+0.958, so this reads as ordinary
+per-video spread rather than a coding-structure problem.
+
+## A methodological correction the bounds themselves missed
+
+The capture ratio was pre-registered — by me, and by the original claim — **without
+a null**. That was wrong. Random selection of k superblocks already captures a
+**mean 0.402** of the oracle's bits, so a capture ratio is not "fraction of the way
+to the oracle" and 93–99% never meant what it appeared to mean either.
+
+Quoted against the null, the proxy is worth **+0.431 on average** (range +0.075 to
++0.661). **Any future quotation of a capture ratio must carry its null.**
+
+## What the paper may now say
+
+`NEXT(sec:implementation)` can be cleared for claim (a). Permitted wording:
+
+- the inter-coding numbers (**rho +0.669, capture 0.833 against a 0.402 random
+  null, n=8**), citing the eight hashes;
+- 93.0–99.4% **only** as the all-intra upper bound it is, never on its own;
+- the `drift-straight` caveat stated wherever the mean is quoted — on one of eight
+  videos the proxy is barely better than chance, and unexplained.
+
+Claim (b) (the denominator spread) is **still not CLAIM-grade** — it remains
+computed by `tools/mine_block_damage.py` outside the runner, and nothing here
+changes that.
