@@ -9,7 +9,8 @@ module under `src/presley/` appears here, so this cannot quietly go stale.
 experiments.yaml
    │  each entry hashed (runner.compute_experiment_hash) -> results/<hash>/
    ▼
-runner.dispatch_component  ──►  components/{baselines,roi,elvis,presley_ai,probe_oracle_bits}
+runner.dispatch_component  ──►  components/{baselines,roi,elvis,presley_ai,
+                                              probe_oracle_bits,probe_block_damage}
    │                                    │
    │                          preprocessing: reference frames, EVCA scores, UFO masks
    │                                    │
@@ -45,6 +46,7 @@ evaluation/  ──►  metrics per region  ──►  invariants.check_result
 | `components/elvis.py` | Block removal plus client-side in-painting (the NOSSDAV method). |
 | `components/presley_ai.py` | Mask-driven degradation with generative restoration. |
 | `components/probe_oracle_bits.py` | F1 measurement probe, not a transport: leave-one-superblock-out marginal bit cost vs the EVCA proxy, under inter coding. Runs through the runner only so its numbers carry a `results/<hash>`. |
+| `components/probe_block_damage.py` | Claim-(b) measurement probe: within-run dispersion of per-superblock damage after restoration, against a pristine encode made inside the run. Wraps `run_presley_ai` rather than reimplementing it, so unlike the other probe it **does** emit a restored video — never pool it as a transport arm. |
 
 ### Pipeline stages
 | Module | Responsibility |
@@ -54,6 +56,7 @@ evaluation/  ──►  metrics per region  ──►  invariants.check_result
 | `restoration.py` | Client-side restoration model wrappers. |
 | `encode_utils.py` | Encoder invocations, rate-control derivation, QP-offset mapping, decode. |
 | `sidechannel.py` | Packs the strength maps transmitted alongside the video. |
+| `blockdamage.py` | 64x64 superblock geometry for the damage denominator: area-exact pooling, MSE-space (never PSNR) averaging. Shared by `components/probe_block_damage.py` and `tools/mine_block_damage.py` so the two cannot drift apart on where boundaries fall. |
 | `io.py` | Frame and mask loading, directory hygiene. |
 | `utils.py` | Small shared helpers. |
 | `hnerv_arch.py`, `hnerv_utils.py` | HNeRV learned-codec baseline. |
