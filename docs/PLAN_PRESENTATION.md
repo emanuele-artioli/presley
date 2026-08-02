@@ -91,15 +91,28 @@ the quotable headline numbers.
 
 Three separable jobs. **They are not equally safe.**
 
-1. **Goal renumbering — do this first, it touches everything.** The article
-   defines three goals (selection, reduction, restoration) but numbers only
-   two, and the numbers contradict the introduction's order: `evaluation.tex`
-   calls bit relocation "Goal 1" and generative restoration "Goal 2", leaving
-   selection unnumbered. Renumber to **1 = selection, 2 = reduction,
-   3 = restoration** throughout, matching the introduction. Mechanical but wide
-   (~26 marker blocks plus prose). The current text explicitly chose not to
-   ("we keep those established labels rather than renumber every result") —
-   that shortcut is a reviewer trap at submission.
+1. **Goal labels — ✅ DONE 2026-08-02, in the session that wrote this plan.**
+   Done first precisely because it touched every file the other workstreams
+   will edit; leaving it to a parallel session would have guaranteed conflicts.
+
+   The defect was real: the introduction promised three goals in one order
+   while `evaluation.tex` numbered two in a different order, so "Goal 1" in the
+   body meant the introduction's *second* goal.
+
+   **The fix was not a renumber.** This plan originally proposed renumbering to
+   1/2/3 and scoped it at "~26 marker blocks plus prose". That was wrong by
+   about 5×: the real cost is **~124 sites** across the paper, the research log,
+   `reviewers_comments.md` and `docs/`, and `hard-rules.md` *defines* the legacy
+   labels — its rule 1 is phrased "inverting Goal 1". The failure mode is
+   silent, since one stale "Goal 1" asserts the opposite of what it says.
+
+   Instead, reviewer-visible prose now **names** the goals ("bit relocation",
+   "generative restoration", "selection") and numbers none of them, so nothing
+   is numbered twice and the collision cannot arise. 21 sites changed, all
+   inside existing `\rev{}` blocks. The ~19 numbered references in comments are
+   kept deliberately — markers key to `hard-rules.md`, whose vocabulary stays
+   stable. **Do not harmonize the two vocabularies in either direction**, and
+   do not reintroduce numbers into the prose.
 2. **Marker sweep.** The paper's own convention already defines this: before
    final submission the discovery grep must return **only `CLAIM` lines**.
    Resolve or consciously delete every `GOAL`/`NOTE`/`HOLE`/`NEXT`. Two `HOLE`s
@@ -134,7 +147,8 @@ Overleaf first.
 
 ## 6. Order of work
 
-1. §4 cleanup (renumber → markers → log). Independent of Plan A, start now.
+1. §4 cleanup. Goal labels are **done**; markers and log drain remain.
+   Independent of Plan A, start now.
 2. Plan A Wave 1 → the map exists.
 3. F1 and F3, which need only existing data.
 4. F2 and F4, which need the map and the cost axis.
