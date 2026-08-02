@@ -275,3 +275,18 @@ not blocked behind a broken config:
 ProPainter at ~49 min/run dominates: ~24 ProPainter runs ≈ 20 h of the total.
 Launch detached; the runner skips any hash that already has a `result.json`, so
 an interrupted job resumes by being re-run.
+
+### ⚠ Those cost estimates were wrong by ~40× (measured 2026-08-02)
+
+**ProPainter took 39–77 s per run here, not ~49 min.** All 16 of H1b's elvis
+runs finished in about 15 minutes of wall clock, against the ~13 h budgeted;
+H3's 32 runs took ~10 minutes against ~1 h. The ~49 min/run figure is a 720p /
+1080p number and does not transfer to this wave's 640×360, 60–90-frame clips.
+
+Two consequences worth carrying forward. **Nothing about this wave needed to be
+scheduled as an overnight job**, and treating it as one would have delayed the
+H3 result — which turned out to contradict a landed claim — by a day. And the
+real wall clock is now dominated by *evaluation*, not restoration: the metrics
+pass over a set costs more than generating it, and the region-LPIPS backfill it
+does not include costs ~14 s per run on top. **Estimate from the metric pass,
+not the GPU model, for anything at this resolution.**
