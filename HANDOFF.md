@@ -1,110 +1,113 @@
-# Handoff — H3 run, H1b and H2 chained and running unattended (2026-08-02)
+# Handoff — the HOLE wave is done bar H2's blackout half (2026-08-02)
 
-Supersedes the earlier 2026-08-02 handoff. **A detached job chain is in flight
-and will be for roughly 20 more hours.** Do not launch a second GPU job against
-this checkout until it drains; check the driver log before you do anything.
+Supersedes the earlier 2026-08-02 handoffs. **Three of the four HOLEs are
+closed and pushed. Only `HOLE(tab:goal2)` is open**, and its data is already on
+disk — what remains is reading the blackout half and writing it up.
 
-Approved plan: `~/.claude/plans/prepare-a-plan-to-quiet-crown.md`.
-Bounds for every set: **`docs/HOLE_CLOSURE_WAVE.md`** — read it first.
+The wave's headline: **Goal 1 (bit relocation) does not generalize; Goal 2
+(restoration behaviour) does.** That reversal is the main thing to carry
+forward, and it forced corrections to the abstract and conclusion.
 
-## What is running right now
+## What is running
 
-```
-/home/itec/emanuele/presley/logs/holes_chain_driver.log
-```
+Nothing, or a short LPIPS backfill (`logs/h2b_driver.log`, last line
+`backfill exited with 0` when done). Check that file before launching anything.
 
-That is the driver. It waits on the H3 `presley-run` PID, then runs **H1b**
-(~13 h, 16 ProPainter), then **H2** (~7 h, 8 ProPainter), then
-`presley-evaluate results/ --backfill-lpips`. Each set writes its own
-`logs/holes_<set>_<stamp>.log`.
+## Your task: finish `HOLE(tab:goal2)`
 
-- **Check log mtimes and `results/<hash>/result.json`, never `pgrep`** — a
-  `pgrep -f` pattern matches your own checking command. This has cost this
-  project hours more than once.
-- The runner **skips any hash that already has a `result.json`**, so an
-  interrupted set resumes by being re-run against its own run-file. Nothing is
-  lost if the chain dies; relaunch `config/holes_wave_h1b.yaml` (or `h2`).
-- Scoped run-files exist precisely so you never need
-  `--filter component=presley_ai`, which would drag in the 16 unrelated
-  pending controls.
+1. `python tools/analyze_holes_h2.py` — bounds encoded, JND from
+   `presley.compare`. The **freeze half already reads and replicates**; the
+   blackout half needs the backfill to have finished.
+2. Fold into `HOLE(tab:goal2)`. Follow `tab:conditioned-breadth` or
+   `tab:av1-breadth` as the worked example: GOAL + CLAIM with hashes, one NOTE
+   per caveat, and the HOLE cleared **by the edit that lands the data**.
+3. n=4 videos is under hard rule 2b's n≥6 — descriptive only, never
+   "significant". `NOTE(tab:goal2)` records this finding has been **mis-stated
+   twice in opposite directions**, so report per-cell direction, not a pooled
+   verdict.
 
-### The trap that will waste your time if you skip this
+### What the freeze half already says (read, not guessed)
 
-A fresh run's `result.json` has **`invariant_failures: ["metrics block is
-missing or empty"]` and no metrics at all** until `presley-run`'s evaluation
-pass finishes, which happens *after* the whole run loop. That is the documented
-pre-evaluation sticky verdict, not a broken run. Both analysis scripts below
-correctly refuse to quote such a run, so "incomplete or not citable" for a
-whole set means *wait*, not *debug*. **Region LPIPS for `elvis` runs
-additionally needs `--backfill-lpips`**, which the chain does at the very end.
+Restoration on a freeze fill is neutral-to-harmful in all four cells — best
+restorer +0.12× (dog) to −1.07× JND (bear), all inside the pre-registered
+−1.2…+1.2× wash band. Telea degrades it unambiguously at 2.29–3.15× JND,
+extending the standing 2.36–2.76× result. **This replicates `CLAIM(tab:goal2)`**
+rather than contradicting it.
 
-## State
-
-- Code `main` clean and pushed, **CI green** (run 30738506530).
-- Paper pushed to Overleaf. Everything `\rev{}`-tracked.
-- `experiments.yaml` 880 entries (800 + 80 appended as text; prior hashes
-  byte-identical, verified by a pure-addition diff). 20 still `_retired`.
-- Results 985+ and climbing as the chain runs.
-- **`pdflatex` is not installed on this host** — the paper cannot be compiled
-  here. Brace balance and tabular column counts were checked by hand instead.
-
-## Done this session
+## What landed this session
 
 | | outcome |
 |---|---|
-| **H3** | 32 runs complete, evaluation pass still finishing at write time — **run `tools/analyze_holes_h3.py` first thing**; no number has been read from it yet |
-| **H1b / H2** | appended, run-files written and dry-run-clean, chained and queued |
-| **H4 → `tab:budget-knee`** | **landed in the paper**, `HOLE(tab:priced-trade)` cleared by the edit that landed its data |
-| **Dispersion sweep** | **clean** — all nine figures already within-run or explicitly scoped; recorded in `operational.md` with the grep that reproduces it |
+| **H4 → `tab:budget-knee`** | budget lever **inert below sa 0.25**; gain there is sub-JND (0.57×/0.83×). `tab:priced-trade`'s fixed 0.25 sits exactly at the knee |
+| **H3 → `tab:conditioned-breadth`** | **Goal 1 does not replicate.** dog/pigs need +44.1%/+27.6% *more* bits for equal FG quality vs −16.1%/−13.8% on the incumbents. Goal 2 survives on 3 of 4 videos |
+| **H1b → `tab:av1-breadth`** | **the starved win does not generalize.** +18.3…+34.4% bits *and* −0.57…−0.86 dB FG at matched rate. The flip is **inverted** — frees bits at the mildest rung, costs at the most starved |
+| **Abstract + conclusion** | corrected: they asserted the 26–29% saving unconditionally, which the new tables contradict |
+| **Dispersion sweep** | clean; recorded in `operational.md` with the grep that redoes it |
 
-### The H4 finding, since it sharpened under JND gating
+**Two mechanisms, same reversal, same content** (H3 is `presley_ai` bs8 +
+Real-ESRGAN; H1b is `elvis` bs16 + ProPainter). That is why it is treated as a
+content result, not a component bug. **The content property is unidentified and
+FG area is refuted** — dog 0.114 ≈ bear 0.111, and dog reverses hardest. This
+is now an open problem of the same standing as the selection objective.
 
-The budget lever is **inert below sa 0.25** (bitrate flat within ±1.2%,
-encoder noise at fixed QP) and the restoration gain there is **sub-JND**
-(0.57× bear, 0.83× camel) — so the smallest budget both fails to free bits and
-produces a repair nobody would see. Above 0.25 the budget buys bits (−31.6% /
-−23.5% vs pristine) and the gain grows to 2.5–3.7× JND without cliffing.
-`tab:priced-trade`'s fixed 0.25 sits exactly at that knee. Every JND multiple
-came from `presley-compare`, not hand arithmetic.
+## Hard-won this session — read before running anything
 
-The pre-registered monotonicity bound **fired on bear and was revised with a
-stated reason** rather than dropped — that is the convention to follow if one
-of yours fires.
+- **`presley-run` exits 0 when every experiment in a wave fails.** It catches
+  the per-entry error, prints `Error running experiment <hash>`, and continues.
+  16 of H2's 32 cells failed this way and the chain moved on silently.
+  **Verify result count against entry count; never trust exit 0.**
+  `grep -c 'Error running experiment' <log>` gives it directly. In `bugs.md`.
+- **`tab:goal2` spans two components** — freeze is `presley_ai`
+  (`degradation`/`restorer`), blackout is `elvis`
+  (`removal_mode`/`inpainter`). A generator treating it as one silently
+  produces a half-invalid set. **Read a cited src hash's config before copying
+  a table's recipe.**
+- **Region LPIPS is missing from fresh runs, and not only for `elvis`.**
+  Standard evaluation writes *overall* LPIPS but leaves FG/BG absent on
+  `presley_ai` too, so a fresh set reads as "not citable" everywhere until
+  `presley-evaluate results/ --backfill-lpips`. `--only <hash>` scopes it.
+- **Do not run two backfills at once.** A scoped `--only` job and a global one
+  will write the same `result.json`. I hit this and killed one; files were
+  clean, but it is a corruption risk on a gitignored, hours-expensive artifact.
+- **Check a bound at the operating point its own text names.** H1b's FG bound
+  is specified *at matched rate*; checked at fixed QP it reads 0.88–1.20 dB and
+  looks like a >1 dB alarm, versus −0.57…−0.86 dB where it belongs.
+- **Do not pre-register a one-sided band on the quantity under test.** H3's FG
+  band was −25…+5% with an alarm only for "too good"; the result came off the
+  other end and the alarm text pointed at the wrong check.
+- **Closing an alarm: reproduce a landed number with the new tool first.** Both
+  fired alarms were closed in one command by re-running the new BD path on
+  bear/camel and matching the published figures exactly.
+- **The wave's cost estimates were ~40× pessimistic.** ProPainter ran at
+  39–77 s, not ~49 min. Wall clock here is dominated by evaluation and
+  backfill, not the restorer. Do not schedule this class of work overnight.
 
-## Your task, in order
+## State
 
-1. **Read H3** — `python tools/analyze_holes_h3.py`. Bounds are encoded in the
-   script and checked in its output. If a bound fires, investigate
-   implementation / eval / data *before* reporting it as a finding.
-2. **Fold H3 into `HOLE(tab:conditioned)`** — a `HOLE` may only be cleared by
-   the edit that lands its data. Follow the `tab:budget-knee` commit as the
-   worked example (GOAL + CLAIM with hashes + NOTEs for the caveats).
-3. **H1b** — `python tools/analyze_holes_h1b.py` once it lands, then
-   `HOLE(tab:av1)`. ⚠ `pigs` cannot be starved as hard as bear/camel; the
-   script prints that caveat next to the numbers, keep it attached.
-4. **H2** — `HOLE(tab:goal2)`. n=4 videos is still under the n≥6 hard rule 2b
-   requires, so this **cannot** produce a "significant" verdict; it can only
-   widen or narrow the descriptive claim, and the text must say so.
+- Code `main` clean and pushed; CI green as of the last code commit.
+- Paper pushed to Overleaf, all edits `\rev{}`-tracked. **`pdflatex` is not
+  installed here** — brace balance and column counts were checked by hand.
+- `experiments.yaml` 896 entries; 36 `_retired` (20 pre-existing + 16 H2
+  blackout mis-specifications, retired in place with their reason).
+- Results ~1030.
 
 ## Still open, unchanged
 
 - **Q6 DiffBIR — ASK before any wire.** No mechanism argument → stay deferred.
-- **Q8 DC-VSR — blocked upstream**; `_retired` in the queue.
-- **0c** — `drift-straight` unexplained, ρ's CI includes zero.
-  `tools/analyze_drift_straight_0c.py`, no GPU.
-- `open-questions.md` / `dead-ends.md` are over the log's 300-line ceiling.
-- 16 pending fixed-QP `none`-restorer controls: legitimate, never run, nobody
-  has decided whether they are wanted.
+- **Q8 DC-VSR — blocked upstream**; `_retired`.
+- **0c** — `drift-straight` unexplained, ρ's CI includes zero. No GPU needed.
+- **New:** the content axis that decides whether bit relocation works. Two
+  mechanisms agree it is content, nothing predicts which way.
+- `open-questions.md` / `dead-ends.md` over the 300-line ceiling.
+- 16 pending fixed-QP `none`-restorer controls: legitimate, never run, undecided.
 
 ## Gotchas
 
-- **The editable install points at the main checkout.** Tests run from a
-  worktree import the *other* tree's `presley` unless `PYTHONPATH=<wt>/src`.
-- **Never `import torch` before `presley`/`sqlite3`** (CXXABI_1.3.15) — it
-  fails at *runtime*, in-function.
-- `nohup … &` inside a harness `Bash` call returns when the wrapper exits; that
-  notification is not the job finishing.
-- The `Bash` tool's own `timeout` (ms, max 600000) is what applies.
+- **The editable install points at the main checkout.** Tests from a worktree
+  import the *other* tree's `presley` unless `PYTHONPATH=<wt>/src`.
+- **Never `import torch` before `presley`/`sqlite3`** (CXXABI_1.3.15).
+- `nohup … &` in a harness `Bash` call returns when the wrapper exits; that is
+  not the job finishing. `pgrep -f <pattern>` matches your own check command.
 - Carried: filter fixed-QP with `codec=svtav1`; NAFNet / Real-HAT-GAN reject
   `fp32=False`; `fg_protect=True`; BG-PSNR is never the Goal-2 verdict; never
   `rm` `results/`/`dataset/`/`cache/`.
@@ -113,10 +116,9 @@ of yours fires.
 
 | Path | Why |
 |---|---|
-| `logs/holes_chain_driver.log` | **check this first** — what is running |
-| `docs/HOLE_CLOSURE_WAVE.md` | bounds, stage-1 calibration, H4 result |
-| `tools/analyze_holes_h3.py`, `tools/analyze_holes_h1b.py` | the analyses, bounds encoded |
-| `config/holes_wave_{h3,h1b,h2}.yaml` | scoped run-files; re-runnable, resume-safe |
-| `sections/evaluation.tex` → `tab:budget-knee` | worked example of clearing a HOLE |
-| `research-log/operational.md` | the dispersion sweep and how to redo it |
-| `research-log/dead-ends.md` | every superseded figure, with its lesson |
+| `docs/HOLE_CLOSURE_WAVE.md` | bounds + **every result and alarm resolution** |
+| `tools/analyze_holes_{h3,h1b,h2}.py` | the analyses, bounds encoded in output |
+| `config/holes_wave_{h3,h1b,h2,h2b}.yaml` | scoped run-files; resume-safe |
+| `sections/evaluation.tex` → `tab:av1-breadth` | worked example of clearing a HOLE |
+| `research-log/bugs.md` | the exit-0 silent failure, and the two-component trap |
+| `research-log/operational.md` | dispersion sweep, bound-setting lessons |
