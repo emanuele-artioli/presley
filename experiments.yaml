@@ -227,6 +227,7 @@ experiments:
     preset: medium
 # hash: 774f24eca108a51d
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -244,6 +245,7 @@ experiments:
     tile: 0
 # hash: c26c5e9a05e47730
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -260,6 +262,7 @@ experiments:
     tile: 0
 # hash: 287d46b17dd07d54
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -876,6 +879,7 @@ experiments:
     qp_range: 15
 # hash: 56675c2650855aa7
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -922,6 +926,7 @@ experiments:
     preset: medium
 # hash: 5318e01ac00f4460
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -939,6 +944,7 @@ experiments:
     tile: 0
 # hash: 36b18dd72ccad44e
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -955,6 +961,7 @@ experiments:
     tile: 0
 # hash: b58ff6864c41bc3f
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -972,6 +979,7 @@ experiments:
     tile: 0
 # hash: 3848dfdf0a24f736
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -988,6 +996,7 @@ experiments:
     tile: 0
 # hash: 8d2eb91d0797f341
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -1006,6 +1015,7 @@ experiments:
     batch_size: 1
 # hash: 4c501accbd5f7a0f
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bear
   width: 640
   height: 360
@@ -1207,6 +1217,7 @@ experiments:
     preset: medium
 # hash: 21bf9b39f84b70ca
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bmx-trees
   width: 640
   height: 360
@@ -1224,6 +1235,7 @@ experiments:
     tile: 0
 # hash: 7a722d016481d3b7
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: bmx-trees
   width: 640
   height: 360
@@ -1240,6 +1252,7 @@ experiments:
     tile: 0
 # hash: 9d24245a8ff40cb7
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: drift-chicane
   width: 640
   height: 360
@@ -1257,6 +1270,7 @@ experiments:
     tile: 0
 # hash: 98de03dc7b94563d
 - component: presley_ai
+  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
   video: drift-chicane
   width: 640
   height: 360
@@ -4778,6 +4792,7 @@ experiments:
 # passthrough composite); expectation: noise is high-entropy and costs bits.
 # hash: 5f0c9dae74977e05
 - component: presley_ai
+  _retired: "noise injection retired: costs 76.5-83.0% more bits than the pristine baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))"
   video: bear
   width: 640
   height: 360
@@ -4794,6 +4809,7 @@ experiments:
     qp: 32
 # hash: 4855a706d4961adf
 - component: presley_ai
+  _retired: "noise injection retired: costs 76.5-83.0% more bits than the pristine baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))"
   video: bear
   width: 640
   height: 360
@@ -4810,6 +4826,7 @@ experiments:
     qp: 37
 # hash: 9cef0d4ad4fc74ad
 - component: presley_ai
+  _retired: "noise injection retired: costs 76.5-83.0% more bits than the pristine baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))"
   video: camel
   width: 640
   height: 360
@@ -4826,6 +4843,7 @@ experiments:
     qp: 32
 # hash: 45114e6ca4f604ed
 - component: presley_ai
+  _retired: "noise injection retired: costs 76.5-83.0% more bits than the pristine baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))"
   video: camel
   width: 640
   height: 360
@@ -8466,6 +8484,7 @@ experiments:
 # ---------------------------------------------------------------------------
 # hash: c50f1c39cb2814c1
 - component: presley_ai
+  _retired: "DC-VSR is blocked upstream (weights-only release, no pipeline code); the restorer stub raises by design"
   video: bear
   width: 640
   height: 360
@@ -8486,6 +8505,7 @@ experiments:
     num_frames: 14
 # hash: a2fd6657af0d2ec9
 - component: presley_ai
+  _retired: "DC-VSR is blocked upstream (weights-only release, no pipeline code); the restorer stub raises by design"
   video: camel
   width: 640
   height: 360

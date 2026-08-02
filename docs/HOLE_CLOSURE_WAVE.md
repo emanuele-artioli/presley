@@ -37,6 +37,31 @@ each) on both videos; the four rungs are then chosen as the QPs whose baseline
 overall PSNR brackets the same range bear/camel's rungs did. Stage 1's choice is
 recorded here before stage 2 launches.
 
+### Stage 1 outcome (2026-08-01) — rungs chosen, and one caveat
+
+Incumbent starved ladders span **29.6 → 26.2 dB** (bear) and **29.3 → 25.6 dB**
+(camel). Measured sweep:
+
+| QP | dog kbps / dB | pigs kbps / dB |
+|---|---|---|
+| 40 | 749 / 30.93 | 460 / 32.47 |
+| 45 | 476 / 30.00 | 331 / 31.77 |
+| 50 | 379 / 29.39 | 269 / 30.96 |
+| 55 | 219 / 28.46 | 170 / 30.16 |
+| 60 | 123 / 27.31 | 103 / 28.87 |
+| 63 |  61 / 25.78 |  55 / 27.19 |
+
+**Both clips take rungs 50 / 55 / 60 / 63.** For `dog` that brackets the
+incumbent range almost exactly (29.39 → 25.78 dB).
+
+⚠ **`pigs` cannot be starved as hard as the incumbents.** Even at QP 63 — the
+codec's maximum — its baseline is still at **27.19 dB**, about a decibel above
+where bear and camel end. It is simply an easier clip at this resolution. The
+rungs are kept (there is no QP left to go to), and the consequence is recorded
+rather than hidden: if the regime effect is weaker on `pigs` than on `dog`, that
+is partly because `pigs` is less starved, and the write-up must not read a
+weaker effect there as content-dependence without saying so.
+
 **Bounds.**
 
 | quantity | plausible | **alarm** |

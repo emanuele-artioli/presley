@@ -113,15 +113,31 @@ def load_experiments(yaml_path: str, filters: Dict[str, str]) -> List[Dict[str, 
         return []
 
     filtered = []
+    retired = []
     for exp in experiments:
         match = True
         for k, v in filters.items():
             if str(exp.get(k, "")) != v:
                 match = False
                 break
-        if match:
-            filtered.append(exp)
-            
+        if not match:
+            continue
+        # `_retired` marks an entry that must never run again: a rule-1 violation,
+        # a retired modality, an upstream-blocked model. Kept in the file rather
+        # than deleted so the record of what was once queued survives, and the `_`
+        # prefix means compute_experiment_hash ignores it -- annotating an entry
+        # cannot change its identity or orphan an existing result.
+        if exp.get('_retired'):
+            retired.append(exp)
+            continue
+        filtered.append(exp)
+
+    if retired:
+        print(f"Skipping {len(retired)} retired experiment(s):")
+        for reason in sorted({str(e['_retired']) for e in retired}):
+            n = sum(1 for e in retired if str(e['_retired']) == reason)
+            print(f"  {n:3} x {reason}")
+
     return filtered
 
 # component name (the `component` key in experiments.yaml) -> module, entry function.

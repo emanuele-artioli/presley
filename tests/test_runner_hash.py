@@ -185,6 +185,41 @@ def test_load_experiments_filters_on_any_key(tmp_path):
     assert [e["video"] for e in only_roi] == ["bear"]
 
 
+def test_a_retired_entry_is_never_dispatched(tmp_path):
+    """`_retired` keeps a rule-violating entry on record without letting it run.
+
+    experiments.yaml accumulated entries that can never produce citable evidence
+    -- VBR degradation runs (hard rule 1), a retired modality, an upstream-blocked
+    model whose stub raises. Deleting them loses the record of what was queued;
+    leaving them bare means the next `--filter component=presley_ai` runs all of
+    them.
+    """
+    path = tmp_path / "experiments.yaml"
+    path.write_text(
+        "experiments:\n"
+        "- component: presley_ai\n"
+        "  video: bear\n"
+        "- component: presley_ai\n"
+        "  video: camel\n"
+        "  _retired: VBR degradation, hard rule 1\n"
+    )
+
+    loaded = load_experiments(str(path), {"component": "presley_ai"})
+    assert [e["video"] for e in loaded] == ["bear"]
+
+
+def test_retiring_an_entry_does_not_move_its_hash(tmp_path):
+    """The `_` prefix is load-bearing: an annotated entry keeps its identity.
+
+    If retiring changed the hash it would orphan any result already on disk for
+    that config, which is the opposite of preserving the record.
+    """
+    entry = {"component": "presley_ai", "video": "camel", "codec": "svtav1"}
+    before = compute_experiment_hash(entry)
+
+    assert compute_experiment_hash({**entry, "_retired": "any reason at all"}) == before
+
+
 def test_load_experiments_raises_on_a_missing_file(tmp_path):
     with pytest.raises(FileNotFoundError):
         load_experiments(str(tmp_path / "absent.yaml"), {})
