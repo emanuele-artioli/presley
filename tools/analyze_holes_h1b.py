@@ -21,6 +21,11 @@ from __future__ import annotations
 
 import json
 import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
+
+from bd_rate import BDError, bd_quality, bd_rate, overlap_fraction  # noqa: E402
 
 RESULTS = pathlib.Path(__file__).resolve().parents[1] / "results"
 VIDEOS = ("dog", "pigs")
@@ -99,17 +104,44 @@ def main():
             hit = [r for r in rows if r[0] == v and r[2] == mode and r[1] == 63]
             if not hit:
                 continue
-            _, _, _, dbits, dfg = hit[0]
+            _, _, _, dbits, _ = hit[0]
             lo, hi, note = BOUNDS[f"{mode}_starved"]
             ok = lo <= dbits <= hi
             fired |= not ok
             print(f"  {v:6} {mode:9} d-bits {dbits:+7.2f}%  band {lo:+.0f}..{hi:+.0f}  "
                   f"{'in band' if ok else '*** OUT OF BAND — ALARM ***'}   [{note}]")
-            loss = -dfg
-            ok_fg = loss <= FG_PSNR_JND
-            fired |= not ok_fg
-            print(f"  {v:6} {mode:9} FG-PSNR loss {loss:+6.2f} dB  "
-                  f"{'within JND' if ok_fg else '*** ABOVE JND — ALARM ***'}")
+
+    # The FG bound is specified AT MATCHED RATE, so it must be checked there.
+    # Comparing FG-PSNR at the same fixed QP measures a different quantity: the
+    # arms sit at different bitrates, so a same-QP gap mixes the FG penalty with
+    # whatever bits the transport moved. That mistake was made once here.
+    print("\n--- FG-PSNR at MATCHED RATE (the quantity the bound names) ---")
+    for v in VIDEOS:
+        b_all = {qp: d for (vv, qp), d in base.items() if vv == v}
+        for mode in MODES:
+            a_all = {qp: d for (vv, qp, m), d in elvis.items() if vv == v and m == mode}
+            have = [q for q in RUNGS if citable(b_all.get(q)) and citable(a_all.get(q))]
+            if len(have) < 3:
+                print(f"  {v:6} {mode:9} only {len(have)} usable rungs, no BD number")
+                continue
+            br = [b_all[q]["actual_bitrate_bps"] for q in have]
+            ar = [a_all[q]["actual_bitrate_bps"] for q in have]
+            qb = [b_all[q]["metrics"]["foreground"]["psnr_mean"] for q in have]
+            qa = [a_all[q]["metrics"]["foreground"]["psnr_mean"] for q in have]
+            try:
+                r = bd_rate(br, qb, ar, qa, lower_is_better=False)
+                dq = bd_quality(br, qb, ar, qa)
+                ov = overlap_fraction(br, ar)
+            except BDError as exc:
+                print(f"  {v:6} {mode:9} refused: {exc}")
+                continue
+            lo, hi, note = BOUNDS["fg_psnr_loss"]
+            loss = -dq
+            ok = loss <= hi
+            fired |= not ok
+            print(f"  {v:6} {mode:9} BD-rate {r:+7.1f}%   FG-PSNR at equal rate "
+                  f"{dq:+.2f} dB   overlap {ov:.2f}   "
+                  f"{'within JND' if ok else '*** ABOVE JND ***'}   [{note}]")
 
     print("\n--- regime check: does the sign flip? ---")
     for v in VIDEOS:
