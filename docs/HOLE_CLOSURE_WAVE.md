@@ -145,6 +145,43 @@ narrow the descriptive claim — say that in the text rather than implying more.
 mask-isolated: a sub-JND FG-LPIPS move between restorers is a background effect
 leaking in, never an FG effect. Do not read one as a finding.
 
+### H2 result (2026-08-02) — a clean replication, no bound fired
+
+All 32 cells citable. Analysis: `tools/analyze_holes_h2.py`. **This is the only
+set in the wave where nothing fired**, and it replicates `CLAIM(tab:goal2)`
+rather than scoping it back.
+
+Best restorer vs the matched `none` control, BG-LPIPS, JND multiples:
+
+| cell | blackout | freeze |
+|---|---|---|
+| dog QP50 | **+3.23×** (e2fgvi) | +0.22× (sub-JND) |
+| pigs QP50 | **+3.21×** (e2fgvi) | −0.59× (sub-JND) |
+| bear QP58 | **+1.28×** (e2fgvi) | −1.07× |
+| camel QP58 | **+1.25×** (e2fgvi) | −0.47× (sub-JND) |
+
+- **blackout: helps in 4/4 cells and clears JND in all four** (band +1.0…+3.5,
+  all in band). The zero-information-fill win is the most robust result in the
+  paper — it now holds on four videos and two QPs.
+- **freeze: never clears JND in any cell** (band −1.2…+1.2, all in band); helps
+  sub-JND on dog only, harms sub-to-marginally on the other three. Exactly
+  `CLAIM(tab:goal2)`'s "neutral-to-marginally-harmful, never helpful".
+- **Telea degrades freeze unambiguously** at 1.04–3.15× JND, extending the
+  standing 2.36–2.76× two-video result to four.
+- `fg_protect` guard: FG-LPIPS spread 0.003–0.037 in every cell, all sub-JND.
+
+**`e2fgvi` is the best blackout restorer in all four cells**, edging ProPainter
+(3.23 vs 2.85 on dog; 1.28 vs 1.08 on bear). That is a numerical ordering at
+n=4, not a separation — the gaps are well inside JND of each other and hard
+rule 2b needs n≥8 for a restorer comparison. Do not promote it over ProPainter
+on this.
+
+**Read together with H3 and H1b, the wave has a shape:** on the two new videos
+the *restoration* half is at its strongest (blackout +3.2× JND, the largest
+wins anywhere in the wave) while the *bit-relocation* half fails outright.
+Restoration quality and bit relocation are not the same axis and do not
+co-vary.
+
 ---
 
 ## H3 — `HOLE(tab:conditioned)`: more videos/QPs, plus a BD-rate curve
