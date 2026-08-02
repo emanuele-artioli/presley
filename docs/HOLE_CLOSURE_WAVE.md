@@ -140,6 +140,60 @@ screen, which is the part the HOLE explicitly asks for.
 `tools/analyze_ratematched.py` already refuses to quote a BD number on disjoint
 quality ranges; reuse it rather than writing a second BD path.
 
+### H3 result (2026-08-02) — the FG bound fired, and it is a real result
+
+All 32 runs citable. Analysis: `tools/analyze_holes_h3.py`.
+
+**⚠ The FG BD-rate bound fired on both videos, in the direction the bound did
+not anticipate:** +34.3% (dog) and +25.3% (pigs) on FG-LPIPS against a
+−25…+5% band; on FG-PSNR it is +44.1% and +27.6%, against **−16.1% / −13.8%**
+for bear / camel in `tab:priced-trade`. Positive = *more* bits for equal
+foreground quality.
+
+**The alarm is closed as a measurement, not a bug.** The pre-registered alarm
+text guessed the failure mode would be a rate-accounting error, so that is what
+was checked first: running this same BD path on bear and camel reproduces the
+published `tab:priced-trade` numbers **exactly** — FG-PSNR −16.1% / −13.8%,
+BG-LPIPS +80.9% / +27.5% — and `actual_bitrate_bps` and
+`transmitted_size_bytes` give identical BD-rates, so the rate axis is not the
+explanation either. **Revised bound: the FG band was set from n=2 videos that
+both won, and encoded the assumption under test as if it were a bound. A BD
+band on a quantity the HOLE exists to generalize should be two-sided and wide,
+or not pre-registered at all.**
+
+**The mechanism, at fixed QP against the pristine baseline:**
+
+| | mildest rung | … | most starved rung |
+|---|---|---|---|
+| bear | −18.5% | −15.9%, −19.2% | −19.6% |
+| camel | −6.3% | −13.8%, −21.5% | −21.0% |
+| **dog** | **−6.7%** | **+13.0%, +22.8%** | **+43.7%** |
+| **pigs** | **−9.7%** | **+1.0%, +2.0%** | **+12.4%** |
+
+On the incumbents the downsample transport frees bits at *every* rung and frees
+more as starving deepens. On dog and pigs it **inverts**: it pays only at the
+mildest rung and costs bits from the second rung on. The upscaled background's
+artifacts become more expensive to code than the content they replaced once QP
+is high enough — the standing "downsample relocates no bits under fixed QP"
+result, showing up as a sign change rather than a null.
+
+**Two candidate explanations, one of which is refuted here.** FG area fraction
+(mean over each clip's UFO masks) is bear 0.111, camel 0.144, **dog 0.114**,
+pigs 0.293. `pigs` has twice the foreground of any incumbent, so it has less
+background to work with — but **dog is the same as bear and still loses**, so
+foreground size does not explain the flip. This matches the project's existing
+out-of-sample negative result that no single scalar content attribute explains
+the win/loss split.
+
+**Goal 2 survives where Goal 1 does not, and is itself video-dependent.**
+JND-gated with `presley-compare --region background`, Real-ESRGAN over the
+downsample transport is a real background win on `pigs` at **every** rung
+(1.26 / 1.42 / 1.60 / 1.62× JND) but **sub-JND on `dog`** at every rung
+(0.66–0.71×), consistently in the right direction and never perceptible.
+Unsharp over blur is sub-JND on both videos everywhere (0.28–0.35×), as the
+no-ML control should be. So the restorer still pays back background quality —
+it is the *transport* that stops freeing bits.
+
 ---
 
 ## H4 — `HOLE(tab:priced-trade)`: the missing `shrink_amount` arm
