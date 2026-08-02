@@ -76,6 +76,41 @@ pigs frees bits at comfortable bitrates, or fails to free them when starved, the
 regime story becomes video-dependent and `tab:av1`'s wording must be scoped to
 say so — the same way `tab:bdrate`'s even split already is.
 
+### H1b result (2026-08-02) — every bound fired; the sign flip is *inverted*
+
+All 24 runs citable. Analysis: `tools/analyze_holes_h1b.py`. **This is the
+outcome the paragraph above anticipated, in its strongest form.**
+
+| video | fill | Δbits mildest → most starved | BD-rate | FG at equal rate |
+|---|---|---|---|---|
+| bear | blackout | −18.5% → −19.6% | **−28.9%** | +0.85 dB |
+| camel | blackout | −6.3% → −21.0% | **−25.6%** | +0.91 dB |
+| dog | blackout | −5.5% → **+26.4%** | **+27.3%** | −0.75 dB |
+| dog | freeze | −0.8% → **+9.6%** | **+34.4%** | −0.86 dB |
+| pigs | blackout | −11.5% → **+2.1%** | **+18.3%** | −0.57 dB |
+| pigs | freeze | −3.4% → −1.7% | **+30.4%** | −0.79 dB |
+
+The new videos **lose on both axes at once**: more bits *and* worse foreground.
+And the flip is **inverted** — they free bits at the mildest rung and cost them
+at the most starved, the opposite of the incumbents. "The bridge wins when
+starved" is therefore not what generalizes.
+
+**Alarm closed the same way as H3:** this BD path reproduces `CLAIM(tab:av1)`'s
+published starved numbers exactly (−28.9% vs −28.87%, −25.6% vs −25.56%).
+
+⚠ **The FG bound is specified *at matched rate* and was first checked at the
+same fixed QP — a different quantity.** At fixed QP the FG gaps read
+0.88–1.20 dB and look like a >1 dB alarm; at matched rate they are
+−0.57…−0.86 dB, above JND but below the alarm. A same-QP FG gap mixes the
+foreground penalty with the bits the transport moved. **Check a bound at the
+operating point its own text names.**
+
+**Corroboration, and why this is not a component bug:** H3 shows the same
+reversal on the same two videos through a completely different component
+(`presley_ai` bs8 + Real-ESRGAN vs `elvis` bs16 + ProPainter). Two mechanisms
+failing identically on the same content is a content result. The responsible
+content property is still unidentified and FG area is refuted (see H3).
+
 ---
 
 ## H2 — `HOLE(tab:goal2)`: is the restorer-on-fill result stable?
