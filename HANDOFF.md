@@ -1,116 +1,110 @@
-# Handoff — three HOLE sets left to run; everything else is closed (2026-08-02)
+# Handoff — H3 run, H1b and H2 chained and running unattended (2026-08-02)
 
-Supersedes the 2026-08-01 handoff. **Your job is W0-A's remaining three sets and
-the W2 close-out that follows them.** Nothing else is outstanding: all reviewer
-items are `[x] Done`, the writing pass has landed, and no job is running.
+Supersedes the earlier 2026-08-02 handoff. **A detached job chain is in flight
+and will be for roughly 20 more hours.** Do not launch a second GPU job against
+this checkout until it drains; check the driver log before you do anything.
 
 Approved plan: `~/.claude/plans/prepare-a-plan-to-quiet-crown.md`.
-Bounds for every set below: **`docs/HOLE_CLOSURE_WAVE.md`** — read it first;
-it is pre-registered and two of its bounds have already needed revising *with a
-stated reason*, which is the convention to follow if yours fire.
+Bounds for every set: **`docs/HOLE_CLOSURE_WAVE.md`** — read it first.
 
-## State (verified at write time)
+## What is running right now
 
-- Code `main` clean and pushed, **CI green**. ~342 tests.
-- Paper pushed to Overleaf. Every edit `\rev{}`/`\del{}`-tracked; comment-only
-  edits verified as such.
-- **Nothing running.** `nvidia-smi` may show another user's process — check PIDs.
-- Results ~955 runs; `experiments.yaml` 800 entries, 20 of them `_retired`.
-
-## Your task: H1 stage 2, H2, H3
-
-Generator: `/tmp/claude-1041/append_holes.py` (sets `h1b`, `h2`, `h3`). If that
-scratch file is gone, it is small — regenerate from the configs in
-`docs/HOLE_CLOSURE_WAVE.md`. **Fill in `QPS` first:**
-
-```python
-QPS = {"dog": [50, 55, 60, 63], "pigs": [50, 55, 60, 63]}
+```
+/home/itec/emanuele/presley/logs/holes_chain_driver.log
 ```
 
-Those come from the stage-1 calibration that already ran (table in the design
-doc). They were **chosen to bracket the incumbents' PSNR range, not copied from
-bear's ladder** — recalibration is the point of the exercise.
+That is the driver. It waits on the H3 `presley-run` PID, then runs **H1b**
+(~13 h, 16 ProPainter), then **H2** (~7 h, 8 ProPainter), then
+`presley-evaluate results/ --backfill-lpips`. Each set writes its own
+`logs/holes_<set>_<stamp>.log`.
 
-⚠ **`pigs` cannot be starved as hard as bear/camel.** At QP 63, the codec
-maximum, its baseline is still ~1 dB above where the incumbents end. Keep the
-rungs (there is no QP left) but **do not read a weaker regime effect on `pigs`
-as content-dependence** without saying that first.
+- **Check log mtimes and `results/<hash>/result.json`, never `pgrep`** — a
+  `pgrep -f` pattern matches your own checking command. This has cost this
+  project hours more than once.
+- The runner **skips any hash that already has a `result.json`**, so an
+  interrupted set resumes by being re-run against its own run-file. Nothing is
+  lost if the chain dies; relaunch `config/holes_wave_h1b.yaml` (or `h2`).
+- Scoped run-files exist precisely so you never need
+  `--filter component=presley_ai`, which would drag in the 16 unrelated
+  pending controls.
 
-| set | what | runs | cost |
-|---|---|---|---|
-| H3 | `tab:conditioned`: 2 videos × 4 rungs × 4 arms, BD-rate curve | 32 | ~1 h |
-| H1b | `tab:av1`: baselines + elvis{blackout,freeze} bs16 | 24 | ~13 h (16 ProPainter) |
-| H2 | `tab:goal2`: 2 new videos + a 2nd QP on bear/camel | 32 | ~7 h (8 ProPainter) |
+### The trap that will waste your time if you skip this
 
-Run cheapest-first (H3 → H1b → H2) so a broken config surfaces early.
+A fresh run's `result.json` has **`invariant_failures: ["metrics block is
+missing or empty"]` and no metrics at all** until `presley-run`'s evaluation
+pass finishes, which happens *after* the whole run loop. That is the documented
+pre-evaluation sticky verdict, not a broken run. Both analysis scripts below
+correctly refuse to quote such a run, so "incomplete or not citable" for a
+whole set means *wait*, not *debug*. **Region LPIPS for `elvis` runs
+additionally needs `--backfill-lpips`**, which the chain does at the very end.
 
-### How to run them without stepping on a landmine
+## State
 
-- **Use a scoped run-file**, as `config/holes_wave_a.yaml` did. Do not run
-  `--filter component=presley_ai` — 16 legitimate but unrelated fixed-QP
-  controls are still pending and would come along.
-- Append to `experiments.yaml` **as text**; verify entry-count delta, prior
-  hashes byte-identical, all distinct. Never re-dump the file.
-- Launch detached. **`nohup … &` inside a harness `Bash` call returns as soon as
-  the wrapper exits — that notification is not the job finishing.**
-- ⚠ **`pgrep -f <pattern>` matches your own checking command.** This bit me
-  twice this session, most recently reporting a finished LPIPS backfill as still
-  running for half an hour. Check log mtimes and result dirs, not `pgrep`.
-- `!! 1 INVARIANT FAILURE — metrics block is missing or empty` in a runner log
-  is the documented pre-evaluation sticky verdict, not a failure.
-- **Region LPIPS is not written by the standard evaluation.** After the runs,
-  `presley-evaluate results/ --backfill-lpips` before any BG-LPIPS bounds check,
-  or you will find the field missing and think something broke.
+- Code `main` clean and pushed, **CI green** (run 30738506530).
+- Paper pushed to Overleaf. Everything `\rev{}`-tracked.
+- `experiments.yaml` 880 entries (800 + 80 appended as text; prior hashes
+  byte-identical, verified by a pure-addition diff). 20 still `_retired`.
+- Results 985+ and climbing as the chain runs.
+- **`pdflatex` is not installed on this host** — the paper cannot be compiled
+  here. Brace balance and tabular column counts were checked by hand instead.
 
-### Then W2
-
-Fold each set into its `HOLE` — **a `HOLE` may only be cleared by the edit that
-lands its data.** `HOLE(tab:priced-trade)` can be cleared now from the H4 result
-already in the design doc. Finish with the sweep that every dispersion figure in
-the manuscript is within-run or explicitly labelled pooled; that class of error
-has now been found twice.
-
-## What landed since the last handoff
+## Done this session
 
 | | outcome |
 |---|---|
-| **R2 "technical insights"** | `sec:insight` — concedes Eqs 1–3 are a heuristic, relocates the contribution to the objective. Item **Done** |
-| **Throughput** | benchmarked: fp16 is already the shipped default, fp32 is **1.5× slower**, retiling worse. Null result, item **Done** |
-| **Perceptual** | corpus audit + first explicit "no MOS study" statement. Item **Done** |
-| **Stale queue** | 20 entries `_retired` in place (14 VBR/rule-1, 4 noise, 2 dc_vsr); pending `presley_ai` 48 → 16 |
-| **H4** | done, in the design doc; the budget lever is **inert below sa≈0.25** and `tab:priced-trade` sits exactly at that knee |
+| **H3** | 32 runs complete, evaluation pass still finishing at write time — **run `tools/analyze_holes_h3.py` first thing**; no number has been read from it yet |
+| **H1b / H2** | appended, run-files written and dry-run-clean, chained and queued |
+| **H4 → `tab:budget-knee`** | **landed in the paper**, `HOLE(tab:priced-trade)` cleared by the edit that landed its data |
+| **Dispersion sweep** | **clean** — all nine figures already within-run or explicitly scoped; recorded in `operational.md` with the grep that reproduces it |
 
-### Three numbers changed under audit — expect a fourth
+### The H4 finding, since it sharpened under JND gating
 
-- `6.2/8.2 dB` → **4.9/8.4 dB** (pooled, worded as within-run)
-- `12.4 dB` → **11.6 dB** (same defect; `R = 6.96` so "some 7 times" survived)
-- FG-metric flips: `13 of 43, 9 away from baselines` → **34 of 142, 16 away and
-  12 toward**. The old figure is **not re-derivable** and must not be quoted.
+The budget lever is **inert below sa 0.25** (bitrate flat within ±1.2%,
+encoder noise at fixed QP) and the restoration gain there is **sub-JND**
+(0.57× bear, 0.83× camel) — so the smallest budget both fails to free bits and
+produces a repair nobody would see. Above 0.25 the budget buys bits (−31.6% /
+−23.5% vs pristine) and the gain grows to 2.5–3.7× JND without cliffing.
+`tab:priced-trade`'s fixed 0.25 sits exactly at that knee. Every JND multiple
+came from `presley-compare`, not hand arithmetic.
 
-**The lesson, in `dead-ends.md`:** pooling inflated one figure by 1.07× and
-another badly, so *"it was pooled" is not itself proof a number is wrong* — it
-has to be measured. The rebuttal now leads on the bounding box not being a
-foreground region (76% of frame vs 15% true FG), not on "the honest metric
-favours us", which the corpus data does not support.
+The pre-registered monotonicity bound **fired on bear and was revised with a
+stated reason** rather than dropped — that is the convention to follow if one
+of yours fires.
+
+## Your task, in order
+
+1. **Read H3** — `python tools/analyze_holes_h3.py`. Bounds are encoded in the
+   script and checked in its output. If a bound fires, investigate
+   implementation / eval / data *before* reporting it as a finding.
+2. **Fold H3 into `HOLE(tab:conditioned)`** — a `HOLE` may only be cleared by
+   the edit that lands its data. Follow the `tab:budget-knee` commit as the
+   worked example (GOAL + CLAIM with hashes + NOTEs for the caveats).
+3. **H1b** — `python tools/analyze_holes_h1b.py` once it lands, then
+   `HOLE(tab:av1)`. ⚠ `pigs` cannot be starved as hard as bear/camel; the
+   script prints that caveat next to the numbers, keep it attached.
+4. **H2** — `HOLE(tab:goal2)`. n=4 videos is still under the n≥6 hard rule 2b
+   requires, so this **cannot** produce a "significant" verdict; it can only
+   widen or narrow the descriptive claim, and the text must say so.
 
 ## Still open, unchanged
 
 - **Q6 DiffBIR — ASK before any wire.** No mechanism argument → stay deferred.
-- **Q8 DC-VSR — blocked upstream**; now `_retired` in the queue.
-- **0c** — `drift-straight` unexplained, ρ's CI includes zero; the cost model may
-  not be called uniformly adequate. `tools/analyze_drift_straight_0c.py`, no GPU.
-- `open-questions.md` / `dead-ends.md` are over the log's own 300-line ceiling.
-- 16 pending fixed-QP `none`-restorer controls at comfortable QPs: legitimate,
-  never run, nobody has decided whether they are wanted.
+- **Q8 DC-VSR — blocked upstream**; `_retired` in the queue.
+- **0c** — `drift-straight` unexplained, ρ's CI includes zero.
+  `tools/analyze_drift_straight_0c.py`, no GPU.
+- `open-questions.md` / `dead-ends.md` are over the log's 300-line ceiling.
+- 16 pending fixed-QP `none`-restorer controls: legitimate, never run, nobody
+  has decided whether they are wanted.
 
 ## Gotchas
 
 - **The editable install points at the main checkout.** Tests run from a
   worktree import the *other* tree's `presley` unless `PYTHONPATH=<wt>/src`.
-- **Never `import torch` before `presley`/`sqlite3`** (CXXABI_1.3.15). It fails
-  at *runtime*, in-function, so a tool can look fine until the one path runs.
-- The `Bash` tool's own `timeout` (ms, max 600000) is what applies; exceeding it
-  backgrounds the command rather than killing it.
+- **Never `import torch` before `presley`/`sqlite3`** (CXXABI_1.3.15) — it
+  fails at *runtime*, in-function.
+- `nohup … &` inside a harness `Bash` call returns when the wrapper exits; that
+  notification is not the job finishing.
+- The `Bash` tool's own `timeout` (ms, max 600000) is what applies.
 - Carried: filter fixed-QP with `codec=svtav1`; NAFNet / Real-HAT-GAN reject
   `fp32=False`; `fg_protect=True`; BG-PSNR is never the Goal-2 verdict; never
   `rm` `results/`/`dataset/`/`cache/`.
@@ -119,8 +113,10 @@ favours us", which the corpus data does not support.
 
 | Path | Why |
 |---|---|
-| `docs/HOLE_CLOSURE_WAVE.md` | **start here** — bounds, calibration, H4 result |
-| `~/.claude/plans/prepare-a-plan-to-quiet-crown.md` | the approved plan |
-| `config/holes_wave_a.yaml` | the scoped-run-file pattern to copy |
-| `sections/evaluation.tex` → `sec:insight` | the R2 answer |
+| `logs/holes_chain_driver.log` | **check this first** — what is running |
+| `docs/HOLE_CLOSURE_WAVE.md` | bounds, stage-1 calibration, H4 result |
+| `tools/analyze_holes_h3.py`, `tools/analyze_holes_h1b.py` | the analyses, bounds encoded |
+| `config/holes_wave_{h3,h1b,h2}.yaml` | scoped run-files; re-runnable, resume-safe |
+| `sections/evaluation.tex` → `tab:budget-knee` | worked example of clearing a HOLE |
+| `research-log/operational.md` | the dispersion sweep and how to redo it |
 | `research-log/dead-ends.md` | every superseded figure, with its lesson |
