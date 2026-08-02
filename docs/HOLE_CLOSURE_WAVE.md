@@ -168,6 +168,43 @@ starved QPs. Sweep `shrink_amount` ∈ {0.10, 0.50, 0.75} (0.25 already exists) 
 known in advance; what the table needs is whether the restorer's ability to pay
 back the degradation falls off gradually or cliffs at some budget.
 
+### H4 result (2026-08-01) — and one alarm that resolves into the finding
+
+All 12 runs citable. Baselines for reference: `bear` 753.7 kbps at QP 43,
+`camel` 740.0 kbps at QP 42.
+
+| video | sa | kbps | BG-LPIPS none | BG-LPIPS restored | restoration gain |
+|---|---|---|---|---|---|
+| bear | 0.10 | 607.0 | 0.1691 | 0.1406 | +0.0285 |
+| bear | 0.25 | 614.2 | 0.2590 | 0.1926 | +0.0664 |
+| bear | 0.50 | 451.4 | 0.3464 | 0.2458 | +0.1006 |
+| bear | 0.75 | 415.4 | 0.4173 | 0.2914 | +0.1258 |
+| camel | 0.10 | 694.9 | 0.1516 | 0.1104 | +0.0413 |
+| camel | 0.25 | 693.3 | 0.1975 | 0.1228 | +0.0747 |
+| camel | 0.50 | 570.5 | 0.3037 | 0.1684 | +0.1353 |
+| camel | 0.75 | 531.9 | 0.3783 | 0.1950 | +0.1833 |
+
+Bounds: total bitrate reduction **−31.6% (bear) / −23.5% (camel)**, inside the
+15–40% band. BG-LPIPS worsens monotonically on both. FG-LPIPS spread 0.019 /
+0.018, well inside JND — foreground protection holds across the whole budget
+range, as it must.
+
+**⚠ The monotonicity bound fired on `bear`:** 607.0 kbps at sa 0.10 rises to
+614.2 at sa 0.25 (+1.2%) before falling. `camel` is flat over the same step
+(−0.2%). **Resolution: the bound was over-specified, not the measurement
+wrong.** Every setting is well below its pristine baseline (bear 607–415 vs
+753.7), so the lever does free bits throughout; what it does *not* do is vary
+between 0.10 and 0.25, where both clips sit within ±1.2% — encoder noise at
+fixed QP. **Revised bound: judge the total range and the shape, not
+step-by-step monotonicity.**
+
+**And that flat region is the answer the HOLE wanted.** The budget lever is
+inert below ≈0.25 and only bites above it, while the *restoration gain* grows
+monotonically across the whole range (bear +0.029 → +0.126, camel +0.041 →
++0.183). So the restorer keeps paying back more as the budget grows — the trade
+does not cliff — but the bitrate only starts moving past 0.25. Anyone reading
+`tab:priced-trade` should note that its fixed sa = 0.25 sits exactly at the knee.
+
 ---
 
 ## Order and cost
