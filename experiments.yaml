@@ -14182,6 +14182,7 @@ experiments:
   restorer: propainter
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14200,6 +14201,7 @@ experiments:
   restorer: none
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14218,6 +14220,7 @@ experiments:
   restorer: telea
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14236,6 +14239,7 @@ experiments:
   restorer: e2fgvi
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14326,6 +14330,7 @@ experiments:
   restorer: propainter
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14344,6 +14349,7 @@ experiments:
   restorer: none
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14362,6 +14368,7 @@ experiments:
   restorer: telea
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14380,6 +14387,7 @@ experiments:
   restorer: e2fgvi
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14470,6 +14478,7 @@ experiments:
   restorer: propainter
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14488,6 +14497,7 @@ experiments:
   restorer: none
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14506,6 +14516,7 @@ experiments:
   restorer: telea
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14524,6 +14535,7 @@ experiments:
   restorer: e2fgvi
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14614,6 +14626,7 @@ experiments:
   restorer: propainter
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14632,6 +14645,7 @@ experiments:
   restorer: none
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14650,6 +14664,7 @@ experiments:
   restorer: telea
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14668,6 +14683,7 @@ experiments:
   restorer: e2fgvi
   restorer_params: {}
 - alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14685,3 +14701,291 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: none
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: telea
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: e2fgvi
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: none
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: telea
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: e2fgvi
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: none
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: bear
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: telea
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: bear
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: e2fgvi
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: bear
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: bear
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: none
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: camel
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: telea
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: camel
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: e2fgvi
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: camel
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: camel
