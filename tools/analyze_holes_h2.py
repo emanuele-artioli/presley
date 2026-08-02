@@ -45,6 +45,17 @@ BOUNDS = {
 
 
 def load():
+    """Index every H2 cell by (video, qp, mode, fill).
+
+    ⚠ `tab:goal2`'s two halves live in different components, and reading only
+    one of them is how 16 of this set's cells were silently queued wrong:
+
+      * freeze  -> `presley_ai`, `degradation: freeze`, `restorer: <fill>`
+      * blackout -> `elvis`, `removal_mode: blackout`, `inpainter: <fill>`
+
+    blackout removes a block outright, which is ELVIS's job; `presley_ai`
+    rejects it outright. Both shapes are normalised to the same key here.
+    """
     out = {}
     for p in RESULTS.glob("*/result.json"):
         try:
@@ -53,12 +64,19 @@ def load():
             continue
         c = d.get("config") or {}
         v = c.get("video")
-        if v not in CELLS or c.get("component") != "presley_ai":
+        if v not in CELLS or c.get("block_size") != 8 or c.get("height") != 360:
             continue
         qp = c.get("codec_params", {}).get("qp")
-        if qp not in CELLS[v] or c.get("block_size") != 8 or c.get("height") != 360:
+        if qp not in CELLS[v] or c.get("codec") != "svtav1":
             continue
-        out[(v, qp, c.get("degradation"), c.get("restorer"))] = d
+        if c.get("component") == "presley_ai":
+            mode, fill = c.get("degradation"), c.get("restorer")
+        elif c.get("component") == "elvis":
+            mode, fill = c.get("removal_mode"), c.get("inpainter")
+        else:
+            continue
+        if mode in MODES and fill in FILLS:
+            out[(v, qp, mode, fill)] = d
     return out
 
 
