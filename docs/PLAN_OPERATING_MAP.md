@@ -293,28 +293,56 @@ Add cost per goal to the existing tables from logged
 `restoration_time_seconds`, and settle a question the article currently assumes
 away.
 
-**Real time is not a hard requirement, but "can we beat a baseline in real
-time?" is worth answering — and the assumption that the baselines themselves
-run in real time does not hold on this host.** Median encode throughput from
-logged `encoding_time_seconds`:
+> ### ⛔ The table that stood here was wrong. Corrected 2026-08-03 by Wave 2C.
+>
+> **Do not quote the old rows; they are kept only in git history.** Every one of
+> them was a **pooled median across disjoint acquisition batches**, and the
+> pooling — not the hardware — produced the anomaly the plan asked us to chase.
+>
+> The alarm was aimed at the wrong number. svtav1 at 1280×720 pools two batches
+> whose ranges do not overlap: QP 30–37 runs at **0.7–1.2 fps** and QP 43–62
+> runs at **23.8–37.4 fps**. Any central value of that mixture lands in a gap
+> **no svtav1 720p run in the corpus has ever occupied**. Resolution was
+> confounded with QP by accident of scheduling, and QP moves encode time here
+> more than resolution does. Verified independently against `results/presley.db`.
+>
+> **QP-matched, the impossibility disappears and the ordering is monotone:**
+>
+> | QP | 640×360 | 1280×720 | 1920×1080 |
+> |---|---|---|---|
+> | 43 | 36.3 | 36.0 | 31.7 |
+> | 50 | 39.3 | 32.8 | 30.7 |
+> | 58 | 81.9 | 35.1 | 29.7 |
+> | 62 | 73.9 | 27.6 | 28.2 |
+>
+> **This overturns the claim the table was built to support.** "The baselines
+> are not real-time above 360p" was an artifact of the same pooling: QP-matched,
+> svtav1 preset 8 clears 24 fps at **every** resolution measured. That sentence
+> must not be repeated anywhere.
+>
+> A second correction fell out: **every `kvazaar` and `x264` baseline in the
+> corpus is VBR** (kvazaar 8/8, x264 1/1 — confirmed). The old `kvazaar 12.6
+> fps` row was therefore not fixed-QP evidence at all, and there is no fixed-QP
+> timing for either codec. Both rows are dropped rather than caveated.
+>
+> **What survives, and it is the part that mattered:** we still cannot claim
+> real time end to end — but **the gap is entirely restoration-side, and
+> encoding was never the bottleneck.** Against a 41.7 ms frame budget, encode
+> costs 11–15 ms at 360p and restoration costs ~206 ms, overrunning the whole
+> budget ~5× on its own. Resolution is not a lever (restoration is full-frame by
+> design and independent of `shrink_amount`), and a dedicated GPU plausibly
+> recovers ~2×, not 5×. **Real time therefore requires a cheaper restorer, not
+> better hardware** — which is exactly the ordering Wave 3(a)/(b) already sets
+> out, now with a measured reason rather than an assumption.
+>
+> Full per-batch table with measurement conditions, and the reason a pooled cell
+> median is never quoted again: `docs/WAVE2C_EFFICIENCY.md`.
 
-| configuration | median fps | vs 24 fps |
-|---|---|---|
-| svtav1 baseline 640×360 | 39.3 | 1.6× |
-| x265 baseline 640×360 | 25.8 | 1.1× |
-| x265 baseline 640×480 | 20.0 | **0.8×** |
-| kvazaar baseline 640×360 | 12.6 | **0.5×** |
-| svtav1 baseline 1280×720 | 3.2 | **0.1×** |
-
-So the baselines are *marginally* real-time at 360p and **not real-time at all
-above it**. We cannot presently claim real time for anything, ours or theirs,
-and saying so is more useful than an unqualified "our restorer is slow".
-
-⚠ **One alarm to close before any of this is quoted:** svtav1 1080p measures
-28.9 fps against 720p's 3.2 fps. Faster at higher resolution is impossible;
-suspect a differing preset, threading setting, or contention from another
-user's job on this shared box. **Investigate before publishing any throughput
-number** — this is exactly the "bound before believing" case.
+**The lesson this cost, worth more than the numbers:** a median over a cell that
+mixes acquisition batches is not a measurement of that cell. Report per batch
+with n and dispersion, or report "not measurable". The plan asked for an alarm
+to be closed and the alarm turned out to be pointing at the wrong row — closing
+it properly overturned the premise it was attached to.
 
 Deliverables: (i) a throughput row per configuration with the measurement
 conditions stated, (ii) an explicit statement of what *would* be needed for a
