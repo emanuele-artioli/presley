@@ -4403,6 +4403,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
 # hash: d40d44974a4b7b94
 - component: presley_ai
   video: bear
@@ -4419,6 +4420,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
 # hash: 095a17e8cd48e2ab
 - component: elvis
   video: bear
@@ -4453,6 +4455,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: dd3a5ef02488e100
 - component: presley_ai
   video: bear
@@ -4469,6 +4472,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: fd8127a1035bedca
 - component: elvis
   video: bear
@@ -4503,6 +4507,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
 # hash: 2488f7ccb50ec232
 - component: presley_ai
   video: bear
@@ -4519,6 +4524,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
 # hash: 920f8e3eb89f2793
 - component: elvis
   video: bear
@@ -4553,6 +4559,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: 0500c272699b1327
 - component: presley_ai
   video: bear
@@ -4569,6 +4576,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: c484f473a63e2500
 - component: elvis
   video: bear
@@ -4603,6 +4611,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
 # hash: 78129f8dfae24287
 - component: presley_ai
   video: camel
@@ -4619,6 +4628,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
 # hash: 4d04b6bdc0ed9908
 - component: elvis
   video: camel
@@ -4653,6 +4663,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: 781dcddf6b8d5743
 - component: presley_ai
   video: camel
@@ -4669,6 +4680,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: aacddd08584f96dc
 - component: elvis
   video: camel
@@ -4703,6 +4715,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
 # hash: 91e30d8869627d7d
 - component: presley_ai
   video: camel
@@ -4719,6 +4732,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
 # hash: 6d81ba1dc73f6fbe
 - component: elvis
   video: camel
@@ -4753,6 +4767,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: fef7493ff50ffd83
 - component: presley_ai
   video: camel
@@ -4769,6 +4784,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: d1b42776c064391b
 - component: elvis
   video: camel
@@ -13229,6 +13245,7 @@ experiments:
     preset: '8'
     qp: 63
   target_bitrate: 0
+# hash: 807e09af4e5d0c6e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13247,6 +13264,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 36d973b3d6662b9b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13267,6 +13285,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: ca38ca2b821af41c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13285,6 +13304,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 4cbfee60a8853cf2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13303,6 +13323,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 4c20beac5c69af0b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13321,6 +13342,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 8000cec54bd37459
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13341,6 +13363,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: fbe8adad37b715e2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13359,6 +13382,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: a4e94dd1f4c9e62c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13377,6 +13401,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 617bc5747387a921
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13395,6 +13420,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 4e0bbea43ba158dc
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13415,6 +13441,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 1e8f71602abf30d2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13433,6 +13460,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 4c2d30801604b72d
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13451,6 +13479,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: f67f2a531895ee8d
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13469,6 +13498,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: ebccd1f79f0927de
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13489,6 +13519,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: a5d3f8d217adbd3d
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13507,6 +13538,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 0e6cd8207a2a18b6
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13525,6 +13557,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 043f79f6fc30be0e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13543,6 +13576,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 9cdf895adbad37bd
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13563,6 +13597,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 3abf2419b1dcb4ad
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13581,6 +13616,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 2df2f7441fd86bd0
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13599,6 +13635,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: e8c528816abf1c47
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13617,6 +13654,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 66d6041e4d7844e6
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13637,6 +13675,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: d7e98276aff50ac9
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13655,6 +13694,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 35451e289f7021d5
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13673,6 +13713,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 02b26e19d0f2d4d7
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13691,6 +13732,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 5c5001ebb55b92ad
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13711,6 +13753,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: eebb2032ca0aae46
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13729,6 +13772,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 7dcdbbbf8a668268
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13747,6 +13791,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 246045841af43528
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13765,6 +13810,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 02342c48176fe93b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13785,6 +13831,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 5d095b6a5fdabe69
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13803,6 +13850,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 5f5fabf54767dc52
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13821,6 +13869,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: dc391e81cdd99801
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13839,6 +13888,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 11aea64ab0c7a272
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13857,6 +13907,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: f7d79cc699093c80
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13875,6 +13926,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: fd5665faf4106609
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13893,6 +13945,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: cd4c80b52532af82
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13911,6 +13964,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: e47c7af5ee5810ab
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13929,6 +13983,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 960daa07740e3009
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13947,6 +14002,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: b750d043f992365f
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13965,6 +14021,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 4b0536b9b7354339
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13983,6 +14040,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: d8751b3614e84674
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14001,6 +14059,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: c7b763b41b955bd6
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14019,6 +14078,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 3ec2131375bd4656
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14037,6 +14097,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 9b69de304adba162
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14055,6 +14116,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 7e00621ac44ff7ce
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14073,6 +14135,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 25574cbb687a4cb5
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14091,6 +14154,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 70fbca153d703b19
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14109,6 +14173,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: c500f8d313a17c9b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14127,6 +14192,7 @@ experiments:
   degradation: freeze
   restorer: none
   restorer_params: {}
+# hash: 74d4c24864090da9
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14145,6 +14211,7 @@ experiments:
   degradation: freeze
   restorer: telea
   restorer_params: {}
+# hash: b1b567eec901b782
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14163,6 +14230,7 @@ experiments:
   degradation: freeze
   restorer: e2fgvi
   restorer_params: {}
+# hash: a2659081027086ba
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14181,6 +14249,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: {}
+# hash: 651cd36f662f47f1
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14200,6 +14269,7 @@ experiments:
   degradation: blackout
   restorer: none
   restorer_params: {}
+# hash: 6bf0b5a6c51b3115
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14219,6 +14289,7 @@ experiments:
   degradation: blackout
   restorer: telea
   restorer_params: {}
+# hash: 85a3a92cd58a750a
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14238,6 +14309,7 @@ experiments:
   degradation: blackout
   restorer: e2fgvi
   restorer_params: {}
+# hash: 9083b599a6736e8d
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14257,6 +14329,7 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+# hash: 2aa6947446f1c842
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14275,6 +14348,7 @@ experiments:
   degradation: freeze
   restorer: none
   restorer_params: {}
+# hash: b99c2f7830984b1b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14293,6 +14367,7 @@ experiments:
   degradation: freeze
   restorer: telea
   restorer_params: {}
+# hash: c77a7899030cf1df
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14311,6 +14386,7 @@ experiments:
   degradation: freeze
   restorer: e2fgvi
   restorer_params: {}
+# hash: bd4ba3aeb3aad546
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14329,6 +14405,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: {}
+# hash: ce47c5f24f56b92a
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14348,6 +14425,7 @@ experiments:
   degradation: blackout
   restorer: none
   restorer_params: {}
+# hash: ff4800630b005b22
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14367,6 +14445,7 @@ experiments:
   degradation: blackout
   restorer: telea
   restorer_params: {}
+# hash: 568427599a72dfa7
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14386,6 +14465,7 @@ experiments:
   degradation: blackout
   restorer: e2fgvi
   restorer_params: {}
+# hash: e5f4d9b0a75d9ee9
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14405,6 +14485,7 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+# hash: b683ca48b74eec47
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14423,6 +14504,7 @@ experiments:
   degradation: freeze
   restorer: none
   restorer_params: {}
+# hash: 3128232321b55d45
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14441,6 +14523,7 @@ experiments:
   degradation: freeze
   restorer: telea
   restorer_params: {}
+# hash: ea178b950bb121ef
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14459,6 +14542,7 @@ experiments:
   degradation: freeze
   restorer: e2fgvi
   restorer_params: {}
+# hash: 3f02ae4404c124f4
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14477,6 +14561,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: {}
+# hash: 81b63969ec2143c1
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14496,6 +14581,7 @@ experiments:
   degradation: blackout
   restorer: none
   restorer_params: {}
+# hash: 9ba1822671e2ab24
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14515,6 +14601,7 @@ experiments:
   degradation: blackout
   restorer: telea
   restorer_params: {}
+# hash: 8c767950d017bd90
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14534,6 +14621,7 @@ experiments:
   degradation: blackout
   restorer: e2fgvi
   restorer_params: {}
+# hash: 4e0a9032a4bd458b
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14553,6 +14641,7 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+# hash: 6e879687a8759643
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14571,6 +14660,7 @@ experiments:
   degradation: freeze
   restorer: none
   restorer_params: {}
+# hash: 95217e5e3a74701a
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14589,6 +14679,7 @@ experiments:
   degradation: freeze
   restorer: telea
   restorer_params: {}
+# hash: 82430799727579fd
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14607,6 +14698,7 @@ experiments:
   degradation: freeze
   restorer: e2fgvi
   restorer_params: {}
+# hash: 5ff0bf38a226e7c8
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14625,6 +14717,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: {}
+# hash: 3ab6bf7e33eb9b97
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14644,6 +14737,7 @@ experiments:
   degradation: blackout
   restorer: none
   restorer_params: {}
+# hash: d99ecaf6ff064139
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14663,6 +14757,7 @@ experiments:
   degradation: blackout
   restorer: telea
   restorer_params: {}
+# hash: 54cf176482676c84
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14682,6 +14777,7 @@ experiments:
   degradation: blackout
   restorer: e2fgvi
   restorer_params: {}
+# hash: 913c787e9e051793
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
@@ -14701,6 +14797,7 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+# hash: 01a0415053552ca0
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14719,6 +14816,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 76c183f9001285e3
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14737,6 +14835,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 1fdf2a679bed0ee9
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14755,6 +14854,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 980693fb02d23d66
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14773,6 +14873,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 483d807a34414148
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14791,6 +14892,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 2f6ae9a46b9f800b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14809,6 +14911,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 0e3a1f96995d513e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14827,6 +14930,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: c6bd9035421f97d2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14845,6 +14949,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 7ac7c19b436f7688
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14863,6 +14968,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: bear
+# hash: b0f8ec4cbbb84115
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14881,6 +14987,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: bear
+# hash: 0927ac209946712b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14899,6 +15006,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: bear
+# hash: ccdc030699eade7c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14917,6 +15025,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: bear
+# hash: 5e14b23355db2f4b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14935,6 +15044,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: camel
+# hash: bb8119c2c965c690
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14953,6 +15063,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: camel
+# hash: fa5c755ca0ccb3cb
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14971,6 +15082,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: camel
+# hash: cf965f7ef594be8e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14989,3 +15101,94 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: camel
+# hash: f4679520005fa154
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: motorbike
+  width: 640
+# hash: 4a5b97329da95564
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: drift-straight
+  width: 640
+# hash: 1b889e2245dab9ca
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dancing
+  width: 640
+# hash: 52c6c61cc41b2b79
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: drift-turn
+  width: 640
+# hash: 0f0d192862aa97eb
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: color-run
+  width: 640
+
