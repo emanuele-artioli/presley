@@ -49,22 +49,63 @@ damage level should allow, or damaging less than its bit saving should cost —
 is a genuinely better operating point rather than a different position on one
 tradeoff curve. Those are the "best of both worlds" cases.
 
-This also explains the corpus-level pattern already measured:
+### ⚠ Pass rates are not effect sizes — do not build the map on them
 
-| transport | reduction | restoration | reading |
-|---|---|---|---|
-| ac_truncate | 87.5% | 20.8% | strips most, restores worst |
-| blur | 79.3% | 12.5% | " |
-| downsample | 69.9% | 34.2% | **acceptable at both** |
-| freeze | 59.4% | **0.0%** (0/22) | leaves most, restorer has nothing to add |
-| blackout | 58.7% | **75.0%** | strips all, but restoration is well-posed |
+`tools/audit_goal_scope.py` reports, per transport, the **fraction of cells
+that pass a boolean gate**. Those percentages are *not* magnitudes:
+"ac_truncate 87.5% reduction" means 87.5% of its cells saved *some* bits with
+foreground within JND — it says nothing about how much. "blackout 75%
+restoration" means 75% of its cells cleared 1 JND **against blackout's own
+unrestored control**, not that 75% of anything was recovered.
 
-`downsample` is best at *neither* goal. It is the only transport acceptable at
-both, and **that** is why the article's main pipeline uses it — a fact the
-article does not currently state. `blackout` is the ladder's most interesting
-resident: it strips everything yet restores best, because a total hole is a
-well-posed in-painting problem while a partial one is an ambiguous denoising
-problem.
+An earlier draft of this plan glossed those rates as "strips most, restores
+worst". **That was wrong**, and the magnitudes reverse it: ac_truncate has the
+*highest* pass rate and the *smallest* median saving (−6.7%). A transport that
+reliably saves 2% would score 100% on the gate and be useless.
+
+**The map must be built on effect sizes measured within operating points**, not
+on pass rates and not on medians pooled across cells (transports were run on
+different videos, so a pooled median is confounded by coverage).
+
+### The magnitudes, paired
+
+Six operating points carry all four core transports *and* a baseline
+(`bear`@51, `bear`@58, `camel`@50, `camel`@58, `dog`@50, `pigs`@50). Medians
+of the per-cell values, best available fill for the restored column:
+
+| transport | bits vs baseline | BG-LPIPS raw | **BG-LPIPS restored** | gain |
+|---|---|---|---|---|
+| blackout | **−24.6%** | 0.480 | 0.374 | 1.70× JND |
+| blur | −15.1% | 0.368 | 0.343 | 0.24× JND |
+| downsample | −14.8% | 0.297 | **0.220** | 1.61× JND |
+| freeze | −8.3% | 0.304 | 0.330 | **−0.53× (harms)** |
+
+**The ladder holds in magnitude, not just in rank:** blackout saves the most
+bits and leaves the most damage; freeze saves the least and leaves the least.
+
+**Why we do not simply blackout everything.** Blackout posts the largest
+restoration *gain* (1.70× JND) purely because it starts from the worst place.
+It *ends* at 0.374 while downsample ends at **0.220** — **3.1× JND worse** — in
+exchange for 10 points more bit saving. Restoration cannot repay what blackout
+destroys. **The gain figure flatters blackout; the absolute restored figure
+decides against it.** Any exhibit that shows restoration gain without the
+absolute end quality beside it will mislead a reader the same way.
+
+**A Pareto frontier, which is the map in miniature:**
+
+- **`downsample` — the quality choice.** Best absolute restored quality by a
+  wide margin, at a mid-range bit saving.
+- **`blackout` — the rate choice.** Only pick it when the budget genuinely
+  requires −24.6%, accepting a visibly worse background.
+- **`blur` — dominated.** Saves the same bits as downsample (−15.1% vs −14.8%)
+  and restores 2.5× JND worse.
+- **`freeze` — dominated twice.** Saves the least *and* restoration actively
+  harms it, corroborating `CLAIM(tab:goal2-breadth)`.
+
+So `downsample` is not "best at neither, acceptable at both" — the earlier
+pass-rate reading. On magnitudes it is **the best absolute-quality transport
+outright**, and blackout is its only frontier rival. n=6 operating points over
+4 videos: descriptive, below the n≥6 *videos* significance threshold.
 
 ## What we already have
 
@@ -96,9 +137,18 @@ Waves 2A/2B/2C are independent and should run in parallel worktrees.
    bits ≤ baseline and FG-PSNR within JND. Report the map under at least two
    objectives (quality-first and rate-first) — a recommendation that survives
    both is far stronger than one tuned to a single scalarization.
-3. **Ladder residuals.** For every arm compute residual against the fitted
-   bits↔damage ladder. Rank the off-ladder winners. These are the candidate
-   "best of both worlds" findings.
+3. **Ladder residuals — the scalar the article is missing.** Fit the
+   bits↔damage ladder per operating point, then score every arm by its
+   **residual** from it. This is deliberately analogous to BD-rate: BD-rate
+   scores a codec against a rate-quality curve, and the residual scores a
+   transport against the rate-damage curve its peers define. It gives one
+   signed number per arm, comparable across operating points, where today we
+   have only per-cell verdicts. Rank the off-ladder winners — those are the
+   "best of both worlds" candidates, and the residual is what F1 in
+   `PLAN_PRESENTATION.md` plots.
+   ⚠ Report the residual in JND units alongside the absolute restored quality.
+   Blackout is the standing warning: the largest gain and the worst absolute
+   result. A residual alone can repeat that error.
 4. **Cost as third axis.** Attach fps to each recommendation; mark
    Pareto-dominated arms (worse on both quality and cost).
 
@@ -132,21 +182,69 @@ Priority order: (i) complete 4-transport coverage at the QPs where only 2 exist,
 significance claim — the map is currently descriptive only, and n≥6 would let
 it be stated as a finding, (iii) only then consider new transports.
 
-### Wave 2C — efficiency reporting (no GPU)
+### Wave 2C — efficiency, and the real-time question (no GPU)
 
-Add cost per goal to the existing tables from logged `restoration_time_seconds`.
-**Quantization/distillation is explicitly deferred, not forgotten:** the gap to
-24 fps is 6–60× and fp16 is already the shipped default, so a 2–4× win would not
-change the offline/VOD positioning. Revisit only if the map shows a cheap
-transport is competitive, which would make cost a decision variable rather than
-a footnote.
+Add cost per goal to the existing tables from logged
+`restoration_time_seconds`, and settle a question the article currently assumes
+away.
 
-### Wave 3 — new methods, only if Waves 1–2 leave a gap
+**Real time is not a hard requirement, but "can we beat a baseline in real
+time?" is worth answering — and the assumption that the baselines themselves
+run in real time does not hold on this host.** Median encode throughput from
+logged `encoding_time_seconds`:
+
+| configuration | median fps | vs 24 fps |
+|---|---|---|
+| svtav1 baseline 640×360 | 39.3 | 1.6× |
+| x265 baseline 640×360 | 25.8 | 1.1× |
+| x265 baseline 640×480 | 20.0 | **0.8×** |
+| kvazaar baseline 640×360 | 12.6 | **0.5×** |
+| svtav1 baseline 1280×720 | 3.2 | **0.1×** |
+
+So the baselines are *marginally* real-time at 360p and **not real-time at all
+above it**. We cannot presently claim real time for anything, ours or theirs,
+and saying so is more useful than an unqualified "our restorer is slow".
+
+⚠ **One alarm to close before any of this is quoted:** svtav1 1080p measures
+28.9 fps against 720p's 3.2 fps. Faster at higher resolution is impossible;
+suspect a differing preset, threading setting, or contention from another
+user's job on this shared box. **Investigate before publishing any throughput
+number** — this is exactly the "bound before believing" case.
+
+Deliverables: (i) a throughput row per configuration with the measurement
+conditions stated, (ii) an explicit statement of what *would* be needed for a
+real-time setup (encoder preset, resolution, hardware), since a reader whose
+setup differs may sit on the other side of the line, (iii) cost attached to
+each map recommendation so it is a decision variable, not a footnote.
+
+### Wave 3 — conditional: new methods, and model compression
 
 Do **not** commission new models or transports before the map exists. The wave
 just completed showed the failure is content-dependent, not model-dependent;
 adding a restorer would not have touched it. Wave 3 is justified only by a
 specific empty region of the map.
+
+**Quantization / distillation lives here, gated on Waves 1–2.** It was deferred
+earlier on the grounds that a 2–4× win would not reach real time and so would
+not change the offline/VOD positioning. Waves 1–2C can overturn that in two
+ways, and if either fires it becomes worth doing:
+
+- the map shows a **cheap transport/restorer is competitive on quality**, so
+  cost becomes a decision variable between near-equal options rather than a
+  footnote; or
+- the throughput work above shows a configuration where **the encoder, not the
+  restorer, is the bottleneck** — in which case compressing the restorer moves
+  the whole pipeline toward a line it could actually cross.
+
+**If it is triggered, scope it small first.** One model (Real-ESRGAN, the
+shipped default and the cheapest generative option at 2.8 fps), one method
+(int8 post-training quantization — no retraining, hours not days), on the
+operating points the map already marks as recommended. Gate on: does BG-LPIPS
+stay within JND of the fp16 result? Only extend to more models, or to
+distillation (which needs training and is a different order of effort), if that
+first probe both preserves quality and produces a speedup large enough to
+change a recommendation in the map. A speedup that changes no recommendation is
+not worth the second step.
 
 ## What would falsify this plan
 
