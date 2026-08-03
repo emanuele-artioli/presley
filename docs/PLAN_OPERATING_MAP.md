@@ -1,9 +1,60 @@
 # Plan A — from "our pipeline wins" to an operating map
 
-**Status:** proposed 2026-08-02. **Wave 1 complete 2026-08-03 and it PASSES the
-falsification gate** — results in `docs/WAVE1_OPERATING_MAP.md`, tool in
-`tools/build_operating_map.py`, tests in `tests/test_build_operating_map.py`.
-Waves 2A/2B/2C are unblocked and may launch together. Workstream 1 of 2.
+**Status:** proposed 2026-08-02. Wave 1 passed the gate 2026-08-03; **Waves 2A,
+2B and 2C then ran, and gate condition 2 substantively FIRES.** This plan needs
+re-scoping before any further work — see the box below. Workstream 1 of 2.
+
+> ### ⛔ Gate condition 2 fires: the map collapses under quality-first
+>
+> Wave 1's coded check said "2 distinct winners, not firing". That check counts
+> **per-cell** winners, and the 2 rested on a single cell. Three independent
+> lines of evidence, from three waves that did not share code, now say the
+> substantive condition is met:
+>
+> 1. **Per-cell (Wave 1):** 18 of 19 quality-first separable cells name
+>    `downsample+realesrgan`.
+> 2. **Paired significance (Wave 2B):** it beats `blackout+propainter` on 10/10
+>    videos — and after Holm over the real family (m=14 candidates, losers
+>    included) that is **the only comparison in the entire corpus that survives**
+>    (p_Holm 0.027, n=10, clearing the n≥8 restorer bar). `blur+nafnet` misses at
+>    0.0508; `freeze+propainter` is `underpowered (n<8)`. **Under rate-first
+>    nothing is significant and the direction reverses.**
+> 3. **Content axis (Wave 2A): NEGATIVE, and degenerate.** No EVCA-derived
+>    attribute predicts transport choice. The one that fired (motion, rho +0.642)
+>    was **withdrawn** — it fails its own pre-registered robustness subset,
+>    correlates with a video's *cell count* as strongly as with the outcome, and
+>    is beaten by dataset **provenance** at rho +0.907, which fired the alarm
+>    bound and was handled as a confound. The deeper point: **T1 could not be
+>    tested at all**, because 18 of 19 cells name the same arm and no attribute
+>    can predict a constant.
+>
+> **What this kills.** The claim this plan was built on — *"for a given kind of
+> content at a given requested quality, there is a best choice"* — is not
+> supported. Content does not select the transport, and under the objective that
+> matters most it is the same arm everywhere. The (content × rate) lookup table
+> is dead.
+>
+> **What survives, and it is a cleaner paper than the one we were defending.**
+> The plan already anticipated this: *"The map collapses to a single global
+> recommendation. Also fine, also a different paper."* Concretely:
+>
+> - **One recommendation, with one significance-backed comparison behind it:**
+>   `downsample+realesrgan`, n=10 videos, p_Holm 0.027, on BG-LPIPS.
+> - **The transport is selected by the deployer's objective, not by the
+>   content** — and even that axis is weaker than it looked, because rate-first's
+>   preference has no significant support and Wave 2C found it **replaceable for
+>   free in 14 of 50 cells, up to 9.8× faster at perceptually indistinguishable
+>   quality**. Rate-first prefers the corpus's slowest fill.
+> - **The corpus is confounded with coverage.** Provenance predicting an outcome
+>   at +0.907 is a fact about how runs were scheduled, not about video content.
+>   Any future breadth claim has to be read against that.
+>
+> **Before resuming:** re-scope this plan to the single-recommendation framing,
+> or retire it in favour of a new one. Wave 2B's remaining batches are still
+> worth running — they *balance* the coverage confound 2A identified, and
+> `tools/analyze_content_axis.py` should be re-run afterwards, which costs
+> nothing. But do not commission Wave 3 or restructure the article against the
+> map framing.
 Companion: `docs/PLAN_PRESENTATION.md` (workstream 2), which **depends on this
 one** — you cannot choose how to present a result before knowing which results
 survive scoping.
