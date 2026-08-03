@@ -46,64 +46,77 @@ tables of numbers.
 
 ### New figures (the article's visual argument)
 
-- **F1 — the information ladder, used the way a BD-rate curve is used.**
-  Transmitted bits against background damage, one point per transport per
-  operating point, with the fitted ladder drawn and the **off-ladder residuals
-  highlighted**.
+**F1 — rate–quality curves, where the shape carries the argument.**
+These are genuine BD-rate curves and we already have the data for them: every
+four-rung QP ladder behind `tab:bdrate`, `tab:av1`, `tab:av1-breadth`,
+`tab:priced-trade` and `tab:conditioned-breadth` *is* an R–D curve, currently
+collapsed to a single BD number in a table.
 
-  The ladder is not merely descriptive: it plays the role a rate-distortion
-  curve plays for BD-rate. BD-rate scores a codec against a rate-quality curve;
-  the **ladder residual** (Plan A, Wave 1 step 3) scores a transport against the
-  rate-damage curve its peers define, giving one signed, cross-cell-comparable
-  number where today we have only per-cell verdicts. F1 is that metric's
-  picture, and the two should land together — the figure without the scalar is
-  an illustration, the scalar without the figure is unmotivated.
+Collapsing is the wrong call for the central result. **The regime reversal is a
+curve-shape phenomenon** — the sign of the bit saving flips along the ladder,
+and on `dog`/`pigs` it flips the opposite way from `bear`/`camel`. A single BD
+integral hides exactly that, and hides curve crossings generally. Plot the
+curves where shape is the argument; **keep the BD numbers in a table** for exact
+quotable values. Figure and table are not redundant here — one shows shape, the
+other gives numbers, which is the conventional division and what a reviewer
+expects.
 
-  ⚠ **Plot the absolute restored quality too, not only the residual or the
-  gain.** Blackout is the standing warning: largest restoration gain
-  (1.70× JND) and worst absolute result (0.374 vs downsample's 0.220). A
-  gain-only exhibit reproduces exactly the misreading that an earlier draft of
-  Plan A made. Second panel, or a second encoding on the same axes.
+Do *not* plot an R–D curve for every table. Two panels earn their space: the
+regime reversal, and the conditioned pipeline against the pristine baseline.
 
-  Replaces the numeric content of `tab:transport` and the ladder `NOTE` on
-  `tab:priced-trade`.
-- **F2 — the operating map.** (content, rate) → recommended transport+restorer,
-  shaded by the winner's margin in JND, with "no separable winner" as an
-  explicit category rather than a blank. This is Plan A's deliverable and the
-  article's answer to "what should I deploy?".
-- **F3 — replication. ⚠ CONDITIONAL — do not build before Plan A Wave 1.**
-  Per-video effect with a JND band, for the three breadth results: at a glance,
-  `bear`/`camel` win and `dog`/`pigs` do not, currently spread across
-  `tab:av1-breadth`, `tab:conditioned-breadth` and `tab:goal2-breadth` as three
-  tables the reader must cross-reference.
+**F2 — the information ladder. Not a BD-rate curve; a different object.**
+Transmitted bits against background damage, one point per transport per
+operating point, with the fitted ladder drawn and off-ladder residuals
+highlighted.
 
-  **The risk is that Plan A makes this figure obsolete before it is drawn.**
-  F3 asks "which videos win?", which presupposes a single fixed configuration
-  per video. Plan A's whole premise is that the right configuration *varies*
-  by video and rate — so under the map, a video that "loses" may simply have
-  been run with the wrong transport. If the map succeeds, "dog loses" becomes
-  "dog at QP 63 wants blackout, not downsample", and F2 subsumes F3.
+An R–D curve traces *one* method across its rate points. F2 is
+cross-sectional: it compares *different transports* at a *fixed* operating
+point, so it shows the reduction/restoration tradeoff itself rather than one
+method's efficiency. The **ladder residual** (Plan A, Wave 1 step 3) is the
+scalar that goes with it, and is *analogous to* BD-rate in the way it scores an
+arm against a curve its peers define — but it is not a BD-rate and should not
+be labelled as one.
 
-  Three outcomes, decide after Wave 1:
-  1. **Map succeeds and explains the win/loss split** → drop F3, F2 carries it.
-  2. **Map succeeds but the split survives within it** (best-configuration
-     still loses on some videos) → build F3, and it becomes *stronger*: the
-     failure is not a bad configuration choice but a real content limit.
-  3. **No separable winners (map fails)** → build F3 as specified; the breadth
-     results are then the paper's main scoping evidence.
+⚠ **Plot absolute restored quality, not only residual or gain.** Blackout is
+the standing warning: the largest restoration gain (1.70× JND) and the worst
+absolute result (0.374 against downsample's 0.220). A gain-only exhibit invites
+the reader to conclude the opposite of what the data supports. Second panel, or
+a second encoding on the same axes.
 
-  Building F3 now would risk drawing the third-best version of it.
-- **F4 — cost/quality Pareto.** fps against restoration gain, dominated arms
-  marked. Makes the efficiency axis a decision variable instead of a footnote,
-  which is what elevating it to a cross-cutting theme requires.
+Replaces the numeric content of `tab:transport` and the ladder `NOTE` on
+`tab:priced-trade`.
+
+**F3 — the operating map.** (content, rate) → recommended transport + restorer,
+shaded by the winner's margin, with "no separable winner" an explicit category
+rather than a blank. Plan A's deliverable and the article's answer to "what
+should I deploy?".
+
+**F4 — cost/quality Pareto.** Throughput against restoration gain, dominated
+arms marked. Makes efficiency a decision variable rather than a footnote. If
+Plan A's Wave 3 runs, model precision joins this figure as a third axis.
+
+**F5 — replication. ⚠ CONDITIONAL — decide after Plan A Wave 1.**
+Per-video effect with a significance band, for the three breadth results:
+`bear`/`camel` win and `dog`/`pigs` do not, currently spread across
+`tab:av1-breadth`, `tab:conditioned-breadth` and `tab:goal2-breadth`.
+
+F5 asks "which videos win?", which presupposes one fixed configuration per
+video — exactly what Plan A's map denies. Under the map, "dog loses" may become
+"dog at QP 63 wants blackout, not downsample", and F3 subsumes F5.
+
+1. **Map succeeds and explains the split** → drop F5; F3 carries it.
+2. **Map succeeds but the split survives within it** → build F5, and it is
+   *stronger*: the failure is a real content limit, not a bad configuration.
+3. **Map fails (no separable winners)** → build F5; the breadth results are
+   then the paper's main scoping evidence.
 
 ### Consolidations
 
 | current | proposal |
 |---|---|
-| `tab:breadth`, `-ext`, `-ext-presley`, `-ratematched` (4) | **1 summary table + F3**; per-clip detail to appendix |
-| `tab:av1-breadth`, `tab:conditioned-breadth`, `tab:goal2-breadth` (3) | **F3**, keeping one table for exact quotable values |
-| `tab:priced-trade`, `tab:budget-knee`, `tab:transport` (3) | **F1** + one table for the knee's exact numbers |
+| `tab:breadth`, `-ext`, `-ext-presley`, `-ratematched` (4) | **1 summary table + F5** (if F5 survives); per-clip detail to appendix |
+| `tab:av1-breadth`, `tab:conditioned-breadth`, `tab:goal2-breadth` (3) | **F3 or F5**, keeping one table for exact quotable values |
+| `tab:priced-trade`, `tab:budget-knee`, `tab:transport` (3) | **F1 + F2** + one table for the knee's exact numbers |
 | `tab:mask-sens`, `tab:mask-morph`, `tab:fillvariant` (3) | **1 compact robustness table**, likely appendix |
 | `tab:roi`, `tab:hnerv` (2) | **1 external-baselines table** |
 | `tab:instantir-kill` | one sentence + appendix; it is a retirement, not a result |
@@ -119,6 +132,41 @@ is this, and is a table the right way to see it?"
 negative result — exact values are the point), and one table per goal holding
 the quotable headline numbers.
 
+## 3b. Significance, and what the exhibits should show
+
+The article currently expresses almost every verdict as a **JND multiple**.
+That answers *is the difference perceptible?* It does not answer *is the
+difference real, or sampling noise?* — and hard rule 2b's machinery (two-tailed
+sign test, Holm correction over candidates, TOST for equivalence, n≥6 videos)
+exists precisely to answer the second.
+
+**The thresholds are the exposed part.** `src/presley/compare.py` calls them
+"literature just-noticeable-differences" but cites nothing, and gives LPIPS and
+DISTS the same 0.05 despite different scales. PSNR 0.5 dB and VMAF 6 are
+defensible; the perceptual-metric constants are adopted convention. A reviewer
+who pulls that thread pulls on most of the article's verdicts at once.
+
+This is a presentation problem as much as a methodology one, so the exhibits
+should be built to defuse it:
+
+- **Error bars / significance bands, not bare JND multiples.** Where n permits
+  a test, show the interval. F5's per-video band should be a confidence
+  interval with the JND drawn as a *reference line*, so the reader sees both
+  "is it real" and "is it perceptible" at once, and can see when the two
+  disagree.
+- **Draw the JND as a line, never as the axis.** A figure whose y-axis is "JND
+  multiples" bakes the constant into the geometry; one with a metric axis and a
+  JND rule line survives a different constant.
+- **State the threshold and its status in every caption** that uses it —
+  adopted convention, sensitivity-tested, not a measured perceptual study.
+- **Report the sensitivity analysis** (Plan A: recompute at 0.03 / 0.05 / 0.08)
+  wherever a recommendation depends on the threshold. A recommendation stable
+  across all three is far stronger than one quoted at a single constant.
+
+**No MOS study exists**, and the article already says so. That is the honest
+ceiling here: with no human ratings, JND is a stand-in and should be presented
+as one rather than as a measured perceptual fact.
+
 ## 4. Cleanup — independent, can start immediately
 
 Three separable jobs. **They are not equally safe.**
@@ -131,12 +179,11 @@ Three separable jobs. **They are not equally safe.**
    while `evaluation.tex` numbered two in a different order, so "Goal 1" in the
    body meant the introduction's *second* goal.
 
-   **The fix was not a renumber.** This plan originally proposed renumbering to
-   1/2/3 and scoped it at "~26 marker blocks plus prose". That was wrong by
-   about 5×: the real cost is **~124 sites** across the paper, the research log,
-   `reviewers_comments.md` and `docs/`, and `hard-rules.md` *defines* the legacy
-   labels — its rule 1 is phrased "inverting Goal 1". The failure mode is
-   silent, since one stale "Goal 1" asserts the opposite of what it says.
+   **Renumbering to 1/2/3 was considered and rejected**, with the cost measured:
+   **~124 sites** across the paper, the research log, `reviewers_comments.md`
+   and `docs/`, and `hard-rules.md` *defines* the legacy labels — its rule 1 is
+   phrased "inverting Goal 1". The failure mode is silent, since one stale
+   "Goal 1" asserts the opposite of what it says.
 
    Instead, reviewer-visible prose now **names** the goals ("bit relocation",
    "generative restoration", "selection") and numbers none of them, so nothing
@@ -179,12 +226,9 @@ Overleaf first.
 
 ## 6. Waves
 
-The first draft of this plan gave a flat 6-step list. That was an oversight —
-the host guideline asks for parallel-agent waves on multi-part work, or an
-explicit statement of why they were skipped, and neither was given. This plan
-*does* have independent pieces, so here they are properly grouped. A wave starts
-only when every workstream it depends on has reported; workstreams inside a wave
-launch together, each in its own worktree.
+Independent pieces run in parallel. A wave starts only when every workstream it
+depends on has reported; workstreams inside a wave launch together, each in its
+own worktree.
 
 ### Wave P1 — cleanup (no dependency on Plan A; start now)
 
@@ -193,11 +237,15 @@ launch together, each in its own worktree.
 | P1a | ~~Goal labels~~ **DONE 2026-08-02** | — |
 | P1b | Marker sweep to the camera-ready standard | `main.tex`, `sections/*.tex` |
 | P1c | Research-log drain (`open-questions.md` 310, `dead-ends.md` 306, both over the 300 ceiling) | `research-log/*.md` |
-| P1d | Close the throughput alarm (svtav1 720p 3.2 fps vs 1080p 28.9 fps is impossible) — Plan A Wave 2C cannot report cost until this is explained | `results/`, no GPU |
+| P1d | Close the throughput alarm (svtav1 baseline 720p 3.2 fps vs 1080p 28.9 fps is impossible) — Plan A Wave 2C cannot report cost, and F4 cannot be drawn, until this is explained | `results/`, no GPU |
 
 P1b and P1c touch disjoint files and can run together. **P1d is here rather
 than in Plan A because it is a measurement bug, not a design question**, and it
-blocks an exhibit (F4).
+blocks F4.
+
+A fifth, optional workstream: **P1e — threshold provenance.** Find citations
+for the JND constants in `src/presley/compare.py`, or mark them as adopted
+convention (§3b). No dependency, and it feeds every caption.
 
 ### Wave P2 — exhibits that need only existing data
 
@@ -205,19 +253,20 @@ Starts after **Plan A Wave 1** reports (the map exists, or is shown not to).
 
 | # | workstream | depends on |
 |---|---|---|
-| P2a | **F1** ladder + residual figure | Plan A W1 step 3 (the residual metric) |
-| P2b | **F4** cost/quality Pareto | P1d (alarm closed) |
-| P2c | Decide F3's fate per the three outcomes in §3; build only under outcome 2 or 3 | Plan A W1 |
+| P2a | **F1** rate–quality curves (regime reversal) | none beyond existing data |
+| P2b | **F2** ladder + residual figure | Plan A W1 step 3 (the residual metric) |
+| P2c | **F4** cost/quality Pareto | P1d (throughput alarm closed) |
+| P2d | Decide **F5**'s fate per the three outcomes in §3; build only under outcome 2 or 3 | Plan A W1 |
 
 ### Wave P3 — the map's own exhibit
 
 | # | workstream | depends on |
 |---|---|---|
-| P3a | **F2** operating map | Plan A W1 *and* W2A (content axis, which sets whether rows are named classes or bare video titles) |
+| P3a | **F3** operating map | Plan A W1 *and* W2A (content axis, which sets whether rows are named classes or bare video titles) |
 
-F2 is deliberately last among the figures: its row labels are the content
+F3 is deliberately last among the figures: its row labels are the content
 classes, and whether those exist at all is Plan A Wave 2A's open question. Under
-a negative result there F2 still ships, with videos as rows and an explicit
+a negative result there F3 still ships, with videos as rows and an explicit
 statement that no predictive class was found.
 
 ### Wave P4 — consolidation and narrative

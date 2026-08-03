@@ -28,6 +28,49 @@ wins"; they want to know what to deploy at 200 kb/s on a high-motion clip.
 are needed: the same video flips sign along the QP ladder, and the same QP
 flips sign across videos.
 
+## Hard rules that bind this workstream (read before designing anything)
+
+Fixed-QP only; `actual_bitrate_bps` for the rate axis; BG-LPIPS is the Goal-3
+verdict and BG-PSNR never is; FG claims only from true masked metrics; a run
+with non-empty `invariant_failures` is not citable; `presley-compare` decides
+whether a quality difference is real; **n≥6 videos before any significance
+claim** (n≥8 for restorer comparisons). State bounds before reading numbers,
+and record a fired bound as revised-with-a-reason rather than dropping it.
+
+### ⚠ JND is an effect-size threshold, not a significance test
+
+These are two different questions and this workstream must not conflate them:
+
+- **JND** asks *is the difference perceptible?* — an effect size compared
+  against a fixed perceptual threshold.
+- **Significance** (hard rule 2b: two-tailed sign test, Holm over candidates,
+  TOST for equivalence, n≥6 videos) asks *is the difference real, or sampling
+  noise?*
+
+A result can be either without the other. Reporting a JND multiple alone,
+which most of the article currently does, answers only the first — and invites
+a reviewer to ask why the threshold is what it is.
+
+**The thresholds are exposed.** `src/presley/compare.py` describes them as
+"literature just-noticeable-differences" but **cites nothing**, and it assigns
+LPIPS and DISTS the *same* 0.05 despite their being different metrics on
+different scales. PSNR 0.5 dB and VMAF 6 have reasonable provenance; the
+perceptual-metric thresholds are adopted convention.
+
+**Required of this workstream, cheaply:**
+
+1. **Report both** wherever n permits — a JND multiple *and* a test — rather
+   than letting a JND multiple stand in for significance.
+2. **Sensitivity-analyse the threshold.** Recompute the map with the LPIPS
+   threshold at 0.03 and 0.08. **A recommendation that survives all three is
+   robust to the constant; one that flips is an artifact of it and must be
+   reported as threshold-dependent.** This is a few minutes of compute and it
+   answers the obvious reviewer challenge directly.
+3. **Cite or downgrade.** Find provenance for each threshold, or state plainly
+   in the article that it is an adopted operating convention and lean on the
+   sensitivity analysis instead.
+
+
 ## The mechanism, and why it is not just a tradeoff
 
 The reduction/restoration tension has a physical cause: **the more information a
@@ -58,14 +101,13 @@ foreground within JND — it says nothing about how much. "blackout 75%
 restoration" means 75% of its cells cleared 1 JND **against blackout's own
 unrestored control**, not that 75% of anything was recovered.
 
-An earlier draft of this plan glossed those rates as "strips most, restores
-worst". **That was wrong**, and the magnitudes reverse it: ac_truncate has the
-*highest* pass rate and the *smallest* median saving (−6.7%). A transport that
-reliably saves 2% would score 100% on the gate and be useless.
+The magnitudes can invert the ranking a pass rate suggests: ac_truncate has the
+*highest* reduction pass rate and the *smallest* median saving (−6.7%). A
+transport that reliably saved 2% would score 100% on the gate and be useless.
 
-**The map must be built on effect sizes measured within operating points**, not
-on pass rates and not on medians pooled across cells (transports were run on
-different videos, so a pooled median is confounded by coverage).
+**Build the map on effect sizes measured within operating points** — not on
+pass rates, and not on medians pooled across cells, since transports were run
+on different videos and a pooled median is confounded by coverage.
 
 ### The magnitudes, paired
 
@@ -123,8 +165,9 @@ without new GPU time. That is the first deliverable and it gates everything else
 
 ## Steps
 
-Grouped into waves; a wave starts only when the previous one has reported.
-Waves 2A/2B/2C are independent and should run in parallel worktrees.
+Grouped into waves. **Wave 1 is a falsification gate** (see its exit criteria
+below); Waves 2A/2B/2C are independent of one another and run in parallel
+worktrees once it passes.
 
 ### Wave 1 — build the map from existing data (no GPU)
 
@@ -154,10 +197,33 @@ Waves 2A/2B/2C are independent and should run in parallel worktrees.
 
 **Pre-registered bounds for Wave 1.** Cells with a JND-separable winner:
 plausible **25–60%**; alarm outside 10–80%. Distinct winners across the map:
-plausible **2–4** of the available transports; alarm =1 (means the map is
-really one global recommendation and the framing collapses) or =every transport
-(means the objective is noise-driven). Ladder residual for the best off-ladder
-arm: plausible **1–3× JND**; alarm >5× (suspect a mismatched control).
+plausible **2–4** of the available transports; alarm =1 or =every transport.
+Ladder residual for the best off-ladder arm: plausible **1–3× JND**; alarm >5×
+(suspect a mismatched control).
+
+### ⚠ Wave 1 is the falsification gate — Wave 2 does not start until it passes
+
+Wave 1 is deliberately ordered first because it can kill the framing cheaply,
+before any GPU time or any restructuring of the article. Three outcomes end
+this plan rather than continue it, and each must be checked explicitly and
+reported:
+
+1. **No cell has a JND-separable winner.** There is no map. The honest
+   contribution becomes "transport choice does not matter within JND" — a
+   different, simpler paper, and a legitimate one.
+2. **One transport wins everywhere.** The map collapses to a single global
+   recommendation. Also fine, also a different paper.
+3. **Every off-ladder residual is within JND.** "Best of both worlds" is not
+   achievable with the transports we have, and the reduction/restoration
+   tradeoff is hard rather than beatable.
+
+A fourth, softer stop: if the map's recommendations **flip under the threshold
+sensitivity analysis** above, the map is an artifact of the JND constant and
+must not be published as a decision rule.
+
+**Do not begin Wave 2 until Wave 1 has reported against all four.** Waves 2A,
+2B and 2C are independent of each other and should then launch together, each
+in its own worktree.
 
 ### Wave 2A — the content axis (the open problem)
 
@@ -224,46 +290,50 @@ just completed showed the failure is content-dependent, not model-dependent;
 adding a restorer would not have touched it. Wave 3 is justified only by a
 specific empty region of the map.
 
-**Quantization / distillation lives here, gated on Waves 1–2.** It was deferred
-earlier on the grounds that a 2–4× win would not reach real time and so would
-not change the offline/VOD positioning. Waves 1–2C can overturn that in two
-ways, and if either fires it becomes worth doing:
+**Quantization / distillation lives here, gated on Waves 1–2.**
 
-- the map shows a **cheap transport/restorer is competitive on quality**, so
-  cost becomes a decision variable between near-equal options rather than a
-  footnote; or
-- the throughput work above shows a configuration where **the encoder, not the
-  restorer, is the bottleneck** — in which case compressing the restorer moves
-  the whole pipeline toward a line it could actually cross.
+**The restorer is the bottleneck, which is what makes compressing it the right
+lever.** Median wall-clock split over fixed-QP treated runs:
 
-**If it is triggered, scope it small first.** One model (Real-ESRGAN, the
-shipped default and the cheapest generative option at 2.8 fps), one method
-(int8 post-training quantization — no retraining, hours not days), on the
-operating points the map already marks as recommended. Gate on: does BG-LPIPS
-stay within JND of the fp16 result? Only extend to more models, or to
-distillation (which needs training and is a different order of effort), if that
-first probe both preserves quality and produces a speedup large enough to
-change a recommendation in the map. A speedup that changes no recommendation is
-not worth the second step.
+| configuration | encode | restore | restore share |
+|---|---|---|---|
+| `presley_ai` svtav1 640×360 | 6.7 s | 13.1 s | 66% |
+| `presley_ai` x265 640×360 | 11.5 s | 24.6 s | 68% |
+| `presley_ai` svtav1 1280×720 | 20.3 s | 78.7 s | 80% |
+| `elvis` svtav1 640×360 | 3.7 s | 46.2 s | 93% |
+| `elvis` x265 640×480 | 6.0 s | 304.8 s | 98% |
 
-## What would falsify this plan
+Restoration is **66–98% of wall clock** everywhere it runs. Compressing it is
+therefore the lever that moves total throughput, and Amdahl's law says nothing
+else will.
 
-- **No cell has a JND-separable winner.** Then there is no map, and the honest
-  contribution is "transport choice does not matter within JND", which is
-  publishable but a different paper. Wave 1 tests this first, deliberately.
-- **One transport wins everywhere.** Then the map collapses to a single
-  recommendation. Also fine, also a different (simpler) paper.
-- **The ladder's off-ladder residuals are all within JND.** Then "best of both
-  worlds" is not achievable with current transports and the tradeoff is hard.
+**If a configuration turns up where the encoder or the degradation step
+dominates instead, quantization and distillation are the wrong tools for it.**
+Those are classical algorithms, not networks: the remedies there are
+parallelisation, moving a CPU-bound stage to GPU, or re-examining an
+implementation we may simply have written inefficiently. Diagnose which stage
+dominates before choosing a remedy.
 
-Each of these is cheap to check in Wave 1 and each changes the article's
-argument, which is why Wave 1 precedes everything.
+**Triggers.** Do this when either holds after Waves 1–2:
 
-## Hard rules that bind this workstream
+- the map shows a **cheap restorer is competitive on quality**, so cost becomes
+  a live decision variable between near-equal options; or
+- **throughput is close enough to a threshold that matters** (real time, or a
+  transcode-budget target) that a 2–4× restorer speedup would cross it.
 
-Fixed-QP only; `actual_bitrate_bps` for the rate axis; BG-LPIPS is the Goal-3
-verdict and BG-PSNR never is; FG claims only from true masked metrics; a run
-with non-empty `invariant_failures` is not citable; `presley-compare` decides
-whether a quality difference is real; **n≥6 videos before any significance
-claim** (n≥8 for restorer comparisons). State bounds before reading numbers,
-and record a fired bound as revised-with-a-reason rather than dropping it.
+**Scope it small first.** One model (Real-ESRGAN — the shipped default and the
+cheapest generative option at 2.8 fps), one method (int8 post-training
+quantization: no retraining, hours not days), on operating points the map
+already marks as recommended.
+
+**Do not gate it on "quality must stay within JND of fp16".** Model precision
+is a cost/quality tradeoff of exactly the same kind as the transport tradeoff
+this plan is built around, and it belongs on the same footing: **measure the
+quality lost and the cost saved, and let the map decide.** An int8 model that
+gives up half a JND for 4× throughput may be the right recommendation at a
+tight compute budget and the wrong one at a generous quality target — which is
+precisely a map axis, not a pass/fail gate. Concretely: add model precision as
+a third dimension alongside transport and fill, and report its Pareto frontier
+the same way. Extend to more models, or to distillation (which needs training
+and is a different order of effort), only if the first probe changes a
+recommendation somewhere in the map.
