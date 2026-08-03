@@ -1,6 +1,9 @@
 # Plan A — from "our pipeline wins" to an operating map
 
-**Status:** proposed 2026-08-02, not started. Workstream 1 of 2.
+**Status:** proposed 2026-08-02. **Wave 1 complete 2026-08-03 and it PASSES the
+falsification gate** — results in `docs/WAVE1_OPERATING_MAP.md`, tool in
+`tools/build_operating_map.py`, tests in `tests/test_build_operating_map.py`.
+Waves 2A/2B/2C are unblocked and may launch together. Workstream 1 of 2.
 Companion: `docs/PLAN_PRESENTATION.md` (workstream 2), which **depends on this
 one** — you cannot choose how to present a result before knowing which results
 survive scoping.
