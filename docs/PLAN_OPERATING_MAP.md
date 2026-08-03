@@ -246,10 +246,46 @@ Cost is now known to be ~40× lower than the old estimate: ProPainter is
 **39–77 s/run** at 640×360, not ~49 min. A full 4-transport × 4-rung sweep on
 one new video is well under an hour.
 
-Priority order: (i) complete 4-transport coverage at the QPs where only 2 exist,
-(ii) add videos to reach **n≥6**, the threshold at which hard rule 2b permits a
-significance claim — the map is currently descriptive only, and n≥6 would let
-it be stated as a finding, (iii) only then consider new transports.
+**Priority order, revised 2026-08-03 against what Wave 1 measured.** The
+original order (transport coverage → videos → new transports) was written
+before the map existed and put the `none` controls nowhere. Wave 1 shows they
+are the binding constraint:
+
+1. **Matched `none` controls first — the cheapest fix in the corpus.** The
+   ladder residual, the plan's BD-rate analogue and the scalar `F1` plots, is
+   fitted on **12 of 130 operating points**, purely because a residual needs the
+   arm's own unrestored control and those are far sparser than baselines. The
+   **16 pending fixed-QP `none` controls already sitting unrun in the queue**
+   (legitimate, never run, no one has decided whether they are wanted — they
+   are) are the first batch. A control is an encode plus an evaluation with no
+   restorer: the cheapest run type there is, and it multiplies the reach of runs
+   already paid for.
+2. **Transport coverage at the cells that cannot pose the question.** 24 of 84
+   cells have **no deployable arm at all** and 14 have exactly one. Those are
+   not holes in the sense of missing data — they are cells where nothing on
+   offer both saves bits and holds FG. Adding a 3rd/4th transport there is what
+   turns them into map cells; adding one where 4 already exist is not.
+3. **Paired coverage for a significance test — sharper than "add videos".**
+   The quality-first winners already span **8 videos**, so the raw video count
+   is not the blocker. What hard rule 2b needs is the *same pair of arms*
+   compared across ≥6 videos at comparable operating points. Target the
+   specific pairing the map keeps naming (`downsample+realesrgan` vs its
+   runner-up) rather than adding videos generically, or n will keep rising
+   while no single comparison reaches n≥6.
+4. **New transports last**, and only against a named empty region.
+
+**Two things to watch while running, not afterwards:**
+
+- **Re-run `tools/build_operating_map.py` after every batch.** 18 of 19
+  quality-first winners are already the same arm. If new coverage makes it
+  19/19, **gate condition 2 fires retroactively** — the map collapses to one
+  global recommendation and this becomes a different paper. That is a cheap
+  check and an expensive thing to discover at the end.
+- **Do not let 2B and 2C contradict each other.** Rate-first's winner is
+  `blackout+propainter` at **0.78 fps**, the slowest generative fill in the
+  corpus; quality-first's is `downsample+realesrgan` at 4.48 fps, 5.7× faster.
+  Any 2B batch that adds propainter arms adds them at ~6× the wall clock of a
+  realesrgan arm, so schedule accordingly.
 
 ### Wave 2C — efficiency, and the real-time question (no GPU)
 
