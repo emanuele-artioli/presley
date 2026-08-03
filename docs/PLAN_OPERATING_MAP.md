@@ -283,12 +283,53 @@ real-time setup (encoder preset, resolution, hardware), since a reader whose
 setup differs may sit on the other side of the line, (iii) cost attached to
 each map recommendation so it is a decision variable, not a footnote.
 
-### Wave 3 — conditional: new methods, and model compression
+### Wave 3 — conditional: cheaper inference, then new methods
 
 Do **not** commission new models or transports before the map exists. The wave
 just completed showed the failure is content-dependent, not model-dependent;
 adding a restorer would not have touched it. Wave 3 is justified only by a
 specific empty region of the map.
+
+**Exhaust the cheap knobs before compressing anything.** Ordered by what each
+costs to try, and every one of them is cheaper than post-training quantization:
+
+*(a) The scope of restoration — the largest single lever, and unmeasured.*
+`upscale_realesrgan_adaptive` applies the model to the **entire frame** by
+design, not only to degraded blocks; its docstring gives the reason — blocks
+must "see their neighbors during upscaling for proper context". The timing data
+agrees: median Real-ESRGAN restoration is ~24–27 s at `shrink_amount` 0.10,
+0.50 and 0.75 alike, i.e. **cost is independent of how much of the frame was
+actually degraded**. A block-local or dilated-region variant would cut cost
+roughly in proportion to the untouched area — but it trades away the neighbour
+context the current design exists to preserve, so **measure it as a
+speed/quality tradeoff rather than assuming it is free**. This is a design
+parameter, not a defect.
+
+*(b) Parameters that already exist and have never been swept.* Across the whole
+corpus every restorer carries only **1–2 distinct parameter sets**, so this
+space is effectively unexplored:
+
+| knob | status |
+|---|---|
+| `denoise_strength` (Real-ESRGAN) | **never varied** — always 1.0 |
+| `num_inference_steps` | only in retired InstantIR (1 vs 20, a correctness fix not a speed sweep) and Stream-DiffVSR, fixed at 4 |
+| NAFNet `width` | 64 only; smaller widths never tried |
+| model variant | one checkpoint per family; no lighter variants tried |
+| `tile` / `tile_pad` | 0 vs 400 only |
+
+**"Fewer steps" is the classic knob for any diffusion restorer and we have
+never swept it for throughput.** If a diffusion backbone re-enters the map, its
+step count belongs on the cost/quality frontier before its weights do.
+
+*(c) Already settled, do not redo.* fp16 is the shipped default, full precision
+is **1.5× slower**, and retiling does not help. So precision and tiling are
+done for Real-ESRGAN; (a) and (b) are not.
+
+Every knob in (a) and (b) is a config change costing one run, against hours for
+post-training quantization and days plus new artifacts for distillation. They
+also land on the same Pareto axis as precision, so they extend the frontier
+rather than competing with it. **Only once (a) and (b) are exhausted does
+compressing the weights become the cheapest remaining option.**
 
 **Quantization / distillation lives here, gated on Waves 1–2.**
 
@@ -321,10 +362,10 @@ dominates before choosing a remedy.
 - **throughput is close enough to a threshold that matters** (real time, or a
   transcode-budget target) that a 2–4× restorer speedup would cross it.
 
-**Scope it small first.** One model (Real-ESRGAN — the shipped default and the
-cheapest generative option at 2.8 fps), one method (int8 post-training
-quantization: no retraining, hours not days), on operating points the map
-already marks as recommended.
+**If compression is still wanted after (a) and (b), scope it small.** One model
+(Real-ESRGAN — the shipped default and the cheapest generative option at
+2.8 fps), one method (int8 post-training quantization: no retraining, hours not
+days), on operating points the map already marks as recommended.
 
 **Do not gate it on "quality must stay within JND of fp16".** Model precision
 is a cost/quality tradeoff of exactly the same kind as the transport tradeoff
