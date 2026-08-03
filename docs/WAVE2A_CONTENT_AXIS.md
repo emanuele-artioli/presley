@@ -136,12 +136,157 @@ A fired bound is recorded as revised-with-a-reason, never dropped.
 
 ## Part 2 — Method as run
 
-*(filled in after the pre-registration commit)*
+Reproduce:
+
+```bash
+python tools/build_operating_map.py --db results/presley.db --json map.json
+python tools/analyze_content_axis.py --map map.json \
+    --cache cache --annotations dataset/annotations --json content.json
+```
+
+Tests: `tests/test_analyze_content_axis.py` (20 cases, fast tier; whole suite
+387 passed). No GPU, no runs, read-only.
+
+Everything in Part 1 was executed as written. Two things were **added** after
+the fact, and both are labelled as such wherever they appear:
+
+- **A cell-count confound check.** Added after A1 fired. A video's cell count
+  is a record of what was run, not a property of its content.
+- **An adjudication step** requiring a fired attribute to survive both its
+  pre-registered robustness subset and that confound before it is reported.
+
+One bug was found and fixed mid-analysis: the cache lookup flattened video
+names to a basename, so the nine MOSEv2/YouTube-VOS clips (nested under
+`cache/mosev2/`, `cache/youtube_vos/`) silently dropped out and attributes
+covered only 14 of 23 videos. **The truncated run produced a false positive**
+— A1 and A3 came back with byte-identical rho and p, which is what flagged it.
+Every number below is from the corrected 23-of-23 run.
 
 ## Part 3 — Results
 
-*(filled in after the pre-registration commit)*
+**The content axis is negative.** One attribute fired under the pre-registered
+rule and was withdrawn on its own robustness check.
 
-## Part 4 — What the map becomes if this fails
+### T1 — which arm wins: no variance to predict
 
-*(filled in after the pre-registration commit)*
+Confirmed as pre-registered, by computation rather than assumption:
+`downsample+realesrgan` 18, `blackout+propainter` 1, modal share **0.947**.
+No attribute was tested against it. **This is the single most important
+negative in Wave 2A**: even a perfect content predictor could not have told a
+deployer which transport to pick, because under the quality-first objective
+the map does not offer a choice — it offers one arm and one exception.
+
+### T2 — separable vs tie (46 contested cells, 19 videos)
+
+| attribute | n videos | rho | p | Holm p | pre-registered verdict |
+|---|---|---|---|---|---|
+| A1 motion magnitude | 19 | **+0.642** | 0.0043 | **0.0172** | PREDICTIVE |
+| A2 hole-region instability | 19 | +0.182 | 0.451 | 0.903 | negative |
+| A3 background texture | 19 | +0.314 | 0.187 | 0.560 | negative |
+| A4 residual-information proxy | 19 | −0.038 | 0.889 | 0.903 | negative |
+
+A1 met the pre-registered bar. It does not survive:
+
+- **Its own pre-registered robustness subset.** Restricted to the 9 videos
+  with ≥2 contested cells, A1 collapses to **rho +0.297, Holm p = 1.00**.
+  10 of the 19 videos contribute exactly one contested cell, where the "rate"
+  is necessarily 0 or 1.
+- **The cell-count confound.** A1 correlates with a video's cell count at
+  **rho +0.634** — as strongly as with the outcome (+0.642) — and the outcome
+  itself tracks cell count at **+0.604**. A video's cell count is run history.
+- **A non-content variable that beats it outright.** Dataset provenance alone
+  (DAVIS vs MOSEv2/YouTube-VOS) predicts T2 at **rho +0.907, p = 0.0002** —
+  and that fires the pre-registered |rho| > 0.9 alarm, so it is reported as a
+  confound to investigate, not as a discovery. The individual attributes are
+  nearly orthogonal to provenance (|rho| ≤ 0.12), so provenance is not acting
+  through them: it carries structure the content attributes do not.
+
+The mechanism of the artifact is visible in the raw table: every video with a
+T2 rate of 1.0 is a sparse MOSEv2/YouTube-VOS clip with 1–3 contested cells,
+while the two densest clips (`bear` 10 cells, `camel` 6) sit at 0.30–0.33.
+A1 is a weak correlate of that split, not of separability.
+
+**A1 is withdrawn.** Reported as an association with corpus and coverage, not
+with content.
+
+### T3 — no deployable arm (84 cells, 23 videos)
+
+All four negative, nothing near the bar:
+
+| attribute | n videos | rho | p | Holm p |
+|---|---|---|---|---|
+| A1 motion magnitude | 23 | −0.249 | 0.253 | 0.650 |
+| A2 hole-region instability | 23 | −0.473 | 0.025 | 0.100 |
+| A3 background texture | 23 | −0.271 | 0.217 | 0.650 |
+| A4 residual-information proxy | 23 | −0.086 | 0.700 | 0.700 |
+
+A2 is the only raw p under 0.05 and it does not survive Holm over the four
+pre-registered candidates. Per the decision rule it is **negative**, not a
+near miss, and it is not quoted as one. Its sign (less stable hole region →
+*fewer* dead cells) is also opposite to the intuition that would have been
+offered had it survived, which is a reason for more caution rather than less.
+
+In the ≥2-cells subset, A1, A2 and A3 all clear Holm at once (−0.731, −0.628,
+−0.656). **This is the pre-registered ≥3-attributes alarm firing**, and it is
+reported as an alarm: the three are collinear EVCA means, the effect is absent
+in the full sample and absent again when `bear` and `camel` are dropped, so a
+result present in exactly one of three subsets and only as three correlated
+attributes together is a confound, not a discovery.
+
+### Bounds, checked against what was read
+
+| quantity | pre-registered plausible | observed |
+|---|---|---|
+| \|rho\| for a null attribute | 0.00–0.45 | 0.03–0.47 — in band |
+| any single \|rho\| | ≤ 0.9 | **0.907 (outcome vs provenance) — ALARM fired** |
+| attributes surviving Holm over both targets | 0–1 | **1** (A1/T2), then withdrawn — in band |
+
+The |rho| > 0.9 alarm fired on a variable that is not a content attribute, and
+was handled as the pre-registration requires: investigated, and reported as a
+confound rather than a finding. No bound was revised.
+
+### What was *not* tested, and why
+
+FG area — refuted for win/loss by prior work, not re-run. Per-frame mask
+dynamics for the DAVIS clips — deliberately excluded so that the foreground
+definition means the same thing for all 23 videos. Cell-level correlations —
+computable and roughly 4× more "significant", and exactly the inflation the
+video-level unit exists to prevent.
+
+## Part 4 — What the map becomes
+
+**An empirical lookup table.** This is the third consecutive negative content
+result, and the first two tested a different question, so it is not a
+replication — it is an independent negative on the axis the plan called "the
+open problem".
+
+Concretely, for the article:
+
+1. **Do not claim a content rule.** There is no defensible "on high-motion
+   clips, use X". The honest statement is: *which arm to deploy is read off a
+   table indexed by measured operating point, and the content attributes we
+   can compute do not shortcut that lookup.*
+2. **The lookup table is still the contribution**, and Wave 1 is what makes it
+   one — the map exists, it has a separable winner in 41% of contested cells,
+   and its recommendation depends on what the deployer optimises. None of that
+   needed a content rule.
+3. **State the ceiling honestly.** Under quality-first, the map's answer is
+   `downsample+realesrgan` in 18 of 19 separable cells. The map's real content
+   is therefore *where it declines to recommend* — the 27 ties and the 24 dead
+   cells — more than *what* it recommends.
+4. **The interesting negatives stay open.** Nothing predicts the ties and
+   nothing predicts the dead cells. Both look like properties of the operating
+   point rather than of the clip, which is a hypothesis Wave 2B's added
+   coverage could test and Wave 2A's data cannot.
+5. **The corpus is confounded with coverage.** The strongest correlate of
+   anything here is which dataset a clip came from, entangled with how densely
+   it was run. Wave 2B should be told this: adding operating points to the
+   sparsely-covered clips is what would break the entanglement, and until it
+   does, per-video rates over this corpus should not be correlated with
+   anything.
+
+**What would change the verdict.** Not more attributes on this corpus — the
+limiting factor is that 10 of 19 videos contribute a single contested cell.
+Balanced coverage (Wave 2B) at ≥3 contested cells per video across ≥6 videos
+would let this test be re-run with rates that carry information. Re-running
+`analyze_content_axis.py` after Wave 2B costs nothing and is the right trigger.

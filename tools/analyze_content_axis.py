@@ -434,7 +434,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"      {attr:22s} rho={_fmt(cov[attr], '6.3f')}")
 
     conf = dataset_confound(attrs, videos)
-    print("\nConfound -- attribute vs dataset provenance (DAVIS=0, MOSEv2/YT-VOS=1)")
+    print("\nConfound -- dataset provenance (DAVIS=0, MOSEv2/YT-VOS=1)")
+    for target in (t2, t3):
+        vs = sorted(target.rates)
+        rho, p = permutation_p([1.0 if "/" in v else 0.0 for v in vs],
+                               [target.rates[v] for v in vs],
+                               n_perm=args.permutations)
+        results.setdefault("provenance_outcome", {})[target.name] = {
+            "rho": rho, "p": p}
+        print(f"  {target.name}: OUTCOME vs provenance rho={_fmt(rho, '6.3f')} "
+              f"p={_fmt(p, '.4f')}"
+              + ("   !ALARM |rho|>0.9" if abs(rho) > 0.9 else ""))
+    print("  attribute vs provenance:")
     for attr, rho in conf.items():
         print(f"    {attr:22s} rho={_fmt(rho, '6.3f')}")
     results["dataset_confound"] = conf
