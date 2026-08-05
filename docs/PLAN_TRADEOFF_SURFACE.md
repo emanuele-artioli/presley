@@ -3,7 +3,7 @@
 **Supersedes `docs/PLAN_OPERATING_MAP.md`.** (Copy of the session plan, checked in so the next session finds it without the plans directory.) Written 2026-08-03 after Waves 1,
 2A, 2B, 2C reported and their claims were audited.
 
-> ## Execution status — updated 2026-08-03, end of session
+> ## Execution status — updated 2026-08-05
 >
 > | | workstream | status |
 > |---|---|---|
@@ -13,16 +13,41 @@
 > | **W1d** | commit 2B report + post-check | ✅ **DONE** — and it found a bug in the map tool |
 > | **W2** | tradeoff surface, matched pooling | ✅ **DONE** — tool + 12 tests |
 > | **W3a** | record acquisition conditions | ✅ **DONE** — prerequisite only |
-> | **W3b–d** | controlled timing campaign | ⬜ **NOT STARTED** |
-> | **W4** | significance completion | 🟡 **PARTIAL** — `blur+nafnet` closed; `freeze+propainter` still open |
-> | **W5** | content axis round 2 | ⬜ **NOT STARTED** |
+> | **W3b–d** | controlled timing campaign | ⬜ **NOT STARTED** — now the only thing blocking W7 |
+> | **W4** | significance completion | ✅ **DONE** — `freeze+propainter` closed at n=10, p_Holm 0.0254; three significant quality comparisons, none on bitrate. Only `ac_truncate` (n=7) left, one video from the floor |
+> | **W4b** | sweeps already on disk | ✅ **DONE** — graded vs uniform downsampling answered from existing runs |
+> | **W5** | content axis round 2 | ✅ **DONE** — negative, as pre-registered; BG-motion fired and was withdrawn |
 > | **W6** | naming / hygiene | ✅ **DONE** — documented, deliberately not renamed |
 > | **W7** | paper restructure | ⬜ **NOT STARTED** — blocked on W3/W5 |
 >
-> **Everything is committed; nothing is pushed.** Code `main` at `8b1791b`, map
-> branch `claude/operating-map-implementation-34a243` at `90e4e16`, paper repo at
-> `6408a0c` with **5 commits awaiting an Overleaf push** — the push was blocked
-> by the permission classifier this session and needs the human to run it.
+> **Everything is committed; nothing is pushed.** Work since 2026-08-03 is on
+> `claude/after-wave-2b-cosmic-sunbeam-1330c8`, which also **merges in the two
+> branches whose tools main could not see** — `claude/operating-map-implementation-34a243`
+> (W1/W2) and `worktree-agent-ac71fed8395e1fd74` (Wave 2A). Both merged cleanly.
+> That invisibility is why W4's significance analysis was re-derived by hand and
+> never committed; it is now `tools/analyze_w4_significance.py`, and it
+> reproduces the published table exactly. The paper repo is still at `6408a0c`
+> with **5 commits awaiting an Overleaf push** the human has to run.
+>
+> ### 2026-08-05 session, in one line each
+>
+> * **W4 closed.** `freeze+propainter` n=6→10, 10/10, p_Holm 0.0254. Three arms
+>   now lose to `downsample+realesrgan` on quality on every video tested
+>   (11/11, 10/10, 10/10); **none of the three bitrate comparisons is
+>   significant and their directions disagree.** All six bounds held.
+> * **W5 negative.** BG-motion fired (rho 0.663, p_Holm 0.0203) and was withdrawn
+>   by both pre-registered checks. It is A1 relabelled — background blocks
+>   outnumber foreground ~10:1 — so the FG/BG decomposition is not one in
+>   practice. Duration is not the coverage confound; FG-fraction refutes again.
+> * **W4b, no GPU.** Graded downsampling beats uniform-3 on quality 8/8 and
+>   loses bitrate 0/8 (p_Holm 0.031 each, post-hoc, n at the floor) — the data
+>   `HOLE(sec:downsample-vs-uniform)` needs. `blur_kernel` is a bad lever;
+>   `ac_keep` is a real two-JND ladder; `mask_source` moves quality by a
+>   thirteenth of a JND.
+> * **A sixth instance of the one pattern**, this time in a tool written the same
+>   day: `None` was both a legitimate parameter value and the no-winner signal,
+>   so an 8-of-8 result displayed as 1 of 8. **When absence is data, absence can
+>   no longer double as the error signal.**
 >
 > ### What closed each item
 >

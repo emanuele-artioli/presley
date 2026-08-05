@@ -1,6 +1,13 @@
 # W4 — the significance picture, after two added videos
 
-**Status:** complete 2026-08-03. Plan: `~/.claude/plans/after-wave-2b-*.md`.
+**Status:** SUPERSEDED 2026-08-05 by `docs/W4_FREEZE_BOUNDS.md`, which added four
+videos and took `freeze+propainter` to n=10, 10/10, **p_Holm 0.0254 —
+SIGNIFICANT**. The table below is the 2026-08-03 state and every `freeze` row in
+it is stale; the rest still reproduces exactly. The analysis behind both is now
+committed as `tools/analyze_w4_significance.py` (it was not, when this was
+written, which is why it had to be reconstructed).
+
+Plan: `docs/PLAN_TRADEOFF_SURFACE.md`.
 
 ## What was run
 
