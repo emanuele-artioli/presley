@@ -60,14 +60,33 @@ scope* — it has not been run, and until it is, this stays descriptive.
 
 The rate–damage ladder is fitted per operating point over the arms' unrestored
 (`none`-control) BG-LPIPS, and each arm is scored by its signed residual — the
-BD-rate analogue the article was missing. **106 arms across 12 operating points**
+BD-rate analogue the article was missing. **81 arms across 11 operating points**
 carry a fit; the rest lack the `none` controls (far sparser than baselines,
 which is why the map itself never requires one).
 
-**10 deployable arms sit ≥1 JND off the ladder in the good direction** — less
+**3 deployable arms sit ≥1 JND off the ladder in the good direction** — less
 background damage than their bit saving should have cost. Best from a
-well-fitted ladder: **+1.32× JND**, `camel`/svtav1/QP50, `downsample` (every
-fill), ending at BG-LPIPS 0.152–0.213.
+well-fitted ladder: **+1.32× JND**, `camel`/svtav1/QP50, `downsample+unsharp`,
+ending at BG-LPIPS 0.213.
+
+> **⚠ Corrected 2026-08-03. The first version of this section said 10 deployable
+> off-ladder arms across 12 operating points; both numbers were inflated by a
+> control-matching bug.** Controls were keyed on
+> `(component, transport, block_size, shrink_amount)`, which does not
+> distinguish degradation *strength*: `dancing`@QP43 carries three `blur` runs at
+> `blur_kernel` 7 / 15 / 31, and all three collapsed to one key. The controls
+> dict kept whichever was inserted last, so two of the three arms were scored
+> against **another run's damage while keeping their own bitrate** — damage and
+> bits from different experiments, which is precisely how a rate–damage ladder
+> acquires a positive slope. Controls now match on the **whole config minus the
+> fill**, and a residual collision is refused and counted rather than guessed
+> between. Regression tests: `test_same_transport_at_different_strengths_gets_
+> different_controls`, `test_two_indistinguishable_controls_are_refused_*`.
+>
+> **What did not change:** the map itself (19/46 separable, 18 of 19 naming the
+> same arm) never depended on control matching, and the gate's verdict and all
+> three pre-registered bounds are unmoved. What got weaker is the "best of both
+> worlds" evidence — 3 candidate arms, not 10.
 
 The residual is never reported alone. `blackout` is the standing warning — the
 corpus's largest restoration *gain* and its worst absolute result — so the tool

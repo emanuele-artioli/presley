@@ -72,6 +72,10 @@ BITS_SEP_PP = 1.0
 # with the corpus-wide ladder, which is itself a finding), but they are flagged
 # and kept out of the falsification gate: the gate must not pass on noise.
 LADDER_R2_MIN = 0.5
+# Config keys naming the restorer/in-painter. Everything else identifies the
+# transmitted bitstream, so everything else has to match for a `none` run to be
+# a given arm's control.
+FILL_KEYS = ("restorer", "inpainter")
 
 # Pre-registered bounds (PLAN_OPERATING_MAP.md, "Pre-registered bounds for
 # Wave 1"). Written before the numbers were read; a fired bound is reported as
@@ -105,6 +109,7 @@ class Run:
     restore_s: Optional[float]
     bg_lpips: Optional[float]
     fg_psnr: Optional[float]
+    raw_config: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def op(self) -> Tuple:
@@ -113,9 +118,28 @@ class Run:
 
     @property
     def config(self) -> Tuple:
-        """The arm's configuration excluding the fill -- what a `none` control
-        must match for its BG-LPIPS to be this arm's *unrestored* damage."""
-        return (self.component, self.transport, self.block_size, self.shrink_amount)
+        """Everything about this run except which fill was applied -- what a
+        `none` control must match for its BG-LPIPS to be this arm's *unrestored*
+        damage.
+
+        Derived from the whole config dict rather than a hand-listed tuple,
+        because the hand-listed version was wrong and silently so. It named only
+        (component, transport, block_size, shrink_amount), which does not
+        distinguish degradation-strength parameters: `dancing`@QP43 carries three
+        `blur` runs at `blur_kernel` 7 / 15 / 31, all three collapsing to one key.
+        The controls dict then kept whichever was inserted last, so two of the
+        three arms were scored against a *different run's* damage -- with their
+        own bitrate. Damage and bits came from different experiments, which is
+        how a rate-damage ladder ends up with a positive slope.
+
+        Anything that is not the fill belongs here. A new degradation parameter
+        added later is handled automatically instead of silently aliasing.
+        """
+        return tuple(sorted(
+            (k, json.dumps(v, sort_keys=True, default=str))
+            for k, v in self.raw_config.items()
+            if k not in FILL_KEYS
+        ))
 
     @property
     def label(self) -> str:
@@ -162,6 +186,7 @@ def load(db: str) -> List[Run]:
             restore_s=doc.get("restoration_time_seconds"),
             bg_lpips=m.get(("background", "lpips_mean")),
             fg_psnr=m.get(("foreground", "psnr_mean")),
+            raw_config=cfg,
         ))
     return out
 
@@ -188,6 +213,9 @@ class Arm:
     fps: Optional[float] = None
     residual_jnd: Optional[float] = None          # + = better than the ladder predicts
     cost_dominated: bool = False
+    # config-minus-fill: identifies the transmitted bitstream, so every arm
+    # sharing it shares one control and contributes ONE ladder point.
+    config: Tuple = ()
 
     @property
     def gain_jnd(self) -> Optional[float]:
@@ -196,6 +224,33 @@ class Arm:
         if self.unrestored_bg_lpips is None:
             return None
         return (self.unrestored_bg_lpips - self.bg_lpips) / BG_LPIPS_JND
+
+
+def build_controls(runs: Sequence[Run]) -> Dict[Tuple, Run]:
+    """Map (operating point, config-minus-fill) -> the matched `none` control.
+
+    Refuses to guess when two controls share a key. The previous version was a
+    dict comprehension, so a collision silently kept whichever run came last and
+    handed its damage to arms that belonged to a different bitstream. A
+    collision under the full-config key means two runs are genuinely
+    indistinguishable in config yet hashed differently, which is a data problem
+    worth seeing rather than averaging away -- so it is dropped and counted.
+    """
+    seen: Dict[Tuple, List[Run]] = defaultdict(list)
+    for r in runs:
+        if r.component != "baselines" and is_control(r):
+            seen[(r.op, r.config)].append(r)
+    controls: Dict[Tuple, Run] = {}
+    for key, group in seen.items():
+        if len(group) == 1:
+            controls[key] = group[0]
+        else:
+            AMBIGUOUS_CONTROLS.append((key[0], [g.hash for g in group]))
+    return controls
+
+
+# Populated by build_controls; reported rather than swallowed.
+AMBIGUOUS_CONTROLS: List[Tuple[Tuple, List[str]]] = []
 
 
 def score_arms(runs: Sequence[Run]) -> Dict[Tuple, List[Arm]]:
@@ -207,8 +262,7 @@ def score_arms(runs: Sequence[Run]) -> Dict[Tuple, List[Arm]]:
     the baselines, so requiring it would silently shrink the map by 3/4.
     """
     baselines = {r.op: r for r in runs if r.component == "baselines"}
-    controls = {(r.op, r.config): r for r in runs
-                if r.component != "baselines" and is_control(r)}
+    controls = build_controls(runs)
 
     by_op: Dict[Tuple, List[Arm]] = defaultdict(list)
     for r in runs:
@@ -227,7 +281,7 @@ def score_arms(runs: Sequence[Run]) -> Dict[Tuple, List[Arm]]:
             dfg_db=r.fg_psnr - b.fg_psnr,
             bg_lpips=r.bg_lpips,
             unrestored_bg_lpips=ctrl.bg_lpips if ctrl else None,
-            fps=r.fps,
+            fps=r.fps, config=r.config,
         ))
 
     for arms in by_op.values():
@@ -319,12 +373,18 @@ def attach_residuals(by_op: Dict[Tuple, List[Arm]]) -> Dict[Tuple, Ladder]:
     fits: Dict[Tuple, Ladder] = {}
     for op, arms in by_op.items():
         usable = [a for a in arms if a.unrestored_bg_lpips is not None]
-        # De-duplicate by transport config: several fills share one control,
-        # and letting each copy vote would weight that transport by its
-        # number of restorers rather than treating it as one ladder point.
+        # One ladder point per transmitted bitstream. Several fills share one
+        # control, and letting each copy vote would weight a transport by its
+        # number of restorers rather than treating it as one point.
+        #
+        # Keyed on the full config, NOT on (transport, bits) as before: that
+        # older key let one transport contribute many points whenever its bit
+        # delta varied across arms, while damage stayed pinned to a single
+        # control's value. The result was x-axis scatter at constant y, which
+        # drags the fitted slope toward zero and flipped several cells positive.
         seen: Dict[Tuple, Arm] = {}
         for a in usable:
-            seen.setdefault((a.transport, round(a.dbits_pct, 6)), a)
+            seen.setdefault(a.config, a)
         fit = fit_ladder([(a.dbits_pct, a.unrestored_bg_lpips) for a in seen.values()])
         if fit is None or not fit.is_ladder:
             continue

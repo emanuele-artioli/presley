@@ -34,11 +34,20 @@ _spec.loader.exec_module(bom)
 OP = ("bear", "svtav1", 50, 640, 360)
 
 
-def arm(label, bg, dbits=-10.0, dfg=0.0, fps=None, unrestored=None):
+def arm(label, bg, dbits=-10.0, dfg=0.0, fps=None, unrestored=None, config=None):
+    """`config` is the config-minus-fill signature -- the transmitted bitstream.
+
+    It defaults to something unique per (transport, bits) so each arm is its own
+    ladder point. Pass the SAME config to two arms to model what really happens
+    in the corpus: several fills sharing one `none` control.
+    """
     transport, _, fill = label.partition("+")
+    if config is None:
+        config = (("degradation", transport), ("bits_marker", dbits))
     return bom.Arm(hash=label, label=label, component="presley_ai",
                    transport=transport, fill=fill, dbits_pct=dbits, dfg_db=dfg,
-                   bg_lpips=bg, unrestored_bg_lpips=unrestored, fps=fps)
+                   bg_lpips=bg, unrestored_bg_lpips=unrestored, fps=fps,
+                   config=config)
 
 
 # --------------------------------------------------------------------------
@@ -228,7 +237,10 @@ def test_several_fills_of_one_transport_count_as_one_ladder_point():
     """Otherwise a transport that happened to be run with six restorers would
     drag the fit six times harder than one run with a single restorer -- the
     same coverage confound the map avoids by never pooling across cells."""
-    shared = [arm(f"a+fill{i}", 0.5, dbits=-30.0, unrestored=0.40) for i in range(5)]
+    # One bitstream, five restorers run on it -> one control, one ladder point.
+    one_bitstream = (("degradation", "a"), ("blur_kernel", 7))
+    shared = [arm(f"a+fill{i}", 0.5, dbits=-30.0, unrestored=0.40,
+                  config=one_bitstream) for i in range(5)]
     by_op = {OP: shared + [arm("b+f", 0.5, dbits=-20.0, unrestored=0.30),
                            arm("c+f", 0.5, dbits=-10.0, unrestored=0.20)]}
 
@@ -255,6 +267,60 @@ def test_residual_from_a_cloud_is_kept_out_of_the_gate(capsys):
     assert out["best_deployable_residual_any_fit"] is not None
     assert out["best_deployable_residual_jnd"] is None
     assert "!" in capsys.readouterr().out
+
+
+def test_same_transport_at_different_strengths_gets_different_controls():
+    """The bug this pins, found on real data: `dancing`@QP43 carries three
+    `blur` runs at blur_kernel 7 / 15 / 31. Under the old key --
+    (component, transport, block_size, shrink_amount) -- all three collapsed to
+    one entry, the controls dict kept whichever was inserted last, and two of
+    the three arms were scored against *another run's* damage while keeping
+    their own bitrate. Damage and bits from different experiments is exactly how
+    a rate-damage ladder acquires a positive slope."""
+    def run(blur_kernel, bg, fill):
+        return bom.Run(
+            hash=f"k{blur_kernel}-{fill}", component="presley_ai", video="dancing",
+            codec="svtav1", qp=43, width=640, height=360, transport="blur",
+            fill=fill, block_size=16, shrink_amount=0.25, bits=1_000_000,
+            frames=80, restore_s=20.0, bg_lpips=bg, fg_psnr=30.0,
+            raw_config={"degradation": "blur", "blur_kernel": blur_kernel,
+                        "block_size": 16, "shrink_amount": 0.25,
+                        "restorer": fill},
+        )
+    runs = [run(k, bg, fill)
+            for k, bg, fill in ((7, 0.30, "none"), (15, 0.40, "none"),
+                                (31, 0.50, "none"), (7, 0.25, "nafnet"),
+                                (15, 0.35, "nafnet"), (31, 0.45, "nafnet"))]
+
+    controls = bom.build_controls(runs)
+
+    assert len(controls) == 3, "each blur strength is its own control"
+    # And each restored arm must draw damage from its OWN strength.
+    by_kernel = {r.raw_config["blur_kernel"]: r for r in runs
+                 if r.fill == "nafnet"}
+    for kernel, expected_damage in ((7, 0.30), (15, 0.40), (31, 0.50)):
+        ctrl = controls[(by_kernel[kernel].op, by_kernel[kernel].config)]
+        assert ctrl.bg_lpips == expected_damage
+
+
+def test_two_indistinguishable_controls_are_refused_not_guessed_between():
+    """A collision under the full-config key means two runs are identical in
+    config yet hashed differently. Silently keeping the last one is what caused
+    the original defect, so the pair is dropped and recorded instead."""
+    bom.AMBIGUOUS_CONTROLS.clear()
+    cfg = {"degradation": "blur", "block_size": 8, "restorer": "none"}
+    dupes = [bom.Run(hash=f"dup{i}", component="presley_ai", video="bear",
+                     codec="svtav1", qp=50, width=640, height=360,
+                     transport="blur", fill="none", block_size=8,
+                     shrink_amount=0.25, bits=1e6, frames=80, restore_s=20.0,
+                     bg_lpips=0.3 + 0.1 * i, fg_psnr=30.0, raw_config=dict(cfg))
+             for i in range(2)]
+
+    controls = bom.build_controls(dupes)
+
+    assert controls == {}
+    assert len(bom.AMBIGUOUS_CONTROLS) == 1
+    bom.AMBIGUOUS_CONTROLS.clear()
 
 
 def test_arms_without_a_control_still_enter_the_map():
