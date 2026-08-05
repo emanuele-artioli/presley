@@ -15507,3 +15507,560 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+
+
+# ---------------------------------------------------------------------------
+# HOLE(sec:downsample-vs-uniform) -- selective vs UNIFORM downsampling at
+# matched rate (referee 2, item 6.2: Netflix/YouTube uniform downscale + SR).
+# Pre-registered in docs/PLAN_DOWNSAMPLE_VS_UNIFORM.md BEFORE any of these runs
+# existed; bounds there are two-sided and must not be re-fitted after the fact.
+#
+# THE UNIFORM ARM. Every key is copied verbatim from that video/QP's EXISTING
+# selective entry (the cited src hashes of CLAIM(tab:conditioned) /
+# tab:priced-trade / tab:conditioned-breadth, read from results/<hash>/result.json,
+# not inferred from the tables). Only two values differ:
+#   shrink_amount: 80   -- 640/8 = num_blocks_x. select_removal_mask_global reads
+#                          amount >= 1.0 as an ABSOLUTE per-row block count, so
+#                          k = 80*45 = every block. Verified: mask sum 3600/3600.
+#   fg_protect: false   -- REQUIRED. With true, the UFO foreground lands in
+#                          `exclude` and k is capped (measured 2700/3600 on a 25%
+#                          FG mask), so the "uniform" arm would silently still
+#                          protect the foreground and the result would be quietly
+#                          invalid.
+# NOT set: downsample_levels / downsample_uniform_level. uniform_level raises
+# unless levels > 1, and levels=1 with a full-coverage sel already emits a
+# uniform level-1 map -- verified byte-identical pixels AND maps. Adding them
+# would move the hash and buy nothing.
+#
+# The SELECTIVE arm is NOT re-run: all 24 counterpart hashes already exist with
+# empty invariant_failures. Fixed QP (rate_control=crf) throughout, never VBR.
+# Rungs recalibrated per video, as in CLAIM(tab:av1)/tab:av1-breadth.
+# ---------------------------------------------------------------------------
+# uniform twin of selective ceac3559f8af0c3f (bear qp43)
+# hash: 22f6147e41fba4cc
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: bear
+  width: 640
+# uniform twin of selective e2cb6bed165d69b1 (bear qp51)
+# hash: cae4b213d7c2e78a
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 51
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: bear
+  width: 640
+# uniform twin of selective 660bfa8e58ad4dc0 (bear qp58)
+# hash: f10f5f79b1cd1d2f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: bear
+  width: 640
+# uniform twin of selective aa00beae3eca0b00 (bear qp61)
+# hash: 1753219b14a0cc65
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 61
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: bear
+  width: 640
+# uniform twin of selective a1dc7f1557c09867 (camel qp42)
+# hash: 5f2f81dfaabc8760
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 42
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: camel
+  width: 640
+# uniform twin of selective c29c94b5c290f208 (camel qp50)
+# hash: 67e74fa3608464fe
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: camel
+  width: 640
+# uniform twin of selective fde83c22fc01c85c (camel qp58)
+# hash: 70c6ddb7b98570aa
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: camel
+  width: 640
+# uniform twin of selective b06092cca2df6726 (camel qp62)
+# hash: 382870c6c9dfe1b0
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 62
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: camel
+  width: 640
+# uniform twin of selective dc189c206da6cd4d (dog qp43)
+# hash: 84743c7c4b33b549
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: dog
+  width: 640
+# uniform twin of selective 36d973b3d6662b9b (dog qp50)
+# hash: 3ca9a60bfbeca6b4
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: dog
+  width: 640
+# uniform twin of selective c85b79fa26560bc3 (dog qp58)
+# hash: 233c3e3670003b35
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: dog
+  width: 640
+# uniform twin of selective 5d046a46384dd4de (dog qp62)
+# hash: d81b1d270f60b3f6
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 62
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: dog
+  width: 640
+# uniform twin of selective 474fbb90d358caf0 (india qp43)
+# hash: a3dd0b440aec7cf0
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: india
+  width: 640
+# uniform twin of selective a1fab6d2e641f27a (india qp50)
+# hash: 8b6686fb7bf30028
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: india
+  width: 640
+# uniform twin of selective 93657ec7fe2751d9 (india qp58)
+# hash: fbbccda7bdc75c0b
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: india
+  width: 640
+# uniform twin of selective 33c8f6d4dfd857e7 (india qp62)
+# hash: 2b7c18de19ec436f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 62
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: india
+  width: 640
+# uniform twin of selective 340195a69b34b413 (pigs qp43)
+# hash: 3b485b0921e88bd4
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# uniform twin of selective 9cdf895adbad37bd (pigs qp50)
+# hash: dd920026d06df7ec
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# uniform twin of selective b23228908f7d34a7 (pigs qp58)
+# hash: fe14bc87b037a8f6
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# uniform twin of selective 065853196970874b (pigs qp62)
+# hash: 2d3cfbc8dd06725f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 62
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# uniform twin of selective 6d169af7b8a90f24 (tennis qp43)
+# hash: 779bd1647f82f4d5
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: tennis
+  width: 640
+# uniform twin of selective 69f428bd0178726a (tennis qp50)
+# hash: e4db65c2a3843100
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: tennis
+  width: 640
+# uniform twin of selective 8b2b11e91badd1e8 (tennis qp58)
+# hash: 3f9bec7e8d9bc1bd
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 58
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: tennis
+  width: 640
+# uniform twin of selective 1ec9cbffcdbf0988 (tennis qp62)
+# hash: ca3719647bb726cd
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 62
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: tennis
+  width: 640
