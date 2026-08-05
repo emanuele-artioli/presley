@@ -31,6 +31,43 @@ def gpu_free_memory() -> List[Tuple[int, int, int]]:
         return []
 
 
+def acquisition_conditions() -> dict:
+    """When a run finished, and what the GPUs looked like while it ran.
+
+    Exists because timings in this corpus are otherwise unattributable. Without
+    it, ProPainter's 10-40x spread in restoration time at a single resolution
+    cannot be told apart from a code change, a co-tenant's job, or a config
+    difference we failed to record -- and this box is explicitly shared, so
+    co-tenancy is the leading hypothesis and the one we could not test. The
+    sibling failure is Wave 2C's withdrawn throughput table, where a median
+    pooled over two acquisition batches produced a value no run ever achieved.
+
+    `gpu_visible` records the pin, because preflight_gpu sets
+    CUDA_VISIBLE_DEVICES and it is the busy-ness of the *pinned* card that
+    matters, not the average across the box.
+
+    Never raises: a timing annotation must not be able to fail a finished run.
+    """
+    import datetime
+
+    out: dict = {
+        "finished_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "gpu_visible": os.environ.get("CUDA_VISIBLE_DEVICES"),
+    }
+    try:
+        gpus = gpu_free_memory()
+        if gpus:
+            out["gpus"] = [{"index": i, "free_mb": f, "total_mb": t} for i, f, t in gpus]
+            # Occupancy on the busiest card is the cheapest single proxy for
+            # "was someone else hammering this box while we timed ourselves".
+            used = [(t - f) / t for _, f, t in gpus if t]
+            if used:
+                out["max_used_frac"] = round(max(used), 3)
+    except Exception:
+        pass
+    return out
+
+
 def pick_gpu(min_free_mb: int = 2000) -> Optional[Tuple[int, int]]:
     """Pick the GPU with the most free memory. Returns (index, free_mb) or None.
 

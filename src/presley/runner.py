@@ -216,6 +216,20 @@ def run_single_experiment(experiment: Dict[str, Any], dataset_dir: str, results_
         # also store the raw experiment config inside
         result['config'] = experiment
 
+        # Acquisition conditions. Added 2026-08-03 because their absence made
+        # every timing in the corpus unattributable: ProPainter's
+        # restoration_time_seconds at 640x360 splits into two clusters ~10-40x
+        # apart with NO recorded config explaining it, and with neither a
+        # timestamp nor GPU occupancy there is no way to separate a code change
+        # from a co-tenant's job on this shared box. Wave 2C's throughput table
+        # had to be withdrawn for the sibling reason: a median pooled over two
+        # acquisition batches produced a value no run ever achieved.
+        #
+        # One nvidia-smi call (already used by preflight), and it can never
+        # perturb the experiment hash, which is computed from `experiment`.
+        from presley.gpu_utils import acquisition_conditions
+        result['acquisition'] = acquisition_conditions()
+
         # Record whether this run actually satisfies the methodology rules the
         # paper's claims rest on. Stored in the result rather than only printed,
         # so a run that violated one cannot be quietly cited weeks later.
