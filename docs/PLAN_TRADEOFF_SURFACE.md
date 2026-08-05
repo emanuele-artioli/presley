@@ -18,7 +18,7 @@
 > | **W4b** | sweeps already on disk | ✅ **DONE** — graded vs uniform downsampling answered from existing runs |
 > | **W5** | content axis round 2 | ✅ **DONE** — negative, as pre-registered; BG-motion fired and was withdrawn |
 > | **W6** | naming / hygiene | ✅ **DONE** — documented, deliberately not renamed |
-> | **W7** | paper restructure | ⬜ **NOT STARTED** — **no longer blocked**; W3 and W5 have reported |
+> | **W7** | paper restructure | ✅ **DONE** — `sec:frontier` + `tab:frontier` + `tab:speed-scaling` landed and pushed to Overleaf (paper `ba38f60`). The operating-map framing needed no retiring: it had never reached reader-facing text, only one comment |
 >
 > **Everything is committed; nothing is pushed.** Work since 2026-08-03 is on
 > `claude/after-wave-2b-cosmic-sunbeam-1330c8`, which also **merges in the two
