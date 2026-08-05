@@ -157,6 +157,7 @@ def replay_once(run_dir: str, out_dir: str) -> Tuple[float, int, List[str]]:
     import numpy as np
 
     from presley.components.presley_ai import _restorer_strength_map
+    from presley.encode_utils import load_frames_from_video
     from presley.concurrency import last_resolved_devices, reset_resolved_devices
     from presley.degradation import upsample_block_mask
     from presley.sidechannel import load_level_masks
@@ -167,15 +168,16 @@ def replay_once(run_dir: str, out_dir: str) -> Tuple[float, int, List[str]]:
     params = cfg.get("restorer_params") or {}
     block_size, width, height = cfg["block_size"], cfg["width"], cfg["height"]
 
+    # `load_frames_from_video` and not cv2.VideoCapture: the transmitted videos
+    # are SVT-AV1, which this OpenCV build decodes to zero frames without
+    # raising. The component uses this helper, so replaying with anything else
+    # would also risk decoding the stream differently than the run did.
+    frames = load_frames_from_video(os.path.join(run_dir, "encoded_degraded.mp4"))
     cap = cv2.VideoCapture(os.path.join(run_dir, "encoded_degraded.mp4"))
     framerate = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    frames = []
-    while True:
-        ok, frame = cap.read()
-        if not ok:
-            break
-        frames.append(frame)
     cap.release()
+    if not frames:
+        raise ValueError(f"decoded 0 frames from {run_dir}/encoded_degraded.mp4")
 
     smaps = load_level_masks(os.path.join(run_dir, "strength_maps.npz"))
     frames_dir = os.path.join(out_dir, "in")
