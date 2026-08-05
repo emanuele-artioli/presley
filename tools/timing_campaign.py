@@ -249,8 +249,12 @@ def run_campaign(configs: Sequence[Configuration], trials: int,
                 height=cfg.height, trial=trial, seconds=seconds, frames=frames,
                 devices=devices, gpu_free_mb=cond.get("gpu_free_mb"),
                 max_used_frac=cond.get("max_used_frac")))
+            # flush: stdout is block-buffered when redirected to a file, so a
+            # campaign launched in the background shows nothing at all until it
+            # exits -- which is indistinguishable from a hang for the ~30
+            # minutes it runs, and defeats the point of a progress line.
             print(f"  {cfg.label:26} {cfg.width}x{cfg.height} trial {trial}/{trials}: "
-                  f"{frames / seconds:7.3f} fps on {devices or ['?']}")
+                  f"{frames / seconds:7.3f} fps on {devices or ['?']}", flush=True)
 
 
 def main() -> None:
