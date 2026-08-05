@@ -143,6 +143,26 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # fell back to the bare threshold -- meaning the screen that retired them
     # ("relocate no bits under fixed QP") compared 9-13% unclustered degraded
     # blocks against the bridge's 25% clustered, and was never budget-matched.
+    #
+    # ⚠ THE NAME IS A FOSSIL. `shrink_amount` does not shrink anything here.
+    # It named a geometric operation in original ELVIS: remove blocks, repack
+    # the survivors into a smaller rectangle (`removal_mode: 'shrink'`, retired
+    # -- it breaks temporal prediction, +193% bitrate overshoot). No current
+    # degradation shrinks the frame; freeze/blackout/downsample/blur/ac_truncate
+    # all act on blocks in place and the frame stays full size.
+    #
+    # What it means NOW is the *fraction of blocks to degrade* -- a selection
+    # budget. That is why it is read for every degradation rather than only the
+    # in-painting ones. Two readers have already inferred from the name that the
+    # parameter was dead legacy and could be dropped; dropping it silently
+    # switches selection back to the unbudgeted `round(score)>0` threshold and
+    # moves the operating point.
+    #
+    # NOT renamed, on purpose: it is part of compute_experiment_hash and of the
+    # control-matching key the analysis tools use, so a rename orphans every
+    # existing results/<hash>/ and unmatches arms from their `none` controls. An
+    # alias would be worse -- two keys for one behaviour is one experiment with
+    # two hashes. If it is ever renamed, migrate the corpus in the same commit.
     select_amount = experiment.get('shrink_amount')
     fg_protect = experiment.get('fg_protect', False)
     temporal_pool_masks = experiment.get('temporal_pool_masks', False)
