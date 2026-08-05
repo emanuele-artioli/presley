@@ -13,12 +13,12 @@
 > | **W1d** | commit 2B report + post-check | ✅ **DONE** — and it found a bug in the map tool |
 > | **W2** | tradeoff surface, matched pooling | ✅ **DONE** — tool + 12 tests |
 > | **W3a** | record acquisition conditions | ✅ **DONE** — prerequisite only |
-> | **W3b–d** | controlled timing campaign | ⬜ **NOT STARTED** — now the only thing blocking W7 |
-> | **W4** | significance completion | ✅ **DONE** — `freeze+propainter` closed at n=10, p_Holm 0.0254; three significant quality comparisons, none on bitrate. Only `ac_truncate` (n=7) left, one video from the floor |
+> | **W3b–d** | controlled timing campaign | ✅ **DONE** — split diagnosed as silent CPU fallback; 18 trials, every one on the pinned device, CV < 0.06. Speed axis partial by coverage, not by dispersion |
+> | **W4** | significance completion | ✅ **DONE** — all four arms closed. Three significant on quality, one on bitrate |
 > | **W4b** | sweeps already on disk | ✅ **DONE** — graded vs uniform downsampling answered from existing runs |
 > | **W5** | content axis round 2 | ✅ **DONE** — negative, as pre-registered; BG-motion fired and was withdrawn |
 > | **W6** | naming / hygiene | ✅ **DONE** — documented, deliberately not renamed |
-> | **W7** | paper restructure | ⬜ **NOT STARTED** — blocked on W3/W5 |
+> | **W7** | paper restructure | ⬜ **NOT STARTED** — **no longer blocked**; W3 and W5 have reported |
 >
 > **Everything is committed; nothing is pushed.** Work since 2026-08-03 is on
 > `claude/after-wave-2b-cosmic-sunbeam-1330c8`, which also **merges in the two
@@ -44,6 +44,20 @@
 >   `HOLE(sec:downsample-vs-uniform)` needs. `blur_kernel` is a bad lever;
 >   `ac_keep` is a real two-JND ladder; `mask_source` moves quality by a
 >   thirteenth of a JND.
+> * **W4c: the first significant bitrate comparison, and a direction I had
+>   backwards.** `ac_truncate+nafnet` closes at n=10, 10/10, p_Holm 0.0273 —
+>   but the winner is the **incumbent**, not `ac_truncate`. The prose in the
+>   2026-08-03 report said `ac_truncate` "wins bitrate 7/7" against its own
+>   *base wins* column; every per-video delta was positive. The data never moved.
+>   `ac_truncate` is dominated on both axes; **`blackout` is the only rate rival
+>   and its advantage is still not significant** (p_Holm 0.279).
+> * **W3: the timing split is silent CPU fallback**, not co-tenancy and not a
+>   commit — it reverses, which no commit can do. Devices are now recorded. The
+>   controlled campaign then measured cleanly: **Real-ESRGAN scales 3.25× / 2.30×
+>   against pixel ratios 4.0 / 2.25 (sub-linear)**, and at 640×360 the ordering is
+>   `blur+nafnet` 10.75 > `downsample+realesrgan` 5.46 > `freeze+propainter` 1.60
+>   — **the quality winner is not the speed winner.** No pre-2026-08-05 ProPainter
+>   timing is publishable.
 > * **A sixth instance of the one pattern**, this time in a tool written the same
 >   day: `None` was both a legitimate parameter value and the no-winner signal,
 >   so an 8-of-8 result displayed as 1 of 8. **When absence is data, absence can
