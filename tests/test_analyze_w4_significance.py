@@ -176,3 +176,23 @@ def test_the_significant_verdict_needs_both_the_floor_and_holm():
 
     assert row.n >= w4.N_FLOOR and row.p_holm < 0.05
     assert row.verdict == "SIGNIFICANT"
+
+
+def test_excluded_runs_are_reported_by_reason():
+    """The trap this suite exists around: a wave of clean runs lands and n does
+    not move, because the arms carry no region LPIPS yet and are skipped in
+    silence. It happened twice -- 2026-08-03 and again 2026-08-05 -- so the
+    exclusion counts are printed rather than available on a flag."""
+    w4.DROPPED.clear()
+    w4.DROPPED["no BG-LPIPS (needs presley-evaluate --backfill-lpips)"].extend(
+        ["aaaa", "bbbb", "cccc"])
+
+    out = w4.format_drops()
+
+    assert "3" in out and "backfill-lpips" in out
+    w4.DROPPED.clear()
+
+
+def test_no_drops_says_so_rather_than_printing_nothing():
+    w4.DROPPED.clear()
+    assert w4.format_drops() == "no runs dropped"

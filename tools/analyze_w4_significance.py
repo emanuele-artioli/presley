@@ -26,20 +26,21 @@ Method, and every choice in it is one the corpus has already been burned by:
     reported**, the rule pinned in `build_tradeoff_surface.collapse_duplicates`.
     Reused rather than restated so the two tools cannot drift apart.
 
-**Order matters between those last two steps, and only one order reproduces the
-published table.** Filtering for eligibility *before* collapsing lets a cell
-contribute through whichever of its duplicate runs is deployable; collapsing
-first can hand the cell to a run that then fails the filter, and the cell is
-lost. Filter-then-collapse reproduces all eight published rows exactly
-(`blur+nafnet` 11/11 p_Holm 0.0137, `blackout+propainter` 10/10 p_Holm 0.0254,
-`freeze+propainter` n=6, `ac_truncate+nafnet` n=7); collapse-then-filter drops
-`freeze+propainter`/quality to n=5. Do not reorder them.
   * **Two-tailed exact sign test**, then **Holm within a family of
     `--family-size` candidates per objective** (default 14: every arm ever
     compared against this baseline, losers included). Untested candidates enter
     Holm at p=1.0, which is what makes the smallest p multiply by the full 14.
   * **n>=8 videos** (hard rule 2b's restorer floor) or the row is reported as
     underpowered, whatever its p.
+
+**Order matters between eligibility and collapsing, and only one order
+reproduces the published table.** Filtering for eligibility *before* collapsing
+lets a cell contribute through whichever of its duplicate runs is deployable;
+collapsing first can hand the cell to a run that then fails the filter, and the
+cell is lost. Filter-then-collapse reproduces all eight published rows exactly
+(`blur+nafnet` 11/11 p_Holm 0.0137, `blackout+propainter` 10/10 p_Holm 0.0254,
+`freeze+propainter` n=6, `ac_truncate+nafnet` n=7); collapse-then-filter drops
+`freeze+propainter`/quality to n=5. Do not reorder them.
 
 Quality is BG-LPIPS, absolute and lower-better; BG-PSNR is never the verdict.
 Bitrate is Δbits vs the matched pristine baseline. A positive delta in either
@@ -57,7 +58,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
-from build_operating_map import Arm, eligible, load, score_arms  # noqa: E402
+from build_operating_map import DROPPED, Arm, eligible, load, score_arms  # noqa: E402
 from build_tradeoff_surface import collapse_duplicates  # noqa: E402
 from presley.suite import holm_adjust, sign_test_p  # noqa: E402
 
@@ -125,6 +126,24 @@ def holm_within_family(rows: Sequence[Row], family_size: int) -> None:
         row.p_holm = p
 
 
+def format_drops() -> str:
+    """Every run that could not be scored, by reason.
+
+    Printed unconditionally, not on a flag. Twice now a wave of clean runs has
+    landed and `n` has not moved, because a fresh run carries no region LPIPS
+    until `presley-evaluate --backfill-lpips` touches it and the arm simply
+    never appears. A silent exclusion is indistinguishable from the runs having
+    failed, and the second occurrence is what turned this from an anecdote into
+    output.
+    """
+    if not DROPPED:
+        return "no runs dropped"
+    lines = ["runs excluded before scoring, by reason:"]
+    for reason, hashes in sorted(DROPPED.items(), key=lambda kv: -len(kv[1])):
+        lines.append(f"  {len(hashes):4d}  {reason}")
+    return "\n".join(lines)
+
+
 def analyse(db: str, family_size: int) -> List[Row]:
     by_op = score_arms(load(db))
     candidates = sorted({a.label for arms in by_op.values() for a in arms}
@@ -171,6 +190,8 @@ def main() -> None:
 
     rows = analyse(args.db, args.family_size)
     print(format_rows(rows, args.min_n))
+    print()
+    print(format_drops())
 
     if args.candidate:
         print()
