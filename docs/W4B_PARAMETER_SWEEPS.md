@@ -36,9 +36,29 @@ direction.
 
 `downsample_uniform_level` absent means the **graded** mode (per-block level
 chosen by the selection objective); present means every selected block is
-downsampled to that one level. This is the comparison the manuscript still
-carries as `HOLE(sec:downsample-vs-uniform)`, and the data for it has been on
-disk the whole time.
+downsampled to that one level.
+
+> ⚠ **CORRECTED 2026-08-05, before this reached the paper.** An earlier version
+> of this section said this is the comparison `HOLE(sec:downsample-vs-uniform)`
+> is waiting for. **It is not.** That hole asks for importance-selected
+> per-block downsampling against **whole-frame uniform** downsampling at matched
+> rate. Both arms here are importance-selected; they differ only in whether the
+> *strength* is graded or uniform *within the selected footprint*. The hole
+> stays open, and no run on disk closes it.
+>
+> Worse, this is not new data: it is the same comparison the manuscript already
+> carries as `CLAIM(tab:graded)` plus the S1b uniform-level probes, down to the
+> same hashes (`dogs-jump` graded `a65c763b51ecdee1`, uniform k=2
+> `dbe01c1d0fe8363b`, k=3 `ab2c9c567229be90`). **The paper's reading is stricter
+> than the one below and governs:** the quality difference is **sub-JND**
+> (max |Δ| 0.0385 against the 0.05 threshold) and `NOTE(tab:graded)` states it
+> "must never be worded as a quality result". The sign test below is a
+> significance test on an imperceptible difference, which is precisely what
+> hard rule 3 forbids reporting as a quality finding.
+>
+> What survives is the *bitrate* half — uniform-3 transmits fewer bits than
+> graded on 8 of 8 videos — and even that is already in the paper as the mixing
+> cost identified in `NOTE(tab:graded)`. Nothing here lands.
 
 Unit = video, n=8 (`bear`, `bike-packing`, `color-run`, `dancing`, `dogs-jump`,
 `drift-straight`, `drift-turn`, `motorbike`), two-tailed exact sign test, Holm
