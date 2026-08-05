@@ -402,3 +402,31 @@ def test_gate_reports_a_stop_when_no_cell_has_a_winner(capsys):
     assert gate["no_separable_winner"] is True
     assert gate["passes"] is False
     assert "STOPS the plan" in capsys.readouterr().out
+
+
+def test_an_arm_missing_bg_lpips_is_counted_not_silently_dropped():
+    """The failure that cost a debugging cycle on 2026-08-03. A freshly run arm
+    carries only `overall` LPIPS until `presley-evaluate --backfill-lpips` has
+    touched it. Dropping it silently means a newly added arm does not error --
+    it simply never appears, n does not move, and that is indistinguishable
+    from the runs having failed."""
+    bom.DROPPED.clear()
+    common = dict(component="presley_ai", video="bear", codec="svtav1", qp=50,
+                  width=640, height=360, block_size=8, shrink_amount=0.25,
+                  bits=1e6, frames=80, restore_s=20.0, fg_psnr=30.0)
+    runs = [
+        bom.Run(hash="base", transport=None, fill=None, bg_lpips=0.4,
+                raw_config={}, **{**common, "component": "baselines"}),
+        bom.Run(hash="scored", transport="blur", fill="nafnet", bg_lpips=0.3,
+                raw_config={"degradation": "blur", "restorer": "nafnet"}, **common),
+        bom.Run(hash="freshrun", transport="blur", fill="nafnet", bg_lpips=None,
+                raw_config={"degradation": "blur", "restorer": "nafnet",
+                            "blur_kernel": 15}, **common),
+    ]
+
+    by_op = bom.score_arms(runs)
+
+    assert sum(len(v) for v in by_op.values()) == 1
+    reason = "no BG-LPIPS (needs presley-evaluate --backfill-lpips)"
+    assert bom.DROPPED[reason] == ["freshrun"]
+    bom.DROPPED.clear()

@@ -251,6 +251,9 @@ def build_controls(runs: Sequence[Run]) -> Dict[Tuple, Run]:
 
 # Populated by build_controls; reported rather than swallowed.
 AMBIGUOUS_CONTROLS: List[Tuple[Tuple, List[str]]] = []
+# Runs that could not be scored, by reason. Every silent exclusion in this
+# codebase has eventually been mistaken for a null result, so they are counted.
+DROPPED: Dict[str, List[str]] = defaultdict(list)
 
 
 def score_arms(runs: Sequence[Run]) -> Dict[Tuple, List[Arm]]:
@@ -264,14 +267,26 @@ def score_arms(runs: Sequence[Run]) -> Dict[Tuple, List[Arm]]:
     baselines = {r.op: r for r in runs if r.component == "baselines"}
     controls = build_controls(runs)
 
+    DROPPED.clear()
     by_op: Dict[Tuple, List[Arm]] = defaultdict(list)
     for r in runs:
         if r.component == "baselines" or is_control(r):
             continue
         b = baselines.get(r.op)
         if b is None or not b.bits or b.fg_psnr is None:
+            DROPPED["no usable baseline at this operating point"].append(r.hash)
             continue
-        if not r.bits or r.bg_lpips is None or r.fg_psnr is None:
+        # Missing BG-LPIPS is the common case and it is NOT inert: a freshly
+        # run arm has only `overall` LPIPS until `presley-evaluate
+        # --backfill-lpips` has touched it. Dropping it silently means a newly
+        # added arm does not error, it simply never appears -- n does not move,
+        # which is indistinguishable from the runs having failed. That cost a
+        # debugging cycle on 2026-08-03, so it is counted and reported.
+        if r.bg_lpips is None:
+            DROPPED["no BG-LPIPS (needs presley-evaluate --backfill-lpips)"].append(r.hash)
+            continue
+        if not r.bits or r.fg_psnr is None:
+            DROPPED["no bitrate or no FG-PSNR"].append(r.hash)
             continue
         ctrl = controls.get((r.op, r.config))
         by_op[r.op].append(Arm(
@@ -818,7 +833,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     n_arms = sum(len(v) for v in by_op.values())
     videos = {op[0] for op in by_op}
     print(f"{len(runs)} fixed-QP citable runs -> {n_arms} scored arms across "
-          f"{len(by_op)} operating points on {len(videos)} videos\n")
+          f"{len(by_op)} operating points on {len(videos)} videos")
+    if DROPPED:
+        print("  runs present but NOT scored:")
+        for reason, hashes in sorted(DROPPED.items(), key=lambda kv: -len(kv[1])):
+            sample = ", ".join(h[:10] for h in hashes[:3])
+            more = f", +{len(hashes) - 3} more" if len(hashes) > 3 else ""
+            print(f"    {len(hashes):4d}  {reason}  [{sample}{more}]")
+    if AMBIGUOUS_CONTROLS:
+        print(f"  {len(AMBIGUOUS_CONTROLS)} operating point(s) had two "
+              "indistinguishable controls; both refused")
+    print()
     print("Descriptive only: per-cell effect sizes, no significance claim. Hard rule 2b\n"
           "needs n>=6 videos per arm before any of this is stated as a finding.\n")
 
