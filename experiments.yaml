@@ -15350,3 +15350,160 @@ experiments:
   target_bitrate: 600000
   video: tennis
   width: 640
+
+# --- W4 (2026-08-03): take blur+nafnet from n=9 to n=11 paired videos.
+# --- It clears the n>=8 restorer floor already but misses Holm at
+# --- p_Holm 0.0508 (raw 0.0039); two more winning videos put it at ~0.013.
+# --- dog/pigs @QP43 carried only bs8 downsample arms, so the bs16 pair is
+# --- added on BOTH sides -- the comparison is within-cell, and matching
+# --- the seven QP43 videos already at bs16 keeps the arm definition
+# --- constant across the suite. `none` controls included: they cost an
+# --- encode and they are what the ladder residual needs.
+# hash: 79553e7b43a32d0c
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  blur_kernel: 31
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: blur
+  fg_protect: true
+  height: 360
+  restorer: nafnet
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 97b843b32aada05f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  blur_kernel: 31
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: blur
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 77839a43a84500f6
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: realesrgan
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 9df7df0f83873f14
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 76e5cb1de557c639
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  blur_kernel: 31
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: blur
+  fg_protect: true
+  height: 360
+  restorer: nafnet
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: 24240f9ec538274e
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  blur_kernel: 31
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: blur
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: 1d179cb03cd7875d
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: realesrgan
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: 8ec888c58da8863c
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+  width: 640
