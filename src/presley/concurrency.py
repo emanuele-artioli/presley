@@ -96,6 +96,43 @@ def parallel_process_frames(process_fn: Callable[[List[np.ndarray], torch.device
     for chunk in sorted(chunks, key=lambda c: c.chunk_id):
         output.extend(results[chunk.chunk_id])
     return output
+_RESOLVED_DEVICES: List[str] = []
+
+
+def _record_resolution(devices: Sequence[torch.device]) -> None:
+    """Remember what the last restoration actually ran on.
+
+    `allow_cpu_fallback=True` is passed at every call site, so a run with no
+    visible CUDA device does not fail -- it silently runs on CPU, roughly 30x
+    slower, and nothing in `result.json` says so. That is the leading
+    explanation for ProPainter's 10-40x timing split at 640x360: ordered by
+    result mtime, 169 runs form long same-speed blocks with only **3** cluster
+    changes, and the split reverses (slow -> fast -> slow -> fast), which a code
+    change cannot do and random co-tenancy jitter would not produce.
+
+    Recorded rather than only logged, because a timing whose device is unknown
+    is not a measurement. Module-level because the device is resolved deep
+    inside each restorer and threading a return value through every one of them
+    would touch far more code than the fact is worth.
+    """
+    _RESOLVED_DEVICES.clear()
+    _RESOLVED_DEVICES.extend(str(d) for d in devices)
+
+
+def last_resolved_devices() -> List[str]:
+    """Devices the most recent restoration resolved to, e.g. ['cuda:0'] or
+    ['cpu']. Empty when no restoration ran (a `none` control, or a component
+    that never resolves devices) -- which is different from CPU and must not be
+    reported as it."""
+    return list(_RESOLVED_DEVICES)
+
+
+def reset_resolved_devices() -> None:
+    """Clear the record before a run, so one experiment can never inherit the
+    previous experiment's device and read as though it had been measured."""
+    _RESOLVED_DEVICES.clear()
+
+
 def _resolve_device_list(devices: Optional[Sequence[Union[int, str, torch.device]]], *, prefer_cuda: bool=True, allow_cpu_fallback: bool=True) -> List[torch.device]:
     """Normalize user-provided device specifiers into unique torch.device entries."""
     available_gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
@@ -158,4 +195,5 @@ def _resolve_device_list(devices: Optional[Sequence[Union[int, str, torch.device
             resolved_devices.append(torch.device('cpu'))
         else:
             raise ValueError('No valid compute devices resolved from the provided specification.')
+    _record_resolution(resolved_devices)
     return resolved_devices

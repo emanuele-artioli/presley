@@ -204,6 +204,11 @@ def run_single_experiment(experiment: Dict[str, Any], dataset_dir: str, results_
     from presley.gpu_utils import preflight_gpu
     preflight_gpu(component_name, experiment)
 
+    # Clear the device record before dispatch, so this run cannot inherit the
+    # previous run's device and report a number it never measured.
+    from presley.concurrency import last_resolved_devices, reset_resolved_devices
+    reset_resolved_devices()
+
     # Dispatch. Components are named here rather than imported at module scope so
     # a run only pays for the heavy deps (torch, diffusers) of the one it uses.
     try:
@@ -229,6 +234,15 @@ def run_single_experiment(experiment: Dict[str, Any], dataset_dir: str, results_
         # perturb the experiment hash, which is computed from `experiment`.
         from presley.gpu_utils import acquisition_conditions
         result['acquisition'] = acquisition_conditions()
+        # What the restoration actually ran on. CPU fallback is enabled at every
+        # restorer call site and is silent: a run with no visible CUDA device
+        # does not fail, it runs ~30x slower. That is the leading explanation
+        # for ProPainter's 10-40x split at 640x360 -- ordered by result mtime,
+        # 169 runs form long same-speed blocks with only 3 cluster changes, and
+        # the split REVERSES, which no code change can do. An empty list means
+        # no restoration resolved a device (a `none` control); that is not the
+        # same as CPU and must not be reported as it.
+        result['acquisition']['restore_devices'] = last_resolved_devices()
 
         # Record whether this run actually satisfies the methodology rules the
         # paper's claims rest on. Stored in the result rather than only printed,
