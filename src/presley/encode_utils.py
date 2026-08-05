@@ -42,6 +42,14 @@ def derive_rate_control(codec: str, codec_params: Optional[Dict[str, Any]] = Non
     if codec == 'x264':
         return 'vbr_2pass'
     if codec == 'kvazaar':
+        # 'qp' pins a base QP; rate_control='cqp' asks for the same fixed-QP
+        # mode with the base QP binary-searched toward target_bitrate -- which
+        # is exactly what encode_with_roi_kvazaar does, so a baseline written
+        # that way is directly comparable to an ROI arm. With neither, kvazaar
+        # runs --bitrate (VBR), which absorbs ROI deltas and overshoots targets
+        # by 30-45% -- the reason every pre-2026-08-03 kvazaar baseline is VBR.
+        if has_qp or codec_params.get('rate_control') == 'cqp':
+            return 'cqp'
         return 'vbr_1pass'
     if codec == 'svtav1':
         return 'crf' if has_qp else 'vbr_1pass'
@@ -204,6 +212,87 @@ def encode_video_kvazaar(input_video_or_pattern: str, output_video: str, framera
     
     cmd2 = f"ffmpeg -hide_banner -loglevel error -y -i {hevc_out} -c copy {output_video}"
     subprocess.run(cmd2, shell=True, check=True)
+
+def encode_video_kvazaar_qp(input_video_or_pattern: str, output_video: str, framerate: float,
+                            width: int, height: int, target_bitrate: Optional[int] = None,
+                            qp: Optional[int] = None, num_frames: Optional[int] = None) -> None:
+    """Fixed-QP kvazaar: the ROI encode's twin, minus the ROI map.
+
+    Exists because `tab:roi` compared fixed-QP ROI arms against **VBR**
+    baselines: `encode_video_kvazaar` only offers `--bitrate`, so no fixed-QP
+    kvazaar baseline could be produced at all. Kvazaar VBR overshoots its target
+    by 30-45%, which is the same band as the table's headline "saving", so the
+    comparison could not support the claim built on it.
+
+    Two modes:
+      * ``qp`` given            -- encode once at that base QP.
+      * ``target_bitrate`` given -- **binary-search the base QP whose actual
+        bitrate is closest to the target**, which is precisely what
+        `encode_with_roi_kvazaar` does. Matching that search is what makes the
+        two arms comparable; picking a QP by hand would reintroduce exactly the
+        kind of confound this function exists to remove.
+
+    The search is duplicated from `encode_with_roi_kvazaar` rather than factored
+    out of it **deliberately**: that function produced results already landed in
+    the paper, and refactoring it risks perturbing them for no benefit here.
+    """
+    if (qp is None) == (target_bitrate is None):
+        raise ValueError("pass exactly one of qp= or target_bitrate=")
+
+    temp_dir = os.path.dirname(output_video) or "."
+    yuv_path = os.path.join(temp_dir, "kvazaar_base_input.yuv")
+    hevc_path = output_video + ".hevc"
+
+    input_args = (['-framerate', str(framerate), '-i', input_video_or_pattern]
+                  if '%' in input_video_or_pattern else ['-i', input_video_or_pattern])
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', *input_args,
+                    '-pix_fmt', 'yuv420p', '-f', 'rawvideo', yuv_path], check=True)
+
+    if num_frames is None:
+        frame_bytes = width * height * 3 // 2          # yuv420p
+        num_frames = max(1, os.path.getsize(yuv_path) // frame_bytes)
+    duration = num_frames / framerate
+
+    def _encode(base_qp: int) -> float:
+        cmd = ['kvazaar', '--input', yuv_path, '--input-res', f'{width}x{height}',
+               '--input-fps', str(framerate), '--qp', str(base_qp),
+               '--output', hevc_path]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        # Kvazaar sometimes crashes on shutdown (double-free) after writing a
+        # valid stream, so judge success by the output, not the exit code --
+        # same contract as the ROI path.
+        if not os.path.exists(hevc_path) or os.path.getsize(hevc_path) < 1024:
+            raise RuntimeError(f"Kvazaar encoding failed (qp={base_qp}): {result.stderr}")
+        return os.path.getsize(hevc_path) * 8 / duration
+
+    try:
+        if qp is not None:
+            _encode(int(qp))
+        else:
+            lo, hi = 1, 51
+            best_qp, best_diff, last_qp = None, None, None
+            while lo <= hi:
+                mid = (lo + hi) // 2
+                bitrate = _encode(mid)
+                last_qp = mid
+                diff = abs(bitrate - target_bitrate)
+                if best_diff is None or diff < best_diff:
+                    best_qp, best_diff = mid, diff
+                if bitrate > target_bitrate:
+                    lo = mid + 1
+                else:
+                    hi = mid - 1
+            if last_qp != best_qp:
+                _encode(best_qp)
+
+        subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-f', 'hevc',
+                        '-framerate', str(framerate), '-i', hevc_path,
+                        '-c:v', 'copy', output_video], check=True)
+    finally:
+        for path in (hevc_path, yuv_path):
+            if os.path.exists(path):
+                os.remove(path)
+
 
 def scores_to_qp_offsets(removability_scores: np.ndarray, qp_range: int) -> np.ndarray:
     """Map removability scores to bit-neutral per-block QP offsets in [-qp_range, +qp_range].

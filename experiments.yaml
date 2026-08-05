@@ -15192,3 +15192,161 @@ experiments:
   video: color-run
   width: 640
 
+
+# --- W1a (2026-08-03): fixed-QP kvazaar baselines, one per kvazaar ROI arm
+# --- at 640x360. Every pre-existing kvazaar baseline is VBR because the
+# --- code had no fixed-QP kvazaar path until now, so tab:roi compared
+# --- fixed-QP ROI arms against baselines that overshoot by 30-45%.
+# hash: 8648db33afe78b06
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 150000
+  video: bear
+  width: 640
+# hash: 791a4a7d211dd339
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 250000
+  video: bear
+  width: 640
+# hash: 1e8ed9c23e6d1922
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 460800
+  video: bear
+  width: 640
+# hash: 01cedd8356287476
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 555000
+  video: bear
+  width: 640
+# hash: 5134094ec43407fc
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 800000
+  video: bear
+  width: 640
+# hash: 88b8b965acf24574
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 460800
+  video: bmx-trees
+  width: 640
+# hash: ac96dfeeea3456df
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 300000
+  video: camel
+  width: 640
+# hash: 2904b5594f582ae7
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 600000
+  video: camel
+  width: 640
+# hash: 54e003fd21df9935
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 300000
+  video: dog
+  width: 640
+# hash: 433b88d2bcb0373f
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 600000
+  video: dog
+  width: 640
+# hash: 4267ff72a682e6d0
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 460800
+  video: drift-chicane
+  width: 640
+# hash: 7483cd84e5940907
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 300000
+  video: india
+  width: 640
+# hash: 986b1ebbd15ffc89
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 600000
+  video: india
+  width: 640
+# hash: a7b6391e3a6c09b3
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 300000
+  video: pigs
+  width: 640
+# hash: 922748d11019292b
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 600000
+  video: pigs
+  width: 640
+# hash: af0809337038f43c
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 300000
+  video: tennis
+  width: 640
+# hash: 08245d42882938dd
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 600000
+  video: tennis
+  width: 640

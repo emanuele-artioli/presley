@@ -21,6 +21,13 @@ from presley.encode_utils import calculate_target_bitrate, derive_rate_control, 
         ("x265", {}, "vbr_2pass"),
         ("x264", {"qp": 30}, "vbr_2pass"),  # x264 path has no constant-QP mode
         ("kvazaar", {}, "vbr_1pass"),
+        # Added 2026-08-03 with the fixed-QP kvazaar baseline path. Before it,
+        # kvazaar could ONLY be encoded --bitrate, so tab:roi's fixed-QP ROI
+        # arms had only VBR baselines to compare against -- and kvazaar VBR
+        # overshoots targets by 30-45%, the same band as the table's headline
+        # "saving". Mislabelling either of these as VBR would re-hide that.
+        ("kvazaar", {"qp": 30}, "cqp"),
+        ("kvazaar", {"rate_control": "cqp"}, "cqp"),
         ("svtav1", {"qp": 40}, "crf"),  # rc=0:q=N with aq-mode=2 is CRF, not CQP
         ("svtav1", {}, "vbr_1pass"),
         ("unknown_codec", {"qp": 1}, "n/a"),

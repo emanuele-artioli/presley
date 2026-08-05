@@ -34,7 +34,21 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
         else:
             encode_video_x265(ref_frames_pattern, output_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
     elif codec == 'kvazaar':
-        encode_video_kvazaar(ref_frames_pattern, output_video, framerate, target_bitrate, width, height)
+        if 'qp' in codec_params or codec_params.get('rate_control') == 'cqp':
+            # Fixed-QP kvazaar. Without this branch the only kvazaar baseline
+            # obtainable was --bitrate (VBR), which overshoots targets by
+            # 30-45% -- so tab:roi's fixed-QP ROI arms had nothing like-for-like
+            # to be compared against. rate_control='cqp' binary-searches the
+            # base QP toward target_bitrate, matching encode_with_roi_kvazaar.
+            from presley.encode_utils import encode_video_kvazaar_qp
+            _qp = codec_params.get('qp')
+            encode_video_kvazaar_qp(
+                ref_frames_pattern, output_video, framerate, width, height,
+                target_bitrate=None if _qp is not None else target_bitrate,
+                qp=None if _qp is None else int(_qp),
+                num_frames=len(frames))
+        else:
+            encode_video_kvazaar(ref_frames_pattern, output_video, framerate, target_bitrate, width, height)
     elif codec == 'svtav1':
         if 'qp' in codec_params:
             from presley.encode_utils import encode_video_svtav1_qp
