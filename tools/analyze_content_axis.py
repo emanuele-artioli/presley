@@ -22,6 +22,20 @@ scores already cached -- no GPU, no new runs:
   A3  background texture energy            mean SC over non-foreground blocks
   A4  residual-information proxy           mean of EVCA's per-frame B column
 
+Round 2 (W5, 2026-08-05) adds the three candidates named in review and never
+tested. Pre-registration: docs/W5_CONTENT_AXIS_ROUND2.md. k rises to 7, which
+makes round 1's four corrections strictly more conservative -- they were
+negative, so nothing can be weakened by it.
+
+  A5  background motion                    mean TC over NON-foreground blocks;
+      A1's complement, and the FG/BG decomposition round 1 never made
+  A6  duration                             frame count, 38..2440 across the
+      corpus. Not a content property in the same sense as the others: a hit
+      here is more likely the coverage confound made visible than a finding
+  A7  foreground fraction                  share of blocks flagged foreground.
+      A prior wave refuted it against a *different* target (which arm wins),
+      which is not evidence about T2/T3
+
 The unit of analysis is the **video**, never the cell: attributes are constant
 within a video, so cells are not independent observations.
 
@@ -43,7 +57,7 @@ import numpy as np
 
 # --- pre-registered constants -------------------------------------------------
 
-N_CANDIDATES = 4  # Holm correction uses this regardless of how many compute
+N_CANDIDATES = 7  # Holm correction uses this regardless of how many compute
 MIN_VIDEOS_FOR_SIGNIFICANCE = 6  # hard rule 2b
 RHO_EFFECT_THRESHOLD = 0.6
 ALPHA = 0.05
@@ -52,7 +66,8 @@ SEED = 0
 FG_BLOCK_COVERAGE = 0.5
 BLOCK_SIZE = 8
 
-ATTRIBUTES = ("A1_motion", "A2_hole_instability", "A3_bg_texture", "A4_residual_info")
+ATTRIBUTES = ("A1_motion", "A2_hole_instability", "A3_bg_texture", "A4_residual_info",
+              "A5_bg_motion", "A6_duration", "A7_fg_fraction")
 
 
 # --- statistics ---------------------------------------------------------------
@@ -185,9 +200,32 @@ def first_annotation(video: str, annotations_root: str) -> np.ndarray | None:
     return np.array(Image.open(os.path.join(d, frames[0])))
 
 
-def content_attributes(video: str, cache_root: str, annotations_root: str) -> dict:
-    """The four pre-registered attributes for one video. Missing -> None."""
+def video_frame_counts(db: str) -> dict[str, float]:
+    """A6: frames per video, from the runs table.
+
+    Taken as the max over a video's runs rather than the mean: a video has one
+    length, and a run that recorded fewer frames recorded a truncated encode,
+    not a shorter clip. Averaging would let one bad run shorten a video.
+    """
+    import sqlite3
+
+    con = sqlite3.connect(db)
+    try:
+        rows = con.execute(
+            "SELECT video, MAX(video_frames) FROM runs"
+            " WHERE video_frames IS NOT NULL GROUP BY video").fetchall()
+    finally:
+        con.close()
+    return {video: float(frames) for video, frames in rows if frames}
+
+
+def content_attributes(video: str, cache_root: str, annotations_root: str,
+                       frames: dict[str, float] | None = None) -> dict:
+    """The pre-registered attributes for one video. Missing -> None."""
     out = {a: None for a in ATTRIBUTES}
+    # A6 is the one attribute that comes from the run record rather than the
+    # cache, so it survives a video having no EVCA scores at all.
+    out["A6_duration"] = (frames or {}).get(video)
     out["source"] = None
     cdir = cache_dir_for(video, cache_root)
     if cdir is None:
@@ -208,10 +246,15 @@ def content_attributes(video: str, cache_root: str, annotations_root: str) -> di
     mask = first_annotation(video, annotations_root)
     if mask is not None:
         fg = foreground_block_mask(mask, tc.shape[0], width, height)
+        out["A7_fg_fraction"] = float(fg.mean())
         if fg.any():
             out["A2_hole_instability"] = float(tc[fg].mean())
         if (~fg).any():
             out["A3_bg_texture"] = float(sc[~fg].mean())
+            # A5 is A2's complement over the same block flags, so the two are
+            # guaranteed to be the decomposition of A1 rather than two
+            # differently-derived motion numbers that only look like a pair.
+            out["A5_bg_motion"] = float(tc[~fg].mean())
     return out
 
 
@@ -354,6 +397,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap.add_argument("--map", required=True, help="JSON from build_operating_map.py")
     ap.add_argument("--cache", required=True)
     ap.add_argument("--annotations", required=True)
+    ap.add_argument("--db", default="results/presley.db",
+                    help="source of A6 (frame counts); round-1 attributes do not need it")
     ap.add_argument("--permutations", type=int, default=N_PERMUTATIONS)
     ap.add_argument("--json", help="write the full result table here")
     args = ap.parse_args(argv)
@@ -362,7 +407,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         cells = json.load(fh)["cells"]["quality_first"]
 
     print("=" * 78)
-    print("WAVE 2A -- content axis. Pre-registration: docs/WAVE2A_CONTENT_AXIS.md")
+    print("CONTENT AXIS -- round 1 (A1-A4): docs/WAVE2A_CONTENT_AXIS.md")
+    print("               round 2 (A5-A7): docs/W5_CONTENT_AXIS_ROUND2.md")
     print("=" * 78)
 
     deg = winner_degeneracy(cells)
@@ -380,7 +426,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                       {c["verdict"] for c in cells}, "T3 no-eligible-arm")
 
     videos = sorted({c["op"][0] for c in cells})
-    attrs = {v: content_attributes(v, args.cache, args.annotations) for v in videos}
+    frames = video_frame_counts(args.db) if os.path.isfile(args.db) else {}
+    if not frames:
+        print(f"\n  NOTE: no frame counts from {args.db} -- A6 will not compute, and "
+              "it still costs its share of the Holm correction.")
+    attrs = {v: content_attributes(v, args.cache, args.annotations, frames)
+             for v in videos}
 
     missing = [v for v in videos if attrs[v]["A1_motion"] is None]
     print(f"\nAttributes computed for {len(videos) - len(missing)}/{len(videos)} videos")

@@ -75,11 +75,21 @@ def test_permutation_p_is_reproducible_and_two_tailed():
 
 
 def test_holm_corrects_for_candidates_tried_not_candidates_computed():
-    """Three computable attributes still pay the four-candidate correction."""
+    """Three computable attributes still pay the full candidate correction --
+    expressed against N_CANDIDATES rather than a literal, because round 2 raised
+    it from 4 to 7 and a hard-coded expectation would have had to be edited to
+    match rather than checking anything."""
     computed = aca.holm([0.01, 0.4, 0.9], n_tests=aca.N_CANDIDATES)
     uncorrected = aca.holm([0.01, 0.4, 0.9])
-    assert computed[0] == pytest.approx(0.04)
+    assert computed[0] == pytest.approx(0.01 * aca.N_CANDIDATES)
     assert computed[0] > uncorrected[0]
+
+
+def test_every_declared_attribute_is_corrected_for():
+    """The correction must cover every attribute in ATTRIBUTES. Adding an
+    attribute without raising k is a silent way to make the survivors of a
+    larger search look better than they are."""
+    assert aca.N_CANDIDATES == len(aca.ATTRIBUTES)
 
 
 def test_holm_is_monotone_and_clipped():
@@ -227,3 +237,58 @@ def test_foreground_blocks_need_majority_coverage():
     mask = np.zeros((16, 32), dtype=np.uint8)
     mask[:3, :8] = 1  # 3/8 of the first block -- below the 0.5 threshold
     assert not aca.foreground_block_mask(mask, 8, 32, 16).any()
+
+
+# --- round 2 attributes (W5) --------------------------------------------------
+
+
+def _fake_cache(tmp_path, tc, sc, mask):
+    """A minimal EVCA cache + annotation dir for one video at 32x16, bs8."""
+    cdir = tmp_path / "cache" / "clip_32x16_bs8"
+    cdir.mkdir(parents=True)
+    for name, arr in (("evca_TC_blocks.csv", tc), ("evca_SC_blocks.csv", sc)):
+        with open(cdir / name, "w") as fh:
+            fh.write("f0\n")
+            fh.write("\n".join(str(v) for v in arr) + "\n")
+    ann = tmp_path / "annotations" / "clip"
+    ann.mkdir(parents=True)
+    from PIL import Image
+    Image.fromarray(mask * 255).save(ann / "00000.png")
+    return str(tmp_path / "cache"), str(tmp_path / "annotations")
+
+
+def test_bg_motion_is_the_complement_of_hole_instability(tmp_path):
+    """A5 exists to decompose A1, so it must be computed off the same block
+    flags as A2 -- otherwise the pair is two motion numbers that merely look
+    like a decomposition."""
+    tc = [10.0] + [2.0] * 7          # block 0 is the foreground block
+    mask = np.zeros((16, 32), dtype=np.uint8)
+    mask[:8, :8] = 1
+    cache, annotations = _fake_cache(tmp_path, tc, [1.0] * 8, mask)
+
+    attrs = aca.content_attributes("clip", cache, annotations)
+
+    assert attrs["A2_hole_instability"] == pytest.approx(10.0)
+    assert attrs["A5_bg_motion"] == pytest.approx(2.0)
+    assert attrs["A1_motion"] == pytest.approx(sum(tc) / 8)
+
+
+def test_fg_fraction_counts_blocks_not_pixels(tmp_path):
+    """A7 is measured on the block grid the transports actually operate on."""
+    mask = np.zeros((16, 32), dtype=np.uint8)
+    mask[:8, :16] = 1  # two of eight blocks
+    cache, annotations = _fake_cache(tmp_path, [1.0] * 8, [1.0] * 8, mask)
+
+    assert aca.content_attributes("clip", cache, annotations)["A7_fg_fraction"] \
+        == pytest.approx(0.25)
+
+
+def test_duration_survives_a_video_with_no_evca_cache(tmp_path):
+    """A6 comes from the run record, not the cache. A video missing EVCA scores
+    still has a length, and dropping it would quietly shrink A6's n to match
+    the other attributes' n."""
+    attrs = aca.content_attributes("clip", str(tmp_path), str(tmp_path),
+                                   frames={"clip": 2440.0})
+
+    assert attrs["A6_duration"] == 2440.0
+    assert attrs["A1_motion"] is None

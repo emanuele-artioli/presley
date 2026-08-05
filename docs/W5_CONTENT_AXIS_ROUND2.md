@@ -58,3 +58,86 @@ content. That reading is registered now, before the number.
 Any attribute reaching *predictive* must additionally survive the round-1
 confound checks (`dataset_confound`, `coverage_confound`) before being written
 anywhere as a result — that is what stopped A1 in round 1.
+
+---
+
+# Result — negative, as pre-registered
+
+Run 2026-08-05 against `results/presley.db` (1075 runs) and the map rebuilt the
+same day. Command:
+
+```
+python tools/build_operating_map.py --db results/presley.db --json map.json
+python tools/analyze_content_axis.py --map map.json --cache cache \
+    --annotations dataset/annotations --db results/presley.db
+```
+
+**VERDICT: NEGATIVE — 0 of 3 new attributes survive. The map stays an empirical
+lookup table.** Every bound held; nothing fired that was not withdrawn by a
+check written before the numbers.
+
+## T2 (separable vs tie), n=19 videos, 48 cells
+
+| attribute | rho | p | p_Holm (k=7) | verdict |
+|---|---|---|---|---|
+| **A5 bg-motion** | **+0.663** | 0.0029 | **0.0203** | fired, then **WITHDRAWN** |
+| A1 motion (round 1) | +0.642 | 0.0043 | 0.0258 | fired, then WITHDRAWN (same as round 1) |
+| A7 fg-fraction | −0.041 | 0.8663 | 1.0000 | negative |
+| A6 duration | +0.208 | 0.3823 | 1.0000 | negative |
+
+T3 (no-eligible-arm), n=23 videos: all seven attributes negative, largest
+\|rho\| 0.458 (A2, p_Holm 0.221).
+
+## Why A5 was withdrawn, and what it actually is
+
+A5 fails **both** adjudication checks, either of which is disqualifying:
+
+- **It does not survive the ≥2-cells subset**: rho falls 0.663 → 0.475,
+  p_Holm 1.0000. The association lives in the single-cell videos, whose rate is
+  0 or 1 by construction.
+- **It is dirtier than the confound it would have to beat**: A5 correlates with
+  a video's *cell count* at rho 0.599, while the outcome itself correlates with
+  cell count at 0.524. An attribute more strongly associated with run history
+  than the outcome is is not evidence about content.
+
+And A5 is very nearly A1 relabelled. Background blocks outnumber foreground
+blocks by roughly an order of magnitude, so mean TC over non-FG blocks tracks
+mean TC over all blocks: the two agree to rho 0.475 versus 0.475 on the subset,
+0.663 vs 0.642 on the full set, and both withdraw for the same reason. **The
+FG/BG decomposition round 1 never made turns out not to be a decomposition in
+practice** — A2 (FG motion) is the informative half and it is flatly negative
+(rho 0.182). That is the one genuinely new thing this round establishes.
+
+## A6 read exactly as registered
+
+Duration is negative as a content predictor (rho +0.208 on T2, −0.088 on T3)
+and correlates with cell count at rho **0.444** — squarely inside the 0.3–0.9
+band registered for it. The 64× duration spread is therefore **not** the
+coverage confound round 1 blamed for A1: the confound is real, but it is not
+duration, and it now has a measured value rather than an inference.
+
+## A7 closes the re-test cleanly
+
+FG-fraction is flat on both targets (rho −0.041 / +0.306). The prior refutation
+was against a different target; re-tested against these, it refutes again. There
+is no remaining reason to revisit it.
+
+## Bounds check
+
+| bound | value | status |
+|---|---|---|
+| attributes reaching *predictive* (post-adjudication) | 0 of 3 | in band (plausible 0) |
+| largest \|rho\| | 0.663 (A5, T2) | in band (< 0.9 alarm) |
+| A6 vs cell count | 0.444 | in band (0.3–0.9) |
+| videos contributing | T2 n=19, T3 n=23 | as expected |
+
+## One alarm, and it is round 1's, not round 2's
+
+`T2 outcome vs dataset provenance: rho 0.907, p 0.0002` — **above the 0.9
+alarm line**. Separability tracks whether a clip is DAVIS or a newer dataset far
+more strongly than it tracks any content attribute. No round-2 attribute
+correlates with provenance (all \|rho\| ≤ 0.134), so this does not touch the
+verdict above; it says the T2 target itself is substantially a provenance
+variable. It belongs to the corpus, not to this analysis, and it is the reason a
+future positive on T2 would still need a provenance-matched replication before
+anyone believed it.
