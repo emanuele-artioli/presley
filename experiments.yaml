@@ -15507,3 +15507,157 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+
+# --- W4 (2026-08-05): take freeze+propainter from n=6 to n=10 paired videos.
+# --- At n=6 it is 6/6 but underpowered (p_Holm 0.375); n=8 is not enough
+# --- either (p_Holm ~0.10), so four videos are added at once.
+# --- svtav1 QP43 640x360 bs16: these four already carry an ELIGIBLE bs16
+# --- downsample+realesrgan arm and a pristine baseline, so no new baseline
+# --- is needed and the block size matches on both sides -- india is skipped
+# --- for exactly that reason (its downsample arm is bs8, so the sign test
+# --- would partly measure block size). `none` controls included: they cost
+# --- an encode and they are what the ladder residual needs.
+# hash: 4721082d636b4d23
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: freeze
+  fg_protect: true
+  height: 360
+  restorer: propainter
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: color-run
+  width: 640
+# hash: 2d5665b52bac3584
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: freeze
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: color-run
+  width: 640
+# hash: 1bd52888e5a74f7c
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: freeze
+  fg_protect: true
+  height: 360
+  restorer: propainter
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dancing
+  width: 640
+# hash: ff7bbca388749d6e
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: freeze
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dancing
+  width: 640
+# hash: 292535fc3839432a
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: freeze
+  fg_protect: true
+  height: 360
+  restorer: propainter
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: drift-turn
+  width: 640
+# hash: f319efa5dd663a1b
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: freeze
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: drift-turn
+  width: 640
+# hash: 51658477b2384aca
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: freeze
+  fg_protect: true
+  height: 360
+  restorer: propainter
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: motorbike
+  width: 640
+# hash: db6dc5aa1010fb9d
+- alpha: 0.5
+  beta: 0.5
+  block_size: 16
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: presley_ai
+  composite_output: true
+  degradation: freeze
+  fg_protect: true
+  height: 360
+  restorer: none
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: motorbike
+  width: 640
