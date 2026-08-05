@@ -52,8 +52,15 @@ they disagree about which arm is best.
 
 - `freeze+propainter` (n=6): **n=8 is not enough.** At 8/8 raw p is 0.0078 and
   p_Holm ≈ 0.10. It needs ~10/10 → four more videos.
-- `ac_truncate+nafnet` (n=7): loses on quality (6/7 to the baseline) and wins on
-  bitrate (7/7), both underpowered. One more video takes it to the n≥8 floor.
+- `ac_truncate+nafnet` (n=7): **CORRECTED 2026-08-05.** This read "loses on
+  quality (6/7) and **wins** on bitrate (7/7)". The bitrate direction is
+  backwards: the column is *base wins*, so 7/7 meant the **baseline** won
+  bitrate on all seven videos, and the per-video deltas (`bear` +19.06 pp,
+  `bike-packing` +2.68 pp, …) are positive throughout. `ac_truncate` was never a
+  rate rival. Closed at n=10 with three videos, not the one estimated here:
+  **baseline wins bitrate 10/10, p_Holm 0.0273, SIGNIFICANT** — the corpus's
+  first significant bitrate comparison, and it favours the incumbent on both
+  axes. See `docs/W4C_AC_TRUNCATE_BOUNDS.md`.
 
 ## The trap this wave walked into, worth more than the result
 
