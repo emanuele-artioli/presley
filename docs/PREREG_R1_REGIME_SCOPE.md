@@ -119,3 +119,51 @@ exists to prevent.
 **Total scope budget for this paper: two pre-registered hypotheses, R1 and M1.
 There is no third.** Five negatives is enough evidence that this corpus does not
 support attribute-hunting.
+
+---
+
+## RESULT — 2026-08-06. R1 does not fire, and the negative is the useful outcome.
+
+Ran once, as registered. `tools/analyze_r1_regime_scope.py`.
+
+| n | negative contrasts | sign p | Holm (k=4) | min attainable at n=13 | median \|contrast\| |
+|---|---|---|---|---|---|
+| 13 | 5/13 | 0.581 | 1.000 | 0.000244 | 0.0223 BG-LPIPS |
+
+**No dependence on operating point is detectable.** Every contrast sits inside
+the pre-registered plausible band (0.00–0.10); nothing approached the 0.25 alarm;
+the trivial-magnitude alarm did not fire (median 0.0223 is a real magnitude, so
+this is a genuine null and not a coordinate that orders trivially).
+
+**Stopping rule honoured.** The `fg_psnr` coordinate was NOT run. The
+pre-registration specifies it as a robustness check *for a result that fires* —
+running it after a null would be exactly the second-coordinate search the
+stopping rule forbids.
+
+### Why this negative is good news rather than a disappointment
+
+R1 tested whether PRESLEY's advantage **over ELVIS** varies with how bit-starved
+the encoder is. It does not. Read together with the n=13 matched-rate result
+(PRESLEY ahead on **13/13** ladders, p=0.000244), the two say something stronger
+than a regime-conditional claim would have:
+
+> PRESLEY beats ELVIS at matched rate on every ladder tested, across two codecs
+> and three dataset families, and that advantage is **stable across the whole
+> operating range** rather than confined to a favourable corner of it.
+
+A scope result that had *narrowed* the claim would have been weaker. This one
+widens it.
+
+### This does not contradict the regime flip in `tab:av1`
+
+Different comparison, and the distinction must be kept in the text. `tab:av1` and
+`tab:av1-breadth` concern **bit relocation against the pristine baseline** (the
+reduction goal), where the sign genuinely does flip with regime and then fails to
+replicate on new content. R1 concerns **PRESLEY against ELVIS** (the restoration
+goal). The restoration advantage is regime-stable; the bit-relocation advantage
+is regime-dependent *and* content-dependent. Reporting both is the honest
+position, and conflating them would be an error in either direction.
+
+### Scope budget
+
+R1 is spent. One hypothesis remains (M1). **There is no third.**
