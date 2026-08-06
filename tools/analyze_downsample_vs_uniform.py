@@ -26,6 +26,7 @@ from __future__ import annotations
 import json
 import pathlib
 import sys
+from math import comb
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
 from bd_rate import bd_rate, overlap_fraction  # noqa: E402
@@ -71,6 +72,21 @@ SELECTIVE = {
 }
 
 
+# Per-video uniform rungs, where the default ladder does not bracket the
+# selective range. The uniform arm codes 25-33% cheaper at the same QP, so on
+# bear its default ladder (43/51/58/61) topped out at 353 kbps against a
+# selective range reaching 614 -- only 0.47 overlap, below MIN_OVERLAP.
+#
+# Recalibrating rungs per video is the established practice here (tab:av1-breadth
+# did the same so its baseline PSNR range would bracket the incumbents'). The
+# replacement was chosen on a stated rule, NOT by maximising overlap after the
+# fact: among all four-rung ladders that bracket [132, 614] kbps, take the one
+# most evenly spaced in log-rate. That is (35, 43, 51, 58) -- the original ladder
+# with its bottom rung swapped for a new qp35 run -- at log-evenness 1.31 and
+# overlap 0.83. Three other ladders tie on overlap; this one wins on spacing.
+UNIFORM_RUNGS = {"bear": (35, 43, 51, 58)}
+
+
 def _read(h):
     p = RESULTS / h / "result.json"
     if not p.exists():
@@ -103,7 +119,11 @@ def load():
         if d.get("rate_control") != "crf" or d.get("invariant_failures"):
             continue
         if c.get("fg_protect") is False and c.get("shrink_amount") == 80:
-            uni[(c["video"], (c.get("codec_params") or {}).get("qp"))] = d
+            v, qp = c["video"], (c.get("codec_params") or {}).get("qp")
+            allowed = UNIFORM_RUNGS.get(v)
+            if allowed is not None and qp not in allowed:
+                continue
+            uni[(v, qp)] = d
     return sel, uni
 
 
@@ -125,6 +145,13 @@ def rate(d):
 
 def m(d, region, key):
     return d["metrics"][region][key]
+
+
+def sign_p(k, n):
+    """Exact two-tailed sign test. One-tailed p here would be the trap that
+    hard rule 2b's significance layer exists to stop: 5/5 is p=0.0625, not 0.031."""
+    lo = min(k, n - k)
+    return min(1.0, 2 * sum(comb(n, i) * 0.5 ** n for i in range(lo + 1)))
 
 
 def status(name, value):
@@ -165,18 +192,23 @@ def main() -> int:
 
     fired, rows, low_overlap = [], [], []
     for v in VIDEOS:
-        cells = [k for k in common if k[0] == v]
-        if len(cells) < 4:
-            print(f"{v}: only {len(cells)} rungs, skipped")
+        # BD-rate compares two CURVES and does not require matched QPs -- each
+        # arm may sit on its own recalibrated ladder, exactly as tab:av1-breadth
+        # does. Per-rung deltas DO require matched QP and use the common rungs
+        # only. Conflating the two silently dropped bear, whose uniform ladder
+        # was recalibrated and therefore shares only three QPs with selective.
+        s_keys = sorted([k for k in sel if k[0] == v], key=lambda k: k[1])
+        u_keys = sorted([k for k in uni if k[0] == v], key=lambda k: k[1])
+        if len(s_keys) < 4 or len(u_keys) < 4:
+            print(f"{v}: selective {len(s_keys)} rungs / uniform {len(u_keys)} rungs, skipped")
             continue
-        cells.sort(key=lambda k: k[1])
-        s_r = [rate(sel[k]) for k in cells]
-        u_r = [rate(uni[k]) for k in cells]
+        s_r = [rate(sel[k]) for k in s_keys]
+        u_r = [rate(uni[k]) for k in u_keys]
         # BD-rate wants quality increasing; LPIPS is lower-is-better, so negate.
-        s_fg = [-m(sel[k], "foreground", "lpips_mean") for k in cells]
-        u_fg = [-m(uni[k], "foreground", "lpips_mean") for k in cells]
-        s_bg = [-m(sel[k], "background", "lpips_mean") for k in cells]
-        u_bg = [-m(uni[k], "background", "lpips_mean") for k in cells]
+        s_fg = [-m(sel[k], "foreground", "lpips_mean") for k in s_keys]
+        u_fg = [-m(uni[k], "foreground", "lpips_mean") for k in u_keys]
+        s_bg = [-m(sel[k], "background", "lpips_mean") for k in s_keys]
+        u_bg = [-m(uni[k], "background", "lpips_mean") for k in u_keys]
 
         ov = overlap_fraction(u_r, s_r)
         try:
@@ -186,37 +218,53 @@ def main() -> int:
             print(f"{v}: BD failed ({e})")
             continue
         if ov < MIN_OVERLAP:
-            # Arithmetically valid, practically meaningless -- report and exclude.
             low_overlap.append((v, ov, bd_fg, bd_bg))
             continue
 
-        d_lp = sum(m(uni[k], "foreground", "lpips_mean")
-                   - m(sel[k], "foreground", "lpips_mean") for k in cells) / len(cells)
-        d_bits = sum((rate(uni[k]) - rate(sel[k])) / rate(sel[k]) for k in cells) / len(cells) * 100
+        shared = sorted(set(k[1] for k in s_keys) & set(k[1] for k in u_keys))
+        if shared:
+            d_lp = sum(m(uni[(v, q)], "foreground", "lpips_mean")
+                       - m(sel[(v, q)], "foreground", "lpips_mean") for q in shared) / len(shared)
+            d_bits = sum((rate(uni[(v, q)]) - rate(sel[(v, q)])) / rate(sel[(v, q)])
+                         for q in shared) / len(shared) * 100
+        else:
+            d_lp = d_bits = float("nan")
 
-        rows.append((v, bd_fg, bd_bg, d_lp, d_bits))
+        rows.append((v, bd_fg, bd_bg, d_lp, d_bits, ov, len(shared)))
         for nm, val in (("bd_fg", bd_fg), ("bd_bg", bd_bg),
                         ("d_fglpips", d_lp), ("d_bits", d_bits)):
-            st = status(nm, val)
-            if st != "in band":
-                fired.append((v, nm, val, st))
+            if val == val:                          # skip NaN
+                st = status(nm, val)
+                if st != "in band":
+                    fired.append((v, nm, val, st))
 
-    if low_overlap:
-        print("EXCLUDED — rate ranges overlap too little for a BD integral:")
-        for v, ov, a, b in low_overlap:
-            print(f"  {v:8s} overlap={ov:.2f} (<{MIN_OVERLAP})  "
-                  f"nominal BD-rate FG {a:+.1f}% BG {b:+.1f}% — NOT reportable")
-        print()
-
-    print(f"{'video':8s}{'BD-rate FG':>13}{'BD-rate BG':>13}{'d FG-LPIPS':>13}{'d bits @QP':>13}")
-    for v, a, b, c, e in rows:
-        print(f"{v:8s}{a:>12.1f}%{b:>12.1f}%{c:>13.4f}{e:>12.1f}%")
+    print(f"{'video':8s}{'BD-rate FG':>13}{'BD-rate BG':>13}{'d FG-LPIPS':>13}"
+          f"{'d bits @QP':>13}{'overlap':>9}{'n@QP':>6}")
+    for v, a, b, c, e, ov, ns in rows:
+        print(f"{v:8s}{a:>12.1f}%{b:>12.1f}%{c:>13.4f}{e:>12.1f}%{ov:>9.2f}{ns:>6}")
 
     if rows:
-        n_sel_fg = sum(1 for _, a, *_ in rows if a < 0)
-        n_sel_bg = sum(1 for _, _, b, *_ in rows if b < 0)
-        print(f"\nselective wins FG BD-rate on {n_sel_fg}/{len(rows)} videos, "
-              f"BG on {n_sel_bg}/{len(rows)}")
+        n = len(rows)
+        n_sel_fg = sum(1 for r in rows if r[1] < 0)
+        n_sel_bg = sum(1 for r in rows if r[2] < 0)
+        print(f"\nselective wins FG BD-rate on {n_sel_fg}/{n} videos, "
+              f"BG on {n_sel_bg}/{n}")
+        print(f"  FG exact two-tailed sign p = {sign_p(n_sel_fg, n):.4f}")
+        print(f"  BG exact two-tailed sign p = {sign_p(n_sel_bg, n):.4f}")
+        print(f"  floor at n={n} is p={sign_p(0, n):.4f} (a clean sweep); "
+              f"anything short of that cannot reach 0.05")
+
+        # POST-HOC, and labelled as such: this hypothesis was generated by these
+        # data, not pre-registered, so its concordance is hypothesis-GENERATING.
+        # It is not a significance claim and must not be reported as one until
+        # an independent set tests it.
+        conc = sum(1 for r in rows
+                   if (abs(r[3]) > 0.05 and r[1] < 0) or (abs(r[3]) <= 0.05 and r[1] > 0))
+        print(f"\nPOST-HOC observation (NOT pre-registered, NOT a significance claim):")
+        print(f"  selective wins iff uniform's FG damage is supra-JND: "
+              f"{conc}/{n} concordant")
+        print(f"  This hypothesis was generated by these data. Quoting its p-value")
+        print(f"  would be candidate shopping. It needs an independent set to test.")
 
     print("\nPre-registered bound status:")
     if not fired:
