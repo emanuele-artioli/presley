@@ -123,7 +123,8 @@ def pick_configurations(db: str, arms: Sequence[str],
     con = sqlite3.connect(db)
     con.row_factory = sqlite3.Row
     rows = con.execute(
-        "SELECT hash, video, width, height, degradation, restorer, inpainter"
+        "SELECT hash, doc, component, video, width, height, degradation,"
+        "       restorer, inpainter"
         "  FROM runs WHERE n_invariant_failures = 0 AND has_metrics = 1"
     ).fetchall()
     con.close()
@@ -133,13 +134,31 @@ def pick_configurations(db: str, arms: Sequence[str],
         fill = r["restorer"] or r["inpainter"]
         if fill not in REPLAYABLE:
             continue
-        label = f'{r["degradation"]}+{fill}'
+        # ELVIS names its transport `removal_mode`, which is not a DB column --
+        # `degradation` is NULL for every elvis run, so labelling from it alone
+        # yields "None+propainter" and the arm silently never matches.
+        transport = r["degradation"]
+        if transport is None:
+            try:
+                transport = (json.loads(r["doc"]).get("config") or {}).get("removal_mode")
+            except (TypeError, ValueError):
+                transport = None
+        if transport is None:
+            continue
+        label = f'{transport}+{fill}'
         key = (label, r["width"], r["height"])
         if label not in arms or (r["width"], r["height"]) not in resolutions:
             continue
         run_dir = os.path.join(os.path.dirname(db), r["hash"])
-        if not (os.path.isfile(os.path.join(run_dir, "encoded_degraded.mp4"))
-                and os.path.isfile(os.path.join(run_dir, "strength_maps.npz"))):
+        # ELVIS writes different artefact names than presley_ai. Its blackout and
+        # freeze runs ARE replayable -- the stretched frames it restores are just
+        # the decoded transmitted frames -- and excluding them is why
+        # blackout+propainter had no measured speed at all.
+        presley_ok = (os.path.isfile(os.path.join(run_dir, "encoded_degraded.mp4"))
+                      and os.path.isfile(os.path.join(run_dir, "strength_maps.npz")))
+        elvis_ok = (os.path.isfile(os.path.join(run_dir, "encoded_shrunk.mp4"))
+                    and os.path.isfile(os.path.join(run_dir, "removal_masks.npz")))
+        if not (presley_ok or elvis_ok):
             continue
         if key not in best:
             best[key] = Configuration(label=label, width=r["width"],
@@ -165,21 +184,34 @@ def replay_once(run_dir: str, out_dir: str) -> Tuple[float, int, List[str]]:
     with open(os.path.join(run_dir, "result.json")) as fh:
         cfg = json.load(fh)["config"]
     restorer = cfg.get("restorer") or cfg.get("inpainter")
-    params = cfg.get("restorer_params") or {}
+    params = cfg.get("restorer_params") or cfg.get("inpainter_params") or {}
     block_size, width, height = cfg["block_size"], cfg["width"], cfg["height"]
+
+    # ELVIS's transport is a different pair of artefacts. `shrink` is deliberately
+    # NOT supported: its transmitted frames are repacked into a smaller rectangle
+    # and restoring them needs the stretch step, so replaying it as if the decode
+    # were the input would time the wrong thing while looking like it worked.
+    is_elvis = cfg.get("component") == "elvis"
+    if is_elvis and cfg.get("removal_mode") == "shrink":
+        raise ValueError(
+            "removal_mode='shrink' is not replayable: its transmitted frames are "
+            "repacked and need the stretch step, so a decode-as-input replay "
+            "would silently time the wrong operation")
+    video_name = ("encoded_shrunk.mp4" if is_elvis else "encoded_degraded.mp4")
+    maps_name = ("removal_masks.npz" if is_elvis else "strength_maps.npz")
 
     # `load_frames_from_video` and not cv2.VideoCapture: the transmitted videos
     # are SVT-AV1, which this OpenCV build decodes to zero frames without
     # raising. The component uses this helper, so replaying with anything else
     # would also risk decoding the stream differently than the run did.
-    frames = load_frames_from_video(os.path.join(run_dir, "encoded_degraded.mp4"))
-    cap = cv2.VideoCapture(os.path.join(run_dir, "encoded_degraded.mp4"))
+    frames = load_frames_from_video(os.path.join(run_dir, video_name))
+    cap = cv2.VideoCapture(os.path.join(run_dir, video_name))
     framerate = cap.get(cv2.CAP_PROP_FPS) or 30.0
     cap.release()
     if not frames:
-        raise ValueError(f"decoded 0 frames from {run_dir}/encoded_degraded.mp4")
+        raise ValueError(f"decoded 0 frames from {run_dir}/{video_name}")
 
-    smaps = load_level_masks(os.path.join(run_dir, "strength_maps.npz"))
+    smaps = load_level_masks(os.path.join(run_dir, maps_name))
     frames_dir = os.path.join(out_dir, "in")
     restored_dir = os.path.join(out_dir, "out")
     os.makedirs(frames_dir, exist_ok=True)
@@ -187,8 +219,11 @@ def replay_once(run_dir: str, out_dir: str) -> Tuple[float, int, List[str]]:
     for i, frame in enumerate(frames):
         cv2.imwrite(os.path.join(frames_dir, f"{i:05d}.png"), frame)
 
-    smap_r = _restorer_strength_map(np.asarray(smaps), restorer,
-                                    cfg.get("degradation", ""), params)
+    # A binary removal mask has no strength semantics, so the conditioned-restorer
+    # remapping is skipped for ELVIS rather than applied to a 0/1 array.
+    smap_r = (np.asarray(smaps) if is_elvis else
+              _restorer_strength_map(np.asarray(smaps), restorer,
+                                     cfg.get("degradation", ""), params))
 
     reset_resolved_devices()
     # The clock starts after every input is on disk, so it measures restoration
