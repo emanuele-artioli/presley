@@ -3,7 +3,7 @@
 **Supersedes `docs/PLAN_OPERATING_MAP.md`.** (Copy of the session plan, checked in so the next session finds it without the plans directory.) Written 2026-08-03 after Waves 1,
 2A, 2B, 2C reported and their claims were audited.
 
-> ## Execution status — updated 2026-08-03, end of session
+> ## Execution status — updated 2026-08-05
 >
 > | | workstream | status |
 > |---|---|---|
@@ -13,16 +13,55 @@
 > | **W1d** | commit 2B report + post-check | ✅ **DONE** — and it found a bug in the map tool |
 > | **W2** | tradeoff surface, matched pooling | ✅ **DONE** — tool + 12 tests |
 > | **W3a** | record acquisition conditions | ✅ **DONE** — prerequisite only |
-> | **W3b–d** | controlled timing campaign | ⬜ **NOT STARTED** |
-> | **W4** | significance completion | 🟡 **PARTIAL** — `blur+nafnet` closed; `freeze+propainter` still open |
-> | **W5** | content axis round 2 | ⬜ **NOT STARTED** |
+> | **W3b–d** | controlled timing campaign | ✅ **DONE** — split diagnosed as silent CPU fallback; 18 trials, every one on the pinned device, CV < 0.06. Speed axis partial by coverage, not by dispersion |
+> | **W4** | significance completion | ✅ **DONE** — all four arms closed. Three significant on quality, one on bitrate |
+> | **W4b** | sweeps already on disk | ✅ **DONE** — graded vs uniform downsampling answered from existing runs |
+> | **W5** | content axis round 2 | ✅ **DONE** — negative, as pre-registered; BG-motion fired and was withdrawn |
 > | **W6** | naming / hygiene | ✅ **DONE** — documented, deliberately not renamed |
-> | **W7** | paper restructure | ⬜ **NOT STARTED** — blocked on W3/W5 |
+> | **W7** | paper restructure | ✅ **DONE** — `sec:frontier` + `tab:frontier` + `tab:speed-scaling` landed and pushed to Overleaf (paper `ba38f60`). The operating-map framing needed no retiring: it had never reached reader-facing text, only one comment |
 >
-> **Everything is committed; nothing is pushed.** Code `main` at `8b1791b`, map
-> branch `claude/operating-map-implementation-34a243` at `90e4e16`, paper repo at
-> `6408a0c` with **5 commits awaiting an Overleaf push** — the push was blocked
-> by the permission classifier this session and needs the human to run it.
+> **Everything is committed; nothing is pushed.** Work since 2026-08-03 is on
+> `claude/after-wave-2b-cosmic-sunbeam-1330c8`, which also **merges in the two
+> branches whose tools main could not see** — `claude/operating-map-implementation-34a243`
+> (W1/W2) and `worktree-agent-ac71fed8395e1fd74` (Wave 2A). Both merged cleanly.
+> That invisibility is why W4's significance analysis was re-derived by hand and
+> never committed; it is now `tools/analyze_w4_significance.py`, and it
+> reproduces the published table exactly. The paper repo is still at `6408a0c`
+> with **5 commits awaiting an Overleaf push** the human has to run.
+>
+> ### 2026-08-05 session, in one line each
+>
+> * **W4 closed.** `freeze+propainter` n=6→10, 10/10, p_Holm 0.0254. Three arms
+>   now lose to `downsample+realesrgan` on quality on every video tested
+>   (11/11, 10/10, 10/10); **none of the three bitrate comparisons is
+>   significant and their directions disagree.** All six bounds held.
+> * **W5 negative.** BG-motion fired (rho 0.663, p_Holm 0.0203) and was withdrawn
+>   by both pre-registered checks. It is A1 relabelled — background blocks
+>   outnumber foreground ~10:1 — so the FG/BG decomposition is not one in
+>   practice. Duration is not the coverage confound; FG-fraction refutes again.
+> * **W4b, no GPU.** Graded downsampling beats uniform-3 on quality 8/8 and
+>   loses bitrate 0/8 (p_Holm 0.031 each, post-hoc, n at the floor) — the data
+>   `HOLE(sec:downsample-vs-uniform)` needs. `blur_kernel` is a bad lever;
+>   `ac_keep` is a real two-JND ladder; `mask_source` moves quality by a
+>   thirteenth of a JND.
+> * **W4c: the first significant bitrate comparison, and a direction I had
+>   backwards.** `ac_truncate+nafnet` closes at n=10, 10/10, p_Holm 0.0273 —
+>   but the winner is the **incumbent**, not `ac_truncate`. The prose in the
+>   2026-08-03 report said `ac_truncate` "wins bitrate 7/7" against its own
+>   *base wins* column; every per-video delta was positive. The data never moved.
+>   `ac_truncate` is dominated on both axes; **`blackout` is the only rate rival
+>   and its advantage is still not significant** (p_Holm 0.279).
+> * **W3: the timing split is silent CPU fallback**, not co-tenancy and not a
+>   commit — it reverses, which no commit can do. Devices are now recorded. The
+>   controlled campaign then measured cleanly: **Real-ESRGAN scales 3.25× / 2.30×
+>   against pixel ratios 4.0 / 2.25 (sub-linear)**, and at 640×360 the ordering is
+>   `blur+nafnet` 10.75 > `downsample+realesrgan` 5.46 > `freeze+propainter` 1.60
+>   — **the quality winner is not the speed winner.** No pre-2026-08-05 ProPainter
+>   timing is publishable.
+> * **A sixth instance of the one pattern**, this time in a tool written the same
+>   day: `None` was both a legitimate parameter value and the no-winner signal,
+>   so an 8-of-8 result displayed as 1 of 8. **When absence is data, absence can
+>   no longer double as the error signal.**
 >
 > ### What closed each item
 >

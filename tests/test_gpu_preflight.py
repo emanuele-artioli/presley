@@ -47,3 +47,42 @@ def test_acquisition_conditions_never_raises_on_a_cpu_box(monkeypatch):
     assert out["gpu_visible"] is None
     assert "gpus" not in out
     assert out["finished_utc"]
+
+
+# --- what the restoration actually ran on (W3) --------------------------------
+
+def test_resolved_devices_are_recorded_so_a_timing_has_a_device():
+    """CPU fallback is enabled at every restorer call site and is silent: a run
+    with no visible CUDA device does not fail, it runs ~30x slower. A timing
+    whose device is unknown is not a measurement."""
+    from presley.concurrency import (_resolve_device_list, last_resolved_devices,
+                                     reset_resolved_devices)
+
+    reset_resolved_devices()
+    assert last_resolved_devices() == []
+
+    _resolve_device_list(["cpu"])
+
+    assert last_resolved_devices() == ["cpu"]
+
+
+def test_no_restoration_reads_as_unknown_not_as_cpu():
+    """A `none` control resolves no device at all. Reporting that as CPU would
+    invent the very fact this record exists to establish."""
+    from presley.concurrency import last_resolved_devices, reset_resolved_devices
+
+    reset_resolved_devices()
+
+    assert last_resolved_devices() == []
+
+
+def test_one_run_cannot_inherit_the_previous_runs_device():
+    from presley.concurrency import (_resolve_device_list, last_resolved_devices,
+                                     reset_resolved_devices)
+
+    _resolve_device_list(["cpu"])
+    assert last_resolved_devices() == ["cpu"]
+
+    reset_resolved_devices()
+
+    assert last_resolved_devices() == []

@@ -1,6 +1,13 @@
 # W4 — the significance picture, after two added videos
 
-**Status:** complete 2026-08-03. Plan: `~/.claude/plans/after-wave-2b-*.md`.
+**Status:** SUPERSEDED 2026-08-05 by `docs/W4_FREEZE_BOUNDS.md`, which added four
+videos and took `freeze+propainter` to n=10, 10/10, **p_Holm 0.0254 —
+SIGNIFICANT**. The table below is the 2026-08-03 state and every `freeze` row in
+it is stale; the rest still reproduces exactly. The analysis behind both is now
+committed as `tools/analyze_w4_significance.py` (it was not, when this was
+written, which is why it had to be reconstructed).
+
+Plan: `docs/PLAN_TRADEOFF_SURFACE.md`.
 
 ## What was run
 
@@ -45,8 +52,15 @@ they disagree about which arm is best.
 
 - `freeze+propainter` (n=6): **n=8 is not enough.** At 8/8 raw p is 0.0078 and
   p_Holm ≈ 0.10. It needs ~10/10 → four more videos.
-- `ac_truncate+nafnet` (n=7): loses on quality (6/7 to the baseline) and wins on
-  bitrate (7/7), both underpowered. One more video takes it to the n≥8 floor.
+- `ac_truncate+nafnet` (n=7): **CORRECTED 2026-08-05.** This read "loses on
+  quality (6/7) and **wins** on bitrate (7/7)". The bitrate direction is
+  backwards: the column is *base wins*, so 7/7 meant the **baseline** won
+  bitrate on all seven videos, and the per-video deltas (`bear` +19.06 pp,
+  `bike-packing` +2.68 pp, …) are positive throughout. `ac_truncate` was never a
+  rate rival. Closed at n=10 with three videos, not the one estimated here:
+  **baseline wins bitrate 10/10, p_Holm 0.0273, SIGNIFICANT** — the corpus's
+  first significant bitrate comparison, and it favours the incumbent on both
+  axes. See `docs/W4C_AC_TRUNCATE_BOUNDS.md`.
 
 ## The trap this wave walked into, worth more than the result
 

@@ -1,6 +1,60 @@
 # Plan A — from "our pipeline wins" to an operating map
 
-**Status:** proposed 2026-08-02, not started. Workstream 1 of 2.
+**Status:** proposed 2026-08-02. Wave 1 passed the gate 2026-08-03; **Waves 2A,
+2B and 2C then ran, and gate condition 2 substantively FIRES.** This plan needs
+re-scoping before any further work — see the box below. Workstream 1 of 2.
+
+> ### ⛔ Gate condition 2 fires: the map collapses under quality-first
+>
+> Wave 1's coded check said "2 distinct winners, not firing". That check counts
+> **per-cell** winners, and the 2 rested on a single cell. Three independent
+> lines of evidence, from three waves that did not share code, now say the
+> substantive condition is met:
+>
+> 1. **Per-cell (Wave 1):** 18 of 19 quality-first separable cells name
+>    `downsample+realesrgan`.
+> 2. **Paired significance (Wave 2B):** it beats `blackout+propainter` on 10/10
+>    videos — and after Holm over the real family (m=14 candidates, losers
+>    included) that is **the only comparison in the entire corpus that survives**
+>    (p_Holm 0.027, n=10, clearing the n≥8 restorer bar). `blur+nafnet` misses at
+>    0.0508; `freeze+propainter` is `underpowered (n<8)`. **Under rate-first
+>    nothing is significant and the direction reverses.**
+> 3. **Content axis (Wave 2A): NEGATIVE, and degenerate.** No EVCA-derived
+>    attribute predicts transport choice. The one that fired (motion, rho +0.642)
+>    was **withdrawn** — it fails its own pre-registered robustness subset,
+>    correlates with a video's *cell count* as strongly as with the outcome, and
+>    is beaten by dataset **provenance** at rho +0.907, which fired the alarm
+>    bound and was handled as a confound. The deeper point: **T1 could not be
+>    tested at all**, because 18 of 19 cells name the same arm and no attribute
+>    can predict a constant.
+>
+> **What this kills.** The claim this plan was built on — *"for a given kind of
+> content at a given requested quality, there is a best choice"* — is not
+> supported. Content does not select the transport, and under the objective that
+> matters most it is the same arm everywhere. The (content × rate) lookup table
+> is dead.
+>
+> **What survives, and it is a cleaner paper than the one we were defending.**
+> The plan already anticipated this: *"The map collapses to a single global
+> recommendation. Also fine, also a different paper."* Concretely:
+>
+> - **One recommendation, with one significance-backed comparison behind it:**
+>   `downsample+realesrgan`, n=10 videos, p_Holm 0.027, on BG-LPIPS.
+> - **The transport is selected by the deployer's objective, not by the
+>   content** — and even that axis is weaker than it looked, because rate-first's
+>   preference has no significant support and Wave 2C found it **replaceable for
+>   free in 14 of 50 cells, up to 9.8× faster at perceptually indistinguishable
+>   quality**. Rate-first prefers the corpus's slowest fill.
+> - **The corpus is confounded with coverage.** Provenance predicting an outcome
+>   at +0.907 is a fact about how runs were scheduled, not about video content.
+>   Any future breadth claim has to be read against that.
+>
+> **Before resuming:** re-scope this plan to the single-recommendation framing,
+> or retire it in favour of a new one. Wave 2B's remaining batches are still
+> worth running — they *balance* the coverage confound 2A identified, and
+> `tools/analyze_content_axis.py` should be re-run afterwards, which costs
+> nothing. But do not commission Wave 3 or restructure the article against the
+> map framing.
 Companion: `docs/PLAN_PRESENTATION.md` (workstream 2), which **depends on this
 one** — you cannot choose how to present a result before knowing which results
 survive scoping.
@@ -243,10 +297,46 @@ Cost is now known to be ~40× lower than the old estimate: ProPainter is
 **39–77 s/run** at 640×360, not ~49 min. A full 4-transport × 4-rung sweep on
 one new video is well under an hour.
 
-Priority order: (i) complete 4-transport coverage at the QPs where only 2 exist,
-(ii) add videos to reach **n≥6**, the threshold at which hard rule 2b permits a
-significance claim — the map is currently descriptive only, and n≥6 would let
-it be stated as a finding, (iii) only then consider new transports.
+**Priority order, revised 2026-08-03 against what Wave 1 measured.** The
+original order (transport coverage → videos → new transports) was written
+before the map existed and put the `none` controls nowhere. Wave 1 shows they
+are the binding constraint:
+
+1. **Matched `none` controls first — the cheapest fix in the corpus.** The
+   ladder residual, the plan's BD-rate analogue and the scalar `F1` plots, is
+   fitted on **12 of 130 operating points**, purely because a residual needs the
+   arm's own unrestored control and those are far sparser than baselines. The
+   **16 pending fixed-QP `none` controls already sitting unrun in the queue**
+   (legitimate, never run, no one has decided whether they are wanted — they
+   are) are the first batch. A control is an encode plus an evaluation with no
+   restorer: the cheapest run type there is, and it multiplies the reach of runs
+   already paid for.
+2. **Transport coverage at the cells that cannot pose the question.** 24 of 84
+   cells have **no deployable arm at all** and 14 have exactly one. Those are
+   not holes in the sense of missing data — they are cells where nothing on
+   offer both saves bits and holds FG. Adding a 3rd/4th transport there is what
+   turns them into map cells; adding one where 4 already exist is not.
+3. **Paired coverage for a significance test — sharper than "add videos".**
+   The quality-first winners already span **8 videos**, so the raw video count
+   is not the blocker. What hard rule 2b needs is the *same pair of arms*
+   compared across ≥6 videos at comparable operating points. Target the
+   specific pairing the map keeps naming (`downsample+realesrgan` vs its
+   runner-up) rather than adding videos generically, or n will keep rising
+   while no single comparison reaches n≥6.
+4. **New transports last**, and only against a named empty region.
+
+**Two things to watch while running, not afterwards:**
+
+- **Re-run `tools/build_operating_map.py` after every batch.** 18 of 19
+  quality-first winners are already the same arm. If new coverage makes it
+  19/19, **gate condition 2 fires retroactively** — the map collapses to one
+  global recommendation and this becomes a different paper. That is a cheap
+  check and an expensive thing to discover at the end.
+- **Do not let 2B and 2C contradict each other.** Rate-first's winner is
+  `blackout+propainter` at **0.78 fps**, the slowest generative fill in the
+  corpus; quality-first's is `downsample+realesrgan` at 4.48 fps, 5.7× faster.
+  Any 2B batch that adds propainter arms adds them at ~6× the wall clock of a
+  realesrgan arm, so schedule accordingly.
 
 ### Wave 2C — efficiency, and the real-time question (no GPU)
 
@@ -254,28 +344,56 @@ Add cost per goal to the existing tables from logged
 `restoration_time_seconds`, and settle a question the article currently assumes
 away.
 
-**Real time is not a hard requirement, but "can we beat a baseline in real
-time?" is worth answering — and the assumption that the baselines themselves
-run in real time does not hold on this host.** Median encode throughput from
-logged `encoding_time_seconds`:
+> ### ⛔ The table that stood here was wrong. Corrected 2026-08-03 by Wave 2C.
+>
+> **Do not quote the old rows; they are kept only in git history.** Every one of
+> them was a **pooled median across disjoint acquisition batches**, and the
+> pooling — not the hardware — produced the anomaly the plan asked us to chase.
+>
+> The alarm was aimed at the wrong number. svtav1 at 1280×720 pools two batches
+> whose ranges do not overlap: QP 30–37 runs at **0.7–1.2 fps** and QP 43–62
+> runs at **23.8–37.4 fps**. Any central value of that mixture lands in a gap
+> **no svtav1 720p run in the corpus has ever occupied**. Resolution was
+> confounded with QP by accident of scheduling, and QP moves encode time here
+> more than resolution does. Verified independently against `results/presley.db`.
+>
+> **QP-matched, the impossibility disappears and the ordering is monotone:**
+>
+> | QP | 640×360 | 1280×720 | 1920×1080 |
+> |---|---|---|---|
+> | 43 | 36.3 | 36.0 | 31.7 |
+> | 50 | 39.3 | 32.8 | 30.7 |
+> | 58 | 81.9 | 35.1 | 29.7 |
+> | 62 | 73.9 | 27.6 | 28.2 |
+>
+> **This overturns the claim the table was built to support.** "The baselines
+> are not real-time above 360p" was an artifact of the same pooling: QP-matched,
+> svtav1 preset 8 clears 24 fps at **every** resolution measured. That sentence
+> must not be repeated anywhere.
+>
+> A second correction fell out: **every `kvazaar` and `x264` baseline in the
+> corpus is VBR** (kvazaar 8/8, x264 1/1 — confirmed). The old `kvazaar 12.6
+> fps` row was therefore not fixed-QP evidence at all, and there is no fixed-QP
+> timing for either codec. Both rows are dropped rather than caveated.
+>
+> **What survives, and it is the part that mattered:** we still cannot claim
+> real time end to end — but **the gap is entirely restoration-side, and
+> encoding was never the bottleneck.** Against a 41.7 ms frame budget, encode
+> costs 11–15 ms at 360p and restoration costs ~206 ms, overrunning the whole
+> budget ~5× on its own. Resolution is not a lever (restoration is full-frame by
+> design and independent of `shrink_amount`), and a dedicated GPU plausibly
+> recovers ~2×, not 5×. **Real time therefore requires a cheaper restorer, not
+> better hardware** — which is exactly the ordering Wave 3(a)/(b) already sets
+> out, now with a measured reason rather than an assumption.
+>
+> Full per-batch table with measurement conditions, and the reason a pooled cell
+> median is never quoted again: `docs/WAVE2C_EFFICIENCY.md`.
 
-| configuration | median fps | vs 24 fps |
-|---|---|---|
-| svtav1 baseline 640×360 | 39.3 | 1.6× |
-| x265 baseline 640×360 | 25.8 | 1.1× |
-| x265 baseline 640×480 | 20.0 | **0.8×** |
-| kvazaar baseline 640×360 | 12.6 | **0.5×** |
-| svtav1 baseline 1280×720 | 3.2 | **0.1×** |
-
-So the baselines are *marginally* real-time at 360p and **not real-time at all
-above it**. We cannot presently claim real time for anything, ours or theirs,
-and saying so is more useful than an unqualified "our restorer is slow".
-
-⚠ **One alarm to close before any of this is quoted:** svtav1 1080p measures
-28.9 fps against 720p's 3.2 fps. Faster at higher resolution is impossible;
-suspect a differing preset, threading setting, or contention from another
-user's job on this shared box. **Investigate before publishing any throughput
-number** — this is exactly the "bound before believing" case.
+**The lesson this cost, worth more than the numbers:** a median over a cell that
+mixes acquisition batches is not a measurement of that cell. Report per batch
+with n and dispersion, or report "not measurable". The plan asked for an alarm
+to be closed and the alarm turned out to be pointing at the wrong row — closing
+it properly overturned the premise it was attached to.
 
 Deliverables: (i) a throughput row per configuration with the measurement
 conditions stated, (ii) an explicit statement of what *would* be needed for a
