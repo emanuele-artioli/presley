@@ -39,6 +39,11 @@ RESULTS = pathlib.Path(__file__).resolve().parents[1] / "results"
 # Metrics and their direction. LPIPS/DISTS are lower-is-better; PSNR higher.
 LOWER_BETTER = {"lpips_mean", "dists_fg", "dists_bg"}
 
+# JND thresholds this project gates every quality verdict on. A delta below the
+# threshold is "no perceptible difference" and is NEVER reported as a trend --
+# no matter how consistent its sign or how small its p-value.
+JND = {"psnr_mean": 0.5, "lpips_mean": 0.05, "dists_fg": 0.05, "dists_bg": 0.05}
+
 
 def sign_p(k, n):
     """Exact two-tailed sign test — never one-tailed (5/5 is 0.0625, not 0.031)."""
@@ -112,7 +117,8 @@ def main() -> int:
     print(f"  per-video mean d-bits: median {sorted(mb.values())[len(mb)//2]:+.1f}%, "
           f"range {min(mb.values()):+.1f}..{max(mb.values()):+.1f}%\n")
 
-    print(f"{'metric':28s}{'n':>4}{'favouring':>11}{'median delta':>14}{'sign p':>10}")
+    print(f"{'metric':28s}{'n':>4}{'favouring':>11}{'median delta':>14}"
+          f"{'sign p':>10}{'JND':>8}{'perceptible?':>14}")
     for reg, k in metrics:
         d = per_video[(reg, k)]
         if not d:
@@ -128,14 +134,19 @@ def main() -> int:
         want_negative = lower if reg == "foreground" else not lower
         good = sum(1 for x in means.values()
                    if (x < 0) == want_negative and x != 0)
+        thr = JND[k]
+        perceptible = abs(med) >= thr
         print(f"{reg+'.'+k:28s}{n:>4}{f'{good}/{n}':>11}{med:>+14.4f}"
-              f"{sign_p(good, n):>10.4f}")
+              f"{sign_p(good, n):>10.4f}{thr:>8.2f}"
+              f"{('YES' if perceptible else 'sub-JND'):>14}")
 
     print("\nReading: ROI moves quality from background to foreground at unchanged")
     print("rate. 'Favouring' counts videos where FG improved AND BG degraded in")
     print("the direction that metric defines as better/worse.")
     print("\nUnit is the video. bear contributes 5 operating points and still")
     print("counts once -- that is the point of the re-unitization.")
+    print("\nVERDICT GATE: a sub-JND delta is 'no perceptible difference', never a")
+    print("trend, regardless of how consistent its sign or how small its p-value.")
     return 0
 
 
