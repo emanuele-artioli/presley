@@ -227,7 +227,8 @@ experiments:
     preset: medium
 # hash: 774f24eca108a51d
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -245,7 +246,8 @@ experiments:
     tile: 0
 # hash: c26c5e9a05e47730
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -262,7 +264,8 @@ experiments:
     tile: 0
 # hash: 287d46b17dd07d54
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -879,7 +882,8 @@ experiments:
     qp_range: 15
 # hash: 56675c2650855aa7
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -926,7 +930,8 @@ experiments:
     preset: medium
 # hash: 5318e01ac00f4460
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -944,7 +949,8 @@ experiments:
     tile: 0
 # hash: 36b18dd72ccad44e
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -961,7 +967,8 @@ experiments:
     tile: 0
 # hash: b58ff6864c41bc3f
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -979,7 +986,8 @@ experiments:
     tile: 0
 # hash: 3848dfdf0a24f736
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -996,7 +1004,8 @@ experiments:
     tile: 0
 # hash: 8d2eb91d0797f341
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -1015,7 +1024,8 @@ experiments:
     batch_size: 1
 # hash: 4c501accbd5f7a0f
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bear
   width: 640
   height: 360
@@ -1217,7 +1227,8 @@ experiments:
     preset: medium
 # hash: 21bf9b39f84b70ca
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bmx-trees
   width: 640
   height: 360
@@ -1235,7 +1246,8 @@ experiments:
     tile: 0
 # hash: 7a722d016481d3b7
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: bmx-trees
   width: 640
   height: 360
@@ -1252,7 +1264,8 @@ experiments:
     tile: 0
 # hash: 9d24245a8ff40cb7
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: drift-chicane
   width: 640
   height: 360
@@ -1270,7 +1283,8 @@ experiments:
     tile: 0
 # hash: 98de03dc7b94563d
 - component: presley_ai
-  _retired: "VBR degradation experiment: hard rule 1 forbids it (under a bitrate target degradation cannot free bits), so this can never be citable"
+  _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
+    degradation cannot free bits), so this can never be citable'
   video: drift-chicane
   width: 640
   height: 360
@@ -3908,15 +3922,6 @@ experiments:
     qp: 37
     preset: '8'
   restorer_params: {}
-# DO NOT COPY THIS BLOCK AS A TEMPLATE -- it is a mis-specified experiment, kept
-# because its results are on disk and its Goal 2 data is valid.
-# These are VBR (target-bitrate) points, chosen to match the bear 640x360 svtav1
-# baselines' rate-control mode. That was the wrong call: under VBR the encoder
-# spends the target regardless of source complexity, so degradation CANNOT free
-# bits (25/25 matched VBR pairs projectwide encode LARGER than pristine). The
-# resulting +10.56% BD-rate measures VBR laundering, not the method -- see
-# CLAUDE.md's fixed-QP hard rule. A valid starved test needs fixed-QP baselines
-# at 640x360, which do not exist yet.
 # hash: a2d2a599806e629c
 - component: presley_ai
   video: bear
@@ -3989,13 +3994,6 @@ experiments:
   codec_params:
     preset: 8
   restorer_params: {}
-
-# Fixed-QP starved SVT-AV1 rerun (2026-07-16, corrected spec): the VBR block
-# above measured rate-control laundering, not the method. These 12 entries
-# (4 baselines + 4 presley_ai/freeze + 4 elvis/blackout, same 4 QPs) are the
-# valid starved test. QPs calibrated against pristine bear 640x360 svtav1 to
-# land near the original 144-777 kbps starved band: qp43~753, qp51~442,
-# qp58~252, qp61~163 kbps (pristine reference; degraded bitrates will differ).
 # hash: a07560c409dc38ce
 - component: baselines
   video: bear
@@ -4188,11 +4186,6 @@ experiments:
     qp: 61
     preset: '8'
   inpainter_params: {}
-
-# Fixed-QP starved SVT-AV1, camel (2026-07-16, later session): generalization
-# of the bear result above. QPs calibrated against pristine camel 640x360 to
-# land near bear's starved band: qp42~744, qp50~469, qp58~261, qp62~138 kbps
-# (pristine reference; degraded bitrates will differ).
 # hash: 64e6010ca8a3ddf5
 - component: baselines
   video: camel
@@ -4385,8 +4378,6 @@ experiments:
     qp: 62
     preset: '8'
   inpainter_params: {}
-
-# --- Goal-1 screen: matched fixed-QP re-test of retired degradation methods (downsample/blur/shrink) vs blackout/freeze ---
 # hash: cdbfcfb578957d21
 - component: presley_ai
   video: bear
@@ -4403,7 +4394,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
-  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default
+    None/False, never matches the 0.25/true arms). Corrected form would still control
+    nothing -- this operating point has no restored downsample or blur arm. Diagnosed
+    Wave 2B 2026-08-03.'
 # hash: d40d44974a4b7b94
 - component: presley_ai
   video: bear
@@ -4420,7 +4414,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
-  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default
+    None/False, never matches the 0.25/true arms). Corrected form would still control
+    nothing -- this operating point has no restored downsample or blur arm. Diagnosed
+    Wave 2B 2026-08-03.'
 # hash: 095a17e8cd48e2ab
 - component: elvis
   video: bear
@@ -4455,7 +4452,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
-  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect,
+    so they default to None/False and the entry never matches the arms it was meant
+    to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
+    an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: dd3a5ef02488e100
 - component: presley_ai
   video: bear
@@ -4472,7 +4472,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
-  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect,
+    so they default to None/False and the entry never matches the arms it was meant
+    to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
+    an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: fd8127a1035bedca
 - component: elvis
   video: bear
@@ -4507,7 +4510,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default
+    None/False, never matches the 0.25/true arms). Corrected form would still control
+    nothing -- this operating point has no restored downsample or blur arm. Diagnosed
+    Wave 2B 2026-08-03.'
 # hash: 2488f7ccb50ec232
 - component: presley_ai
   video: bear
@@ -4524,7 +4530,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default
+    None/False, never matches the 0.25/true arms). Corrected form would still control
+    nothing -- this operating point has no restored downsample or blur arm. Diagnosed
+    Wave 2B 2026-08-03.'
 # hash: 920f8e3eb89f2793
 - component: elvis
   video: bear
@@ -4559,7 +4568,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect,
+    so they default to None/False and the entry never matches the arms it was meant
+    to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
+    an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: 0500c272699b1327
 - component: presley_ai
   video: bear
@@ -4576,7 +4588,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect,
+    so they default to None/False and the entry never matches the arms it was meant
+    to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
+    an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: c484f473a63e2500
 - component: elvis
   video: bear
@@ -4611,7 +4626,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
-  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default
+    None/False, never matches the 0.25/true arms). Corrected form would still control
+    nothing -- this operating point has no restored downsample or blur arm. Diagnosed
+    Wave 2B 2026-08-03.'
 # hash: 78129f8dfae24287
 - component: presley_ai
   video: camel
@@ -4628,7 +4646,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
-  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default
+    None/False, never matches the 0.25/true arms). Corrected form would still control
+    nothing -- this operating point has no restored downsample or blur arm. Diagnosed
+    Wave 2B 2026-08-03.'
 # hash: 4d04b6bdc0ed9908
 - component: elvis
   video: camel
@@ -4663,7 +4684,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
-  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect,
+    so they default to None/False and the entry never matches the arms it was meant
+    to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
+    an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: 781dcddf6b8d5743
 - component: presley_ai
   video: camel
@@ -4680,7 +4704,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
-  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect,
+    so they default to None/False and the entry never matches the arms it was meant
+    to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
+    an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: aacddd08584f96dc
 - component: elvis
   video: camel
@@ -4715,7 +4742,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default
+    None/False, never matches the 0.25/true arms). Corrected form would still control
+    nothing -- this operating point has no restored downsample or blur arm. Diagnosed
+    Wave 2B 2026-08-03.'
 # hash: 91e30d8869627d7d
 - component: presley_ai
   video: camel
@@ -4732,7 +4762,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default None/False, never matches the 0.25/true arms). Corrected form would still control nothing -- this operating point has no restored downsample or blur arm. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, orphan: omitted shrink_amount/fg_protect (default
+    None/False, never matches the 0.25/true arms). Corrected form would still control
+    nothing -- this operating point has no restored downsample or blur arm. Diagnosed
+    Wave 2B 2026-08-03.'
 # hash: 6d81ba1dc73f6fbe
 - component: elvis
   video: camel
@@ -4767,7 +4800,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect,
+    so they default to None/False and the entry never matches the arms it was meant
+    to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
+    an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: fef7493ff50ffd83
 - component: presley_ai
   video: camel
@@ -4784,7 +4820,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect, so they default to None/False and the entry never matches the arms it was meant to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+  _retired: 'mis-specified control, superseded: omitted shrink_amount/fg_protect,
+    so they default to None/False and the entry never matches the arms it was meant
+    to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
+    an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
 # hash: d1b42776c064391b
 - component: elvis
   video: camel
@@ -4803,12 +4842,10 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-# --- Noise fixed-QP screen (2026-07-18): the only retired-trio member never
-# screened under fixed QP. Same recipe as the Goal-1 screen (restorer none,
-# passthrough composite); expectation: noise is high-entropy and costs bits.
 # hash: 5f0c9dae74977e05
 - component: presley_ai
-  _retired: "noise injection retired: costs 76.5-83.0% more bits than the pristine baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))"
+  _retired: 'noise injection retired: costs 76.5-83.0% more bits than the pristine
+    baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))'
   video: bear
   width: 640
   height: 360
@@ -4825,7 +4862,8 @@ experiments:
     qp: 32
 # hash: 4855a706d4961adf
 - component: presley_ai
-  _retired: "noise injection retired: costs 76.5-83.0% more bits than the pristine baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))"
+  _retired: 'noise injection retired: costs 76.5-83.0% more bits than the pristine
+    baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))'
   video: bear
   width: 640
   height: 360
@@ -4842,7 +4880,8 @@ experiments:
     qp: 37
 # hash: 9cef0d4ad4fc74ad
 - component: presley_ai
-  _retired: "noise injection retired: costs 76.5-83.0% more bits than the pristine baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))"
+  _retired: 'noise injection retired: costs 76.5-83.0% more bits than the pristine
+    baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))'
   video: camel
   width: 640
   height: 360
@@ -4859,7 +4898,8 @@ experiments:
     qp: 32
 # hash: 45114e6ca4f604ed
 - component: presley_ai
-  _retired: "noise injection retired: costs 76.5-83.0% more bits than the pristine baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))"
+  _retired: 'noise injection retired: costs 76.5-83.0% more bits than the pristine
+    baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))'
   video: camel
   width: 640
   height: 360
@@ -4874,13 +4914,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-
-# --- Goal-2 probe (2026-07-19): does ANY restorer beat leaving the transmitted
-# content alone? restorer/inpainter {none,telea,e2fgvi,propainter} x fill
-# {freeze=presley_ai, blackout=elvis}, starved svtav1 fixed QP (bear 51, camel 50).
-# 'none' is the control arm. Score BG-LPIPS/DISTS vs original AND vs transmitted
-# (--backfill-transmitted). Motivated by 2026-07-18: ProPainter made freeze-fill
-# BG perceptually WORSE than the untouched holes on 4/4 points.
 # hash: d41f37f3540c7a0e
 - component: presley_ai
   video: bear
@@ -6117,13 +6150,6 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
-
-# --- Breadth screen, block_size 8 (2026-07-19 CORRECTION): the first pass ran at
-# block_size 16, but the 6 BD-rate curve videos all use block_size 8, so those results
-# were not on the same operating point as the set the explanatory-axis hypothesis came
-# from. This rerun matches the curve recipe exactly (bs8, blackout, fg_protect,
-# shrink 0.25, x265 QP 32/37). The bs16 pass is kept as an incidental block-size
-# ablation across 18 videos. Baselines are block-size-independent and already exist.
 # hash: c2c2504f535dbdb9
 - component: elvis
   video: bike-packing
@@ -6772,15 +6798,6 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
-
-# ---------------------------------------------------------------------------
-# Goal-2 probe RERUN at block_size 8 (2026-07-20).
-# Supersedes the bs16 pass: at 640x360, 360/16 = 22.5, so cv2.resize
-# misaligned block boundaries and elvis's passthrough compositing sourced
-# 8.03%% of every frame from the wrong image (RESEARCH_LOG Bug registry,
-# second instance; fixed at elvis.py:218). bs8 divides evenly -> provably
-# 0 mis-sourced pixels, so this rerun is immune rather than merely fixed.
-# ---------------------------------------------------------------------------
 # hash: e8738fe49401189b
 - component: presley_ai
   video: bear
@@ -7085,7 +7102,6 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
-# --- D6.1: mask-sensitivity (gt / yolo variants of the established elvis recipe) ---
 # hash: c0cc5f978dc4c99f
 - component: elvis
   video: bear
@@ -7352,7 +7368,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-# --- D6.2: breadth batch (MOSEv2 / YouTube-VOS long/multi-object/no-clear-FG clips) ---
 # hash: f09e57cbb724b9a4
 - component: baselines
   video: mosev2/fii86rku
@@ -7857,12 +7872,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-# ---------------------------------------------------------------------------
-# Q2 InstantIR corrected smoke (2026-07-27) — docs/EXPERIMENTS_QUEUED.md
-# Same transport as CLAIM(tab:conditioned) blur cells, but restorer knobs
-# match InstantX tips (steps 20, creative_start 0.7, preview_start 0.2).
-# Existing CLAIM hashes (steps=1) stay as-run; do not delete them.
-# ---------------------------------------------------------------------------
 # hash: 36fb007975de0593
 - component: presley_ai
   video: bear
@@ -7879,7 +7888,7 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
   restorer_params:
     cfg: 7.0
     creative_start: 0.7
@@ -7902,17 +7911,13 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
   restorer_params:
     cfg: 7.0
     creative_start: 0.7
     preview_start: 0.2
     num_inference_steps: 20
     batch_size: 2
-# ---------------------------------------------------------------------------
-# Q3 BSRGAN few cells (2026-07-27) — fixed-QP twin of CLAIM Real-ESRGAN cells.
-# Ignore older VBR BSRGAN yaml entries.
-# ---------------------------------------------------------------------------
 # hash: 432569abedc41fca
 - component: presley_ai
   video: bear
@@ -7929,7 +7934,7 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
   restorer_params:
     tile: 400
 # hash: e437776f348cadbe
@@ -7948,15 +7953,9 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
   restorer_params:
     tile: 400
-# ---------------------------------------------------------------------------
-# Q5 NAFNet blur gauge (2026-07-28) — docs/EXPERIMENTS_QUEUED.md / HANDOFF Wave 1
-# Same recipe as InstantIR CLAIM / Q2 corrected: blur, sa=0.25, fg_protect,
-# starved SVT-AV1 fixed QP. Compare to unsharp + InstantIR-corrected hashes;
-# fill HOLE(tab:instantir-kill). Single-pass GoPro-width64.
-# ---------------------------------------------------------------------------
 # hash: 93fcdf516cf7e363
 - component: presley_ai
   video: bear
@@ -7973,7 +7972,7 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
   restorer_params:
     width: 64
 # hash: 8d2316a5e2d6128f
@@ -7992,15 +7991,9 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
   restorer_params:
     width: 64
-# ---------------------------------------------------------------------------
-# Q4 Real-HAT-GAN vs Real-ESRGAN (2026-07-28) — docs/EXPERIMENTS_QUEUED.md
-# Same recipe as CLAIM(tab:conditioned) Real-ESRGAN cells
-# (e2cb6bed165d69b1 / c29c94b5c290f208): downsample, sa=0.25, fg_protect,
-# starved SVT-AV1 fixed QP. Ignore older VBR yaml entries. fp32 only.
-# ---------------------------------------------------------------------------
 # hash: 661d092654b4e18d
 - component: presley_ai
   video: bear
@@ -8017,7 +8010,7 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
   restorer_params:
     tile: 400
     tile_pad: 32
@@ -8037,37 +8030,10 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
   restorer_params:
     tile: 400
     tile_pad: 32
-# ---------------------------------------------------------------------------
-# Q9 Noise threshold rematch (2026-07-28) — docs/EXPERIMENTS_QUEUED.md / HANDOFF
-# Wave 1-D. Matched-budget Goal-1 screen: noise vs downsample/blur under the
-# S1 contract (shrink_amount: 0.25 + fg_protect → clustered top-k sel), not the
-# old unbudgeted threshold screen.
-#
-# Prior unbudgeted noise (x265, NO sa/fg_protect — unmatched budget vs blur/
-# downsample; dead-end +213…+334% bits) — DO NOT re-run; keep for contrast:
-#   bear qp32 5f0c9dae74977e05 | bear qp37 4855a706d4961adf
-#   camel qp32 9cef0d4ad4fc74ad | camel qp37 45114e6ca4f604ed
-#
-# Existing budgeted downsample/blur AT SAME codec/QP but with restorers
-# (transmitted bitrate is restorer-independent; cite for transport parity):
-#   bear qp51 blur+instantir-corr 36fb007975de0593 | blur+nafnet 93fcdf516cf7e363
-#   bear qp51 downsample+bsrgan 432569abedc41fca | downsample+hat 661d092654b4e18d
-#   camel qp50 blur+instantir-corr afd6dc1e5fa2ebe1 | blur+nafnet 8d2316a5e2d6128f
-#   camel qp50 downsample+bsrgan e437776f348cadbe | downsample+hat 4ec11482c4cfc93e
-#
-# Baselines already in yaml (do not duplicate):
-#   bear qp51 21e85db5dd1062ea | bear qp58 2214e6bfcaab7878
-#   camel qp50 83cb00c94850f2e1 | camel qp58 a2cd5ebc19a3b5db
-#
-# Budgeted restorer:none downsample/blur under svtav1 did NOT exist — added
-# below as Goal-1 comparators. Expectation: noise still costs bits even at
-# matched budget (cleaner dead-end number). Wave 2 filter: codec=svtav1.
-# ---------------------------------------------------------------------------
-# --- Q9 noise (matched budget) ---
 # hash: f27b0f17d4192d37
 - component: presley_ai
   video: bear
@@ -8085,7 +8051,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
 # hash: 4e2d1e221284c843
 - component: presley_ai
   video: bear
@@ -8103,7 +8069,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 58
-    preset: "8"
+    preset: '8'
 # hash: d1e32185eb7b57e3
 - component: presley_ai
   video: camel
@@ -8121,7 +8087,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
 # hash: 65c5aae4318036c0
 - component: presley_ai
   video: camel
@@ -8139,8 +8105,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 58
-    preset: "8"
-# --- Q9 comparator: budgeted downsample restorer:none (same codec/QP grid) ---
+    preset: '8'
 # hash: 0dab871ff58ae1f2
 - component: presley_ai
   video: bear
@@ -8158,7 +8123,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
 # hash: 911bc54a2c6596da
 - component: presley_ai
   video: bear
@@ -8176,7 +8141,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 58
-    preset: "8"
+    preset: '8'
 # hash: 9a0b221f0f7b6c76
 - component: presley_ai
   video: camel
@@ -8194,7 +8159,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
 # hash: 3b8befe17cdfff80
 - component: presley_ai
   video: camel
@@ -8212,8 +8177,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 58
-    preset: "8"
-# --- Q9 comparator: budgeted blur restorer:none (same codec/QP grid) ---
+    preset: '8'
 # hash: ae7b954c11b36de2
 - component: presley_ai
   video: bear
@@ -8231,7 +8195,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
 # hash: 63b733c93c575aa1
 - component: presley_ai
   video: bear
@@ -8249,7 +8213,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 58
-    preset: "8"
+    preset: '8'
 # hash: 820f87b367b60a21
 - component: presley_ai
   video: camel
@@ -8267,7 +8231,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
 # hash: 69d73ef1eafbf9fa
 - component: presley_ai
   video: camel
@@ -8285,24 +8249,7 @@ experiments:
   codec: svtav1
   codec_params:
     qp: 58
-    preset: "8"
-
-# --- Q10: controlled UFO mask dilate / erode / jitter (HOLE(sec:evaluation)) ---
-# Wave 2 GPU arm. Same recipe as D6.1 tab:mask-sens (elvis blackout, x265 qp34,
-# fg_protect) so cells are comparable to the existing bear/camel gt arms
-# (hashes c0cc5f978dc4c99f / 8911d2e29a111443). mask_source stays ufo (default);
-# morphology is the orthogonal axis.
-#
-# Contract (see preprocessing.apply_mask_morphology):
-#   mask_morphology: none|dilate|erode|jitter
-#   mask_morphology_radius: pixels on the full-res mask (elliptical kernel
-#     diameter = 2*r+1 for dilate/erode; max |shift| for jitter)
-#   mask_morphology_seed: jitter RNG seed only (seed + frame_index)
-#
-# Erosion is the failure-mode arm: it shrinks FG so fg_protect covers less of
-# the true object (defeats hard FG protection). Dilate is the conservative
-# over-protect arm. Jitter is seeded spatial translation noise.
-# hash: pending
+    preset: '8'
 # hash: 08cf9e58a63d55f1
 - component: elvis
   video: bear
@@ -8324,7 +8271,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-# hash: pending
 # hash: e802ae0a0a8b475d
 - component: elvis
   video: bear
@@ -8338,7 +8284,6 @@ experiments:
   composite_output: true
   fg_protect: true
   mask_source: ufo
-  # Failure-mode arm: erosion defeats fg_protect by shrinking the protected FG.
   mask_morphology: erode
   mask_morphology_radius: 4
   inpainter: propainter
@@ -8347,7 +8292,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-# hash: pending
 # hash: 61ef4d765a5e8353
 - component: elvis
   video: bear
@@ -8370,7 +8314,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-# hash: pending
 # hash: 754b7d6ef0998f81
 - component: elvis
   video: camel
@@ -8392,7 +8335,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-# hash: pending
 # hash: 9d995b6c60062556
 - component: elvis
   video: camel
@@ -8406,7 +8348,6 @@ experiments:
   composite_output: true
   fg_protect: true
   mask_source: ufo
-  # Failure-mode arm: erosion defeats fg_protect by shrinking the protected FG.
   mask_morphology: erode
   mask_morphology_radius: 4
   inpainter: propainter
@@ -8415,7 +8356,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-# hash: pending
 # hash: bee9c70ae6dd9c95
 - component: elvis
   video: camel
@@ -8438,15 +8378,6 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
-
-# ---------------------------------------------------------------------------
-# Q7 Stream-DiffVSR vs Real-ESRGAN — docs/EXPERIMENTS_QUEUED.md
-# Same recipe as CLAIM(tab:conditioned) Real-ESRGAN cells
-# (e2cb6bed165d69b1 / c29c94b5c290f208): downsample, sa=0.25, fg_protect,
-# starved SVT-AV1 fixed QP. Wired on feat/q7-stream-diffvsr; GPU cells wait
-# for Wave 2 (needs vendor/stream-diffvsr + isolated conda env — do not pip
-# into pinned `presley`). restorer: stream_diffvsr; steps=4; try fp16.
-# ---------------------------------------------------------------------------
 # hash: 85d92dabda4b9907
 - component: presley_ai
   video: bear
@@ -8463,11 +8394,10 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
   restorer_params:
     model_id: Jamichsu/Stream-DiffVSR
     num_inference_steps: 4
-    # fp32: false  # try fp16 on CUDA; set true if Softmax/LN NaNs appear
 # hash: 0bcc99560e456dba
 - component: presley_ai
   video: camel
@@ -8484,23 +8414,14 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
   restorer_params:
     model_id: Jamichsu/Stream-DiffVSR
     num_inference_steps: 4
-
-# ---------------------------------------------------------------------------
-# Q8 DC-VSR quality arm (2026-07-28) — docs/EXPERIMENTS_QUEUED.md
-# Same recipe as Q4 Real-HAT / CLAIM(tab:conditioned) Real-ESRGAN cells
-# (e2cb6bed165d69b1 / c29c94b5c290f208): downsample, sa=0.25, fg_protect,
-# starved SVT-AV1 fixed QP. restorer: dc_vsr is DISPATCH-WIRED but inference
-# raises RuntimeError until HF Janghyeok/dc-vsr publishes a pipeline
-# (weights-only today). fp32 only. Do NOT run GPU Wave 2 until unlocked.
-# Weights: hf download Janghyeok/dc-vsr --local-dir weights/dc-vsr
-# ---------------------------------------------------------------------------
 # hash: c50f1c39cb2814c1
 - component: presley_ai
-  _retired: "DC-VSR is blocked upstream (weights-only release, no pipeline code); the restorer stub raises by design"
+  _retired: DC-VSR is blocked upstream (weights-only release, no pipeline code); the
+    restorer stub raises by design
   video: bear
   width: 640
   height: 360
@@ -8515,13 +8436,14 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 51
-    preset: "8"
+    preset: '8'
   restorer_params:
     fp32: true
     num_frames: 14
 # hash: a2fd6657af0d2ec9
 - component: presley_ai
-  _retired: "DC-VSR is blocked upstream (weights-only release, no pipeline code); the restorer stub raises by design"
+  _retired: DC-VSR is blocked upstream (weights-only release, no pipeline code); the
+    restorer stub raises by design
   video: camel
   width: 640
   height: 360
@@ -8536,7 +8458,7 @@ experiments:
   target_bitrate: 0
   codec_params:
     qp: 50
-    preset: "8"
+    preset: '8'
   restorer_params:
     fp32: true
     num_frames: 14
@@ -8884,12 +8806,6 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
-
-# --- S1b: damage-aware ceiling test (docs/WAVE1_FALSIFIERS.md) ---
-# Pristine baselines at 640x360 svtav1 QP43. tools/mine_block_damage.py
-# joins every restored run to a matched pristine baseline; before these,
-# only bear had one (a07560c409dc38ce) and the miner silently yielded
-# nothing for the other seven probe videos.
 # hash: 7106adb92a8e9c11
 - component: baselines
   video: motorbike
@@ -8960,11 +8876,6 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
-# Uniform-level probes: every block in the levels=3 footprint forced to
-# one fixed level, to measure damage_b(k) per superblock. k=1 is NOT
-# the levels=1 arm on disk -- that arm has a strictly smaller footprint
-# (round(s)>0 vs round(3s)>0) -- but the within-level damage spread,
-# which is the early-exit criterion, only needs k=2 and k=3.
 # hash: 01e9cb2228c06206
 - component: presley_ai
   video: motorbike
@@ -11157,14 +11068,6 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
-
-# --- S1b Arm B: oracle damage-aware level assignment (docs/WAVE1_FALSIFIERS.md) ---
-# Holds Arm A's per-frame level HISTOGRAM exactly fixed and reassigns WHICH block
-# sits at each level by mined damage tolerance, so bit spend is fixed by
-# construction and only the assignment varies. Maps are built offline by
-# tools/build_oracle_levels.py into cache/oracle_levels/<video>.npz; the run
-# raises rather than silently falling back if a map is missing.
-# Verdict: loses to plain binary on BOTH axes -- graded direction closed.
 # hash: 2f007ddcc7843ba1
 - component: presley_ai
   video: bear
@@ -11349,15 +11252,6 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
-
-# --- Breadth: presley_ai on the 9 non-DAVIS clips (docs/BREADTH_PRESLEY_AI.md) ---
-# tab:breadth-ext currently rests on `elvis` runs only -- there were ZERO
-# presley_ai runs outside DAVIS, so the article's breadth evidence spoke for
-# ELVIS block-removal, not the degrade/restore pipeline. Each entry mirrors the
-# matching elvis arm exactly (same clip, resolution, codec, fixed QP, block size,
-# budget, fg_protect) and changes only the component and operator, so baseline /
-# elvis / presley_ai form a matched triple per clip per rate point.
-# Bounds pre-registered before launch; a negative result here is reportable.
 # hash: 159121dd8cea42c4
 - alpha: 0.5
   beta: 0.5
@@ -11736,11 +11630,6 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
-
-# Rate-matched breadth (W1, 2026-07-31): QP 42/47 rungs so ELVIS and PRESLEY
-# each have >=4 fixed-QP points and scripts/bd_rate.py can interpolate a
-# matched-rate comparison. Bounds pre-registered in docs/RATEMATCHED_BREADTH.md.
-# Every key is copied verbatim from that clip's QP-32 entry; only qp differs.
 # hash: 0fb9f86a3042c109
 - component: elvis
   video: mosev2/8i1uo3x9
@@ -12443,10 +12332,6 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
-
-# F1 oracle-bits probe (W2, 2026-07-31): EVCA vs a true leave-one-superblock-out
-# bit oracle under INTER coding, on the n=8 probe set. The old 93-99% figure was
-# all-intra and near-tautological. Bounds pre-registered in docs/F1_ORACLE_BITS.md.
 # hash: 8925be20182b9967
 - component: probe_oracle_bits
   video: motorbike
@@ -14251,7 +14136,10 @@ experiments:
   restorer_params: {}
 # hash: 651cd36f662f47f1
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14271,7 +14159,10 @@ experiments:
   restorer_params: {}
 # hash: 6bf0b5a6c51b3115
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14291,7 +14182,10 @@ experiments:
   restorer_params: {}
 # hash: 85a3a92cd58a750a
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14311,7 +14205,10 @@ experiments:
   restorer_params: {}
 # hash: 9083b599a6736e8d
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14407,7 +14304,10 @@ experiments:
   restorer_params: {}
 # hash: ce47c5f24f56b92a
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14427,7 +14327,10 @@ experiments:
   restorer_params: {}
 # hash: ff4800630b005b22
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14447,7 +14350,10 @@ experiments:
   restorer_params: {}
 # hash: 568427599a72dfa7
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14467,7 +14373,10 @@ experiments:
   restorer_params: {}
 # hash: e5f4d9b0a75d9ee9
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14563,7 +14472,10 @@ experiments:
   restorer_params: {}
 # hash: 81b63969ec2143c1
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14583,7 +14495,10 @@ experiments:
   restorer_params: {}
 # hash: 9ba1822671e2ab24
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14603,7 +14518,10 @@ experiments:
   restorer_params: {}
 # hash: 8c767950d017bd90
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14623,7 +14541,10 @@ experiments:
   restorer_params: {}
 # hash: 4e0a9032a4bd458b
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14719,7 +14640,10 @@ experiments:
   restorer_params: {}
 # hash: 3ab6bf7e33eb9b97
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14739,7 +14663,10 @@ experiments:
   restorer_params: {}
 # hash: d99ecaf6ff064139
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14759,7 +14686,10 @@ experiments:
   restorer_params: {}
 # hash: 54cf176482676c84
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -14779,7 +14709,10 @@ experiments:
   restorer_params: {}
 # hash: 913c787e9e051793
 - alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation, so this entry can never run (the runner rejects it with "Unknown degradation: blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter; see docs/HOLE_CLOSURE_WAVE.md H2.'
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
   beta: 0.5
   block_size: 8
   codec: svtav1
@@ -15191,12 +15124,6 @@ experiments:
   target_bitrate: 0
   video: color-run
   width: 640
-
-
-# --- W1a (2026-08-03): fixed-QP kvazaar baselines, one per kvazaar ROI arm
-# --- at 640x360. Every pre-existing kvazaar baseline is VBR because the
-# --- code had no fixed-QP kvazaar path until now, so tab:roi compared
-# --- fixed-QP ROI arms against baselines that overshoot by 30-45%.
 # hash: 8648db33afe78b06
 - codec: kvazaar
   codec_params:
@@ -15350,15 +15277,6 @@ experiments:
   target_bitrate: 600000
   video: tennis
   width: 640
-
-# --- W4 (2026-08-03): take blur+nafnet from n=9 to n=11 paired videos.
-# --- It clears the n>=8 restorer floor already but misses Holm at
-# --- p_Holm 0.0508 (raw 0.0039); two more winning videos put it at ~0.013.
-# --- dog/pigs @QP43 carried only bs8 downsample arms, so the bs16 pair is
-# --- added on BOTH sides -- the comparison is within-cell, and matching
-# --- the seven QP43 videos already at bs16 keeps the arm definition
-# --- constant across the suite. `none` controls included: they cost an
-# --- encode and they are what the ladder residual needs.
 # hash: 79553e7b43a32d0c
 - alpha: 0.5
   beta: 0.5
@@ -15507,36 +15425,6 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
-
-
-# ---------------------------------------------------------------------------
-# HOLE(sec:downsample-vs-uniform) -- selective vs UNIFORM downsampling at
-# matched rate (referee 2, item 6.2: Netflix/YouTube uniform downscale + SR).
-# Pre-registered in docs/PLAN_DOWNSAMPLE_VS_UNIFORM.md BEFORE any of these runs
-# existed; bounds there are two-sided and must not be re-fitted after the fact.
-#
-# THE UNIFORM ARM. Every key is copied verbatim from that video/QP's EXISTING
-# selective entry (the cited src hashes of CLAIM(tab:conditioned) /
-# tab:priced-trade / tab:conditioned-breadth, read from results/<hash>/result.json,
-# not inferred from the tables). Only two values differ:
-#   shrink_amount: 80   -- 640/8 = num_blocks_x. select_removal_mask_global reads
-#                          amount >= 1.0 as an ABSOLUTE per-row block count, so
-#                          k = 80*45 = every block. Verified: mask sum 3600/3600.
-#   fg_protect: false   -- REQUIRED. With true, the UFO foreground lands in
-#                          `exclude` and k is capped (measured 2700/3600 on a 25%
-#                          FG mask), so the "uniform" arm would silently still
-#                          protect the foreground and the result would be quietly
-#                          invalid.
-# NOT set: downsample_levels / downsample_uniform_level. uniform_level raises
-# unless levels > 1, and levels=1 with a full-coverage sel already emits a
-# uniform level-1 map -- verified byte-identical pixels AND maps. Adding them
-# would move the hash and buy nothing.
-#
-# The SELECTIVE arm is NOT re-run: all 24 counterpart hashes already exist with
-# empty invariant_failures. Fixed QP (rate_control=crf) throughout, never VBR.
-# Rungs recalibrated per video, as in CLAIM(tab:av1)/tab:av1-breadth.
-# ---------------------------------------------------------------------------
-# uniform twin of selective ceac3559f8af0c3f (bear qp43)
 # hash: 22f6147e41fba4cc
 - alpha: 0.5
   beta: 0.5
@@ -15558,7 +15446,6 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
-# uniform twin of selective e2cb6bed165d69b1 (bear qp51)
 # hash: cae4b213d7c2e78a
 - alpha: 0.5
   beta: 0.5
@@ -15580,7 +15467,6 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
-# uniform twin of selective 660bfa8e58ad4dc0 (bear qp58)
 # hash: f10f5f79b1cd1d2f
 - alpha: 0.5
   beta: 0.5
@@ -15602,7 +15488,6 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
-# uniform twin of selective aa00beae3eca0b00 (bear qp61)
 # hash: 1753219b14a0cc65
 - alpha: 0.5
   beta: 0.5
@@ -15624,7 +15509,6 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
-# uniform twin of selective a1dc7f1557c09867 (camel qp42)
 # hash: 5f2f81dfaabc8760
 - alpha: 0.5
   beta: 0.5
@@ -15646,7 +15530,6 @@ experiments:
   target_bitrate: 0
   video: camel
   width: 640
-# uniform twin of selective c29c94b5c290f208 (camel qp50)
 # hash: 67e74fa3608464fe
 - alpha: 0.5
   beta: 0.5
@@ -15668,7 +15551,6 @@ experiments:
   target_bitrate: 0
   video: camel
   width: 640
-# uniform twin of selective fde83c22fc01c85c (camel qp58)
 # hash: 70c6ddb7b98570aa
 - alpha: 0.5
   beta: 0.5
@@ -15690,7 +15572,6 @@ experiments:
   target_bitrate: 0
   video: camel
   width: 640
-# uniform twin of selective b06092cca2df6726 (camel qp62)
 # hash: 382870c6c9dfe1b0
 - alpha: 0.5
   beta: 0.5
@@ -15712,7 +15593,6 @@ experiments:
   target_bitrate: 0
   video: camel
   width: 640
-# uniform twin of selective dc189c206da6cd4d (dog qp43)
 # hash: 84743c7c4b33b549
 - alpha: 0.5
   beta: 0.5
@@ -15734,7 +15614,6 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
-# uniform twin of selective 36d973b3d6662b9b (dog qp50)
 # hash: 3ca9a60bfbeca6b4
 - alpha: 0.5
   beta: 0.5
@@ -15756,7 +15635,6 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
-# uniform twin of selective c85b79fa26560bc3 (dog qp58)
 # hash: 233c3e3670003b35
 - alpha: 0.5
   beta: 0.5
@@ -15778,7 +15656,6 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
-# uniform twin of selective 5d046a46384dd4de (dog qp62)
 # hash: d81b1d270f60b3f6
 - alpha: 0.5
   beta: 0.5
@@ -15800,7 +15677,6 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
-# uniform twin of selective 474fbb90d358caf0 (india qp43)
 # hash: a3dd0b440aec7cf0
 - alpha: 0.5
   beta: 0.5
@@ -15822,7 +15698,6 @@ experiments:
   target_bitrate: 0
   video: india
   width: 640
-# uniform twin of selective a1fab6d2e641f27a (india qp50)
 # hash: 8b6686fb7bf30028
 - alpha: 0.5
   beta: 0.5
@@ -15844,7 +15719,6 @@ experiments:
   target_bitrate: 0
   video: india
   width: 640
-# uniform twin of selective 93657ec7fe2751d9 (india qp58)
 # hash: fbbccda7bdc75c0b
 - alpha: 0.5
   beta: 0.5
@@ -15866,7 +15740,6 @@ experiments:
   target_bitrate: 0
   video: india
   width: 640
-# uniform twin of selective 33c8f6d4dfd857e7 (india qp62)
 # hash: 2b7c18de19ec436f
 - alpha: 0.5
   beta: 0.5
@@ -15888,7 +15761,6 @@ experiments:
   target_bitrate: 0
   video: india
   width: 640
-# uniform twin of selective 340195a69b34b413 (pigs qp43)
 # hash: 3b485b0921e88bd4
 - alpha: 0.5
   beta: 0.5
@@ -15910,7 +15782,6 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
-# uniform twin of selective 9cdf895adbad37bd (pigs qp50)
 # hash: dd920026d06df7ec
 - alpha: 0.5
   beta: 0.5
@@ -15932,7 +15803,6 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
-# uniform twin of selective b23228908f7d34a7 (pigs qp58)
 # hash: fe14bc87b037a8f6
 - alpha: 0.5
   beta: 0.5
@@ -15954,7 +15824,6 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
-# uniform twin of selective 065853196970874b (pigs qp62)
 # hash: 2d3cfbc8dd06725f
 - alpha: 0.5
   beta: 0.5
@@ -15976,7 +15845,6 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
-# uniform twin of selective 6d169af7b8a90f24 (tennis qp43)
 # hash: 779bd1647f82f4d5
 - alpha: 0.5
   beta: 0.5
@@ -15998,7 +15866,6 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
-# uniform twin of selective 69f428bd0178726a (tennis qp50)
 # hash: e4db65c2a3843100
 - alpha: 0.5
   beta: 0.5
@@ -16020,7 +15887,6 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
-# uniform twin of selective 8b2b11e91badd1e8 (tennis qp58)
 # hash: 3f9bec7e8d9bc1bd
 - alpha: 0.5
   beta: 0.5
@@ -16042,7 +15908,6 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
-# uniform twin of selective 1ec9cbffcdbf0988 (tennis qp62)
 # hash: ca3719647bb726cd
 - alpha: 0.5
   beta: 0.5
@@ -16063,4 +15928,46 @@ experiments:
   shrink_amount: 80
   target_bitrate: 0
   video: tennis
+  width: 640
+# hash: 0d6fc8cf5fe2f269
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 35
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: bear
+  width: 640
+# hash: b40e04550b57ed18
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 39
+  component: presley_ai
+  composite_output: true
+  degradation: downsample
+  fg_protect: false
+  height: 360
+  restorer: realesrgan
+  restorer_params:
+    denoise_strength: 1.0
+    tile: 400
+  shrink_amount: 80
+  target_bitrate: 0
+  video: bear
   width: 640
