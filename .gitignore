@@ -207,3 +207,4 @@ vendor/
 results/*.db
 results/*.db-wal
 results/*.db-shm
+submission/
