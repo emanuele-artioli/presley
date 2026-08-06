@@ -105,3 +105,63 @@ M1 runs once, over the 5 declared features. **Do not add a sixth feature after
 seeing the five** — that is candidate shopping, and `--candidates-tried` exists
 precisely to make it cost something. If a new feature family is wanted later it
 is a new pre-registration with its own family size, not an extension of this one.
+
+---
+
+## RESULT — 2026-08-06. M1 FIRES, and the sign of it is the finding.
+
+`tools/analyze_m1_restorability.py`.
+
+| feature | n | median ρ | consistent | p_Holm (k=5) |
+|---|---|---|---|---|
+| **sc_mean** | 120 | **+0.506** | 120/120 | <0.001 |
+| tc_mean | 120 | +0.455 | 120/120 | <0.001 |
+| tc_var | 120 | +0.245 | 120/120 | <0.001 |
+| frame_edge | 120 | +0.178 | 107/120 | <0.001 |
+| sc_var | 120 | +0.160 | 105/120 | <0.001 |
+
+**Post-restoration damage IS partly predictable at transmit time.** Spatial
+complexity ranks a superblock's damage at median ρ +0.506, in the same direction
+on 120 of 120 runs. Inside the pre-registered plausible band (0.15–0.55).
+
+### Two declared deviations
+
+**1. Corpus.** This document claimed the data was "8 `probe_block_damage` runs".
+That was **factually wrong**: none of the eight appear in
+`results/block_damage_s1b.npz`, which holds 143 ordinary restored runs mined by
+`tools/mine_block_damage.py`. Restricting to the two restorers the article
+reports gives **n=120 across 13 videos**. The design is unchanged — same five
+declared features, same within-run rank statistic, same sign test, same stopping
+rule. Only the count differs, upward, which makes a null here stronger than the
+registered n=8 could have produced rather than weaker.
+
+**2. A control added because a bound fired.** Declared as an addition, not
+back-dated into the design. Over *all* superblocks ρ(SC, damage) is **+0.684**,
+outside the registered band — the alarm the band exists for. The cause is
+leakage, and it is structural: **selection picks high-SC blocks, and only
+selected blocks carry damage**, so SC predicts "was this degraded" (ρ **+0.786**)
+before it predicts anything about restorability. Restricting to superblocks that
+were *actually degraded* removes it, and ρ falls to **+0.506** — back inside the
+band. Both numbers are reported; the controlled one is the result.
+
+### Why this matters more than a clean positive would have
+
+The uncomfortable part is the **sign**. The importance score already selects on
+spatial complexity, because complex blocks cost the most *bits*. The same
+quantity predicts, positively, how badly a block comes back after restoration.
+
+So the objective does not merely *omit* restorability:
+
+> **it preferentially selects the blocks that survive restoration worst**, and
+> the two terms it does have are both proxies for the same underlying quantity.
+
+That is a **mechanism** for the α/β null, not just a restatement of it. The
+weights are inert because they reweight two correlated cost proxies, and both of
+those proxies also track fragility — so no setting of them can express the
+trade-off selection actually needs. It also explains why grading by the same
+score failed, and failed even under an oracle: the ranking was pointed the wrong
+way, and grading a wrong ranking harder does not help.
+
+### Scope budget
+
+R1 and M1 are both spent. **There is no third hypothesis.**
