@@ -112,6 +112,17 @@ class Row:
 
 AXES = ("computation", "bitrate", "quality")
 
+# Measured fps, 640x360, from the 2026-08-06 controlled campaign ONLY
+# (tools/timing_campaign.py, 3 trials, pinned GPU, 0/7 CPU fallbacks). No
+# pre-2026-08-05 in-pipeline timing may enter this column: those mix two device
+# populations and which one a run belongs to is unrecoverable.
+FPS_360 = {
+    "blur+nafnet": 10.74,
+    "downsample+realesrgan": 5.35,
+    "blackout+propainter": 2.66,
+    "freeze+propainter": 1.81,
+}
+
 
 def verdict_for(n: int, favouring: int, p_holm: float, jnd_cleared: bool) -> str:
     """Verdict ladder, mirroring suite.assess_metric's vocabulary.
@@ -222,10 +233,14 @@ def build_goal3(db: str) -> List[Row]:
         p = sign_test_p(fav, n - fav)
         med = sorted(gains)[n // 2]
         rows.append(Row(label, "method", {
-            "computation": Cell(Mark.NO_DATA,
-                                reason="not in the controlled timing campaign; "
-                                       "pre-2026-08-05 in-pipeline timings are unpublishable "
-                                       "(silent CPU fallback mixed two device populations)"),
+            "computation": (
+                Cell(Mark.MEASURED, value=FPS_360[label], unit=" fps",
+                     verdict="640x360, controlled campaign")
+                if label in FPS_360 else
+                Cell(Mark.NO_DATA,
+                     reason="not in the controlled timing campaign; pre-2026-08-05 "
+                            "in-pipeline timings are unpublishable (silent CPU "
+                            "fallback mixed two device populations)")),
             "bitrate": Cell(Mark.NOT_APPLICABLE,
                             reason="restoration is client-side; identical bitstream by design"),
             "quality": Cell(Mark.MEASURED, value=med, unit=" JND", n=n, favouring=fav,
