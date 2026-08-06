@@ -16683,3 +16683,213 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 594078444a9ed85c
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 150000
+  video: camel
+  width: 640
+# hash: c9fdee3a41427e4e
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 150000
+  video: camel
+  width: 640
+# hash: 11c83df8309e9bd6
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 900000
+  video: camel
+  width: 640
+# hash: da0d7fe237c019e0
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 900000
+  video: camel
+  width: 640
+# hash: 85c7325980e813d3
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 150000
+  video: dog
+  width: 640
+# hash: 8692a206159c5392
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 150000
+  video: dog
+  width: 640
+# hash: b0d454630f1cbbfa
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 900000
+  video: dog
+  width: 640
+# hash: 084f0175b06b0823
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 900000
+  video: dog
+  width: 640
+# hash: 1d8adf93ce4fb6b1
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 150000
+  video: india
+  width: 640
+# hash: 4fb61c102a774b5c
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 150000
+  video: india
+  width: 640
+# hash: 97da1abe531abb61
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 900000
+  video: india
+  width: 640
+# hash: 2b703c6962ed80a9
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 900000
+  video: india
+  width: 640
+# hash: 4b29fdb09284489f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 150000
+  video: pigs
+  width: 640
+# hash: 2235b45a682b9515
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 150000
+  video: pigs
+  width: 640
+# hash: e0288e30060300f7
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 900000
+  video: pigs
+  width: 640
+# hash: 3bf325db3c37d53e
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 900000
+  video: pigs
+  width: 640
+# hash: 797a400d4fd86f7f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 150000
+  video: tennis
+  width: 640
+# hash: bbd8454abb10e486
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 150000
+  video: tennis
+  width: 640
+# hash: 1981f1c5a7929ba6
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec_params:
+    qp_range: 15
+  component: roi
+  height: 360
+  roi_method: kvazaar
+  target_bitrate: 900000
+  video: tennis
+  width: 640
+# hash: ab560f7c89c1fa00
+- codec: kvazaar
+  codec_params:
+    rate_control: cqp
+  component: baselines
+  height: 360
+  target_bitrate: 900000
+  video: tennis
+  width: 640
