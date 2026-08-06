@@ -1,4 +1,5 @@
 experiments:
+# hash: 49abd569e4ecbe3d
 - component: baselines
   video: bear
   width: 640
@@ -13,6 +14,7 @@ experiments:
     embed_channels: 64
     strides: 5,4,2
     channels: 128,64,32
+# hash: dc12f16fa7589902
 - component: baselines
   video: bear
   width: 640
@@ -21,6 +23,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: 0e49827015f889ca
 - component: baselines
   video: bear
   width: 640
@@ -29,6 +32,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: 13cb90c2d2c2e844
 - component: baselines
   video: bear
   width: 640
@@ -37,6 +41,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: aa9f9a9c4a5ccc96
 - component: baselines
   video: bear
   width: 640
@@ -45,6 +50,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: 8
+# hash: 69fcfa31f7cf54e0
 - component: roi
   video: bear
   width: 640
@@ -56,6 +62,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: e0a789748f59acdc
 - component: roi
   video: bear
   width: 640
@@ -68,6 +75,7 @@ experiments:
   codec_params:
     aq_mode: 1
     aq_strength: 1.0
+# hash: 2fd1ea1b92fc6dbe
 - component: roi
   video: bear
   width: 640
@@ -80,6 +88,7 @@ experiments:
   codec_params:
     qp_range: 15
     preset: 8
+# hash: f84b35028fb87790
 - component: roi
   video: bear
   width: 640
@@ -92,6 +101,7 @@ experiments:
   codec_params:
     qp_range: 30
     preset: 8
+# hash: 7064c8a9202bb7bb
 - component: roi
   video: bear
   width: 640
@@ -103,6 +113,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 30
+# hash: d5be141117dc962e
 - component: roi
   video: bear
   width: 640
@@ -114,6 +125,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: e9565699da71ff8e
 - component: roi
   video: bear
   width: 640
@@ -125,6 +137,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 8
+# hash: 9a1c4184ebf78eb5
 - component: roi
   video: bear
   width: 640
@@ -139,6 +152,7 @@ experiments:
     preset: medium
   degradation_params:
     downsample_scale: 0.5
+# hash: e8d598964a7e067c
 - component: roi
   video: bear
   width: 640
@@ -153,6 +167,7 @@ experiments:
     preset: medium
   degradation_params:
     downsample_scale: 0.25
+# hash: 40934f19558eea34
 - component: roi
   video: bear
   width: 640
@@ -167,6 +182,7 @@ experiments:
     preset: medium
   degradation_params:
     noise_variance: 50
+# hash: 7f32095b14b98cbc
 - component: roi
   video: bear
   width: 640
@@ -181,6 +197,7 @@ experiments:
     preset: medium
   degradation_params:
     noise_variance: 10
+# hash: 4dc9fcf6be47917e
 - component: elvis
   video: bear
   width: 640
@@ -194,6 +211,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: 5d45c24dd3199362
 - component: elvis
   video: bear
   width: 640
@@ -207,6 +225,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: 774f24eca108a51d
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -225,6 +244,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: c26c5e9a05e47730
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -242,6 +262,7 @@ experiments:
     preset: medium
   restorer_params:
     tile: 0
+# hash: 287d46b17dd07d54
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -260,6 +281,7 @@ experiments:
   restorer_params:
     cfg: 7.0
     creative_start: 1.0
+# hash: 4f8b7760b9b02561
 - component: baselines
   video: bmx-trees
   width: 640
@@ -268,6 +290,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: 5eb6ac2713e06a5a
 - component: baselines
   video: bmx-trees
   width: 640
@@ -276,6 +299,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: 8
+# hash: 826ba0ae37cdc630
 - component: roi
   video: bmx-trees
   width: 640
@@ -287,6 +311,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 836f938269451b26
 - component: roi
   video: bmx-trees
   width: 640
@@ -299,6 +324,7 @@ experiments:
   codec_params:
     qp_range: 15
     preset: 8
+# hash: 68ea186829e0f456
 - component: baselines
   video: drift-chicane
   width: 640
@@ -307,6 +333,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: 8056d4bdbec940f6
 - component: baselines
   video: drift-chicane
   width: 640
@@ -315,6 +342,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: 8
+# hash: c9b6ba54c906ab2a
 - component: roi
   video: drift-chicane
   width: 640
@@ -326,6 +354,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 3bb20e37f3668285
 - component: roi
   video: drift-chicane
   width: 640
@@ -338,6 +367,7 @@ experiments:
   codec_params:
     qp_range: 15
     preset: 8
+# hash: 34b1ab21b9815d78
 - component: baselines
   video: bear
   width: 640
@@ -346,6 +376,7 @@ experiments:
   target_bitrate: 150000
   codec_params:
     preset: medium
+# hash: 27bf5c72fccb7780
 - component: baselines
   video: bear
   width: 640
@@ -354,6 +385,7 @@ experiments:
   target_bitrate: 150000
   codec_params:
     preset: 8
+# hash: 31a312412bca7f4d
 - component: baselines
   video: bear
   width: 640
@@ -362,6 +394,7 @@ experiments:
   target_bitrate: 150000
   codec_params:
     preset: medium
+# hash: 2600e041343b5d94
 - component: roi
   video: bear
   width: 640
@@ -373,6 +406,7 @@ experiments:
   target_bitrate: 150000
   codec_params:
     qp_range: 15
+# hash: 400e96a6be251724
 - component: roi
   video: bear
   width: 640
@@ -385,6 +419,7 @@ experiments:
   codec_params:
     qp_range: 15
     preset: 8
+# hash: 3ef3b567e258681f
 - component: roi
   video: bear
   width: 640
@@ -397,6 +432,7 @@ experiments:
   codec_params:
     aq_mode: 1
     aq_strength: 1.0
+# hash: 7c93abe94e628616
 - component: roi
   video: bear
   width: 640
@@ -408,6 +444,7 @@ experiments:
   target_bitrate: 150000
   codec_params:
     qp_range: 15
+# hash: d8171406843e5373
 - component: roi
   video: bear
   width: 640
@@ -422,6 +459,7 @@ experiments:
     preset: medium
   degradation_params:
     downsample_scale: 0.5
+# hash: 1d4122e51e428823
 - component: baselines
   video: bear
   width: 640
@@ -430,6 +468,7 @@ experiments:
   target_bitrate: 250000
   codec_params:
     preset: medium
+# hash: 3befe4fc5efd0714
 - component: baselines
   video: bear
   width: 640
@@ -438,6 +477,7 @@ experiments:
   target_bitrate: 250000
   codec_params:
     preset: 8
+# hash: 9ccca6c400f9db9e
 - component: baselines
   video: bear
   width: 640
@@ -446,6 +486,7 @@ experiments:
   target_bitrate: 250000
   codec_params:
     preset: medium
+# hash: 150fb27a2e055dee
 - component: roi
   video: bear
   width: 640
@@ -457,6 +498,7 @@ experiments:
   target_bitrate: 250000
   codec_params:
     qp_range: 15
+# hash: 9225a02b9525333a
 - component: roi
   video: bear
   width: 640
@@ -469,6 +511,7 @@ experiments:
   codec_params:
     qp_range: 15
     preset: 8
+# hash: 651f69352abc9563
 - component: roi
   video: bear
   width: 640
@@ -481,6 +524,7 @@ experiments:
   codec_params:
     aq_mode: 1
     aq_strength: 1.0
+# hash: 1208828447365fba
 - component: roi
   video: bear
   width: 640
@@ -492,6 +536,7 @@ experiments:
   target_bitrate: 250000
   codec_params:
     qp_range: 15
+# hash: da2464b4866e3ac7
 - component: roi
   video: bear
   width: 640
@@ -506,6 +551,7 @@ experiments:
     preset: medium
   degradation_params:
     downsample_scale: 0.5
+# hash: 4a76bb78d86eb22f
 - component: baselines
   video: bear
   width: 640
@@ -514,6 +560,7 @@ experiments:
   target_bitrate: 800000
   codec_params:
     preset: medium
+# hash: f0eedd9e31c2120c
 - component: baselines
   video: bear
   width: 640
@@ -522,6 +569,7 @@ experiments:
   target_bitrate: 800000
   codec_params:
     preset: 8
+# hash: f1bc515583eb25d3
 - component: baselines
   video: bear
   width: 640
@@ -530,6 +578,7 @@ experiments:
   target_bitrate: 800000
   codec_params:
     preset: medium
+# hash: dc0b0e2047ad9008
 - component: roi
   video: bear
   width: 640
@@ -541,6 +590,7 @@ experiments:
   target_bitrate: 800000
   codec_params:
     qp_range: 15
+# hash: 4d9e98b6ed735266
 - component: roi
   video: bear
   width: 640
@@ -553,6 +603,7 @@ experiments:
   codec_params:
     qp_range: 15
     preset: 8
+# hash: 45a2f7095a4738bd
 - component: roi
   video: bear
   width: 640
@@ -565,6 +616,7 @@ experiments:
   codec_params:
     aq_mode: 1
     aq_strength: 1.0
+# hash: de9f854bb920e02a
 - component: roi
   video: bear
   width: 640
@@ -576,6 +628,7 @@ experiments:
   target_bitrate: 800000
   codec_params:
     qp_range: 15
+# hash: c427f6a24b76fe8b
 - component: roi
   video: bear
   width: 640
@@ -590,6 +643,7 @@ experiments:
     preset: medium
   degradation_params:
     downsample_scale: 0.5
+# hash: 82e3ca44c0119654
 - component: roi
   video: bear
   width: 640
@@ -601,6 +655,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 441879715471f2c7
 - component: roi
   video: bear
   width: 640
@@ -612,6 +667,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 5ed32955d702cef6
 - component: roi
   video: bear
   width: 640
@@ -623,6 +679,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 5f85fcf737d5eef8
 - component: roi
   video: bear
   width: 640
@@ -634,6 +691,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: a232ad31a0b94c1d
 - component: roi
   video: bear
   width: 640
@@ -645,6 +703,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 3a6e0071875d2527
 - component: roi
   video: bear
   width: 640
@@ -656,6 +715,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 3c0babd222940fba
 - component: roi
   video: bear
   width: 640
@@ -667,6 +727,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: fc203a9980dad7d3
 - component: roi
   video: bear
   width: 640
@@ -678,6 +739,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 9bb6a2f51041bfa7
 - component: roi
   video: bear
   width: 640
@@ -689,6 +751,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: 01b9184a59f45595
 - component: roi
   video: bear
   width: 640
@@ -700,6 +763,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: f20c2d2fcba3905d
 - component: baselines
   video: bear
   width: 960
@@ -708,6 +772,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: 06300443033d5a4e
 - component: baselines
   video: bear
   width: 960
@@ -716,6 +781,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: c1380ccc8926e258
 - component: roi
   video: bear
   width: 960
@@ -727,6 +793,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     qp_range: 15
+# hash: b7ece4ecb22e1f48
 - component: elvis
   video: bear
   width: 640
@@ -745,6 +812,7 @@ experiments:
     ref_stride: 30
     neighbor_length: 3
     subvideo_length: 80
+# hash: e126b35024fa3406
 - component: baselines
   video: bear
   width: 1280
@@ -753,6 +821,7 @@ experiments:
   target_bitrate: 1843200
   codec_params:
     preset: 8
+# hash: 3e62a0705f73e025
 - component: baselines
   video: bear
   width: 1280
@@ -761,6 +830,7 @@ experiments:
   target_bitrate: 1843200
   codec_params:
     preset: medium
+# hash: 547eaaed44847d59
 - component: roi
   video: bear
   width: 1280
@@ -773,6 +843,7 @@ experiments:
   codec_params:
     qp_range: 15
     preset: 8
+# hash: 23fcb2ff25ad31de
 - component: roi
   video: bear
   width: 1280
@@ -785,6 +856,7 @@ experiments:
   codec_params:
     qp_range: 15
     preset: 8
+# hash: dfa21110e744b915
 - component: roi
   video: bear
   width: 1280
@@ -796,6 +868,7 @@ experiments:
   target_bitrate: 1843200
   codec_params:
     qp_range: 15
+# hash: 1a853a7f2189fdf9
 - component: roi
   video: bear
   width: 1280
@@ -807,6 +880,7 @@ experiments:
   target_bitrate: 1843200
   codec_params:
     qp_range: 15
+# hash: 56675c2650855aa7
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -826,6 +900,7 @@ experiments:
     cfg: 7.0
     creative_start: 1.0
     batch_size: 1
+# hash: 5a0ec4eb3c738eab
 - component: elvis
   video: bear
   width: 640
@@ -839,6 +914,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: e6979ec432222e66
 - component: elvis
   video: bear
   width: 640
@@ -852,6 +928,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: 5318e01ac00f4460
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -870,6 +947,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 36b18dd72ccad44e
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -887,6 +965,7 @@ experiments:
     preset: medium
   restorer_params:
     tile: 0
+# hash: b58ff6864c41bc3f
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -905,6 +984,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 3848dfdf0a24f736
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -922,6 +1002,7 @@ experiments:
     preset: medium
   restorer_params:
     tile: 0
+# hash: 8d2eb91d0797f341
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -941,6 +1022,7 @@ experiments:
     cfg: 7.0
     creative_start: 1.0
     batch_size: 1
+# hash: 4c501accbd5f7a0f
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -960,6 +1042,7 @@ experiments:
     cfg: 7.0
     creative_start: 1.0
     batch_size: 1
+# hash: 8d695ddb0f614eb5
 - component: baselines
   video: bmx-trees
   width: 640
@@ -968,6 +1051,7 @@ experiments:
   target_bitrate: 250000
   codec_params:
     preset: medium
+# hash: bfa7ea827b9ac8f5
 - component: baselines
   video: bmx-trees
   width: 640
@@ -976,6 +1060,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: d17f871f4c5990ca
 - component: baselines
   video: bmx-trees
   width: 640
@@ -984,6 +1069,7 @@ experiments:
   target_bitrate: 800000
   codec_params:
     preset: medium
+# hash: 1580bb76cb33d41b
 - component: baselines
   video: bmx-trees
   width: 640
@@ -992,6 +1078,7 @@ experiments:
   target_bitrate: 1200000
   codec_params:
     preset: medium
+# hash: c6100863ba091114
 - component: baselines
   video: drift-chicane
   width: 640
@@ -1000,6 +1087,7 @@ experiments:
   target_bitrate: 250000
   codec_params:
     preset: medium
+# hash: cae811af2f35d005
 - component: baselines
   video: drift-chicane
   width: 640
@@ -1008,6 +1096,7 @@ experiments:
   target_bitrate: 460800
   codec_params:
     preset: medium
+# hash: 505da4b2814f41d6
 - component: baselines
   video: drift-chicane
   width: 640
@@ -1016,6 +1105,7 @@ experiments:
   target_bitrate: 800000
   codec_params:
     preset: medium
+# hash: 92e9db688b9ffead
 - component: baselines
   video: drift-chicane
   width: 640
@@ -1024,6 +1114,7 @@ experiments:
   target_bitrate: 1200000
   codec_params:
     preset: medium
+# hash: c30bac1f605efe3b
 - component: baselines
   video: bear
   width: 640
@@ -1032,6 +1123,7 @@ experiments:
   target_bitrate: 1200000
   codec_params:
     preset: medium
+# hash: 4fca2a9ee26e14ce
 - component: baselines
   video: bear
   width: 640
@@ -1040,6 +1132,7 @@ experiments:
   target_bitrate: 1843200
   codec_params:
     preset: medium
+# hash: bd80810ea23f0644
 - component: baselines
   video: bear
   width: 640
@@ -1048,6 +1141,7 @@ experiments:
   target_bitrate: 2400000
   codec_params:
     preset: medium
+# hash: 64166477b1e25b9f
 - component: elvis
   video: bmx-trees
   width: 640
@@ -1061,6 +1155,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: ba7b50a5d4a54320
 - component: elvis
   video: bmx-trees
   width: 640
@@ -1074,6 +1169,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: f1e04fdeb7f327cf
 - component: elvis
   video: drift-chicane
   width: 640
@@ -1087,6 +1183,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: 3fd5a0e6a67d31d8
 - component: elvis
   video: drift-chicane
   width: 640
@@ -1100,6 +1197,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: a27dea25b7d2371c
 - component: elvis
   video: bear
   width: 640
@@ -1113,6 +1211,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: 700b22c9daf949c0
 - component: elvis
   video: bear
   width: 640
@@ -1126,6 +1225,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: 21bf9b39f84b70ca
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -1144,6 +1244,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 7a722d016481d3b7
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -1161,6 +1262,7 @@ experiments:
     preset: medium
   restorer_params:
     tile: 0
+# hash: 9d24245a8ff40cb7
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -1179,6 +1281,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 98de03dc7b94563d
 - component: presley_ai
   _retired: 'VBR degradation experiment: hard rule 1 forbids it (under a bitrate target
     degradation cannot free bits), so this can never be citable'
@@ -1196,6 +1299,7 @@ experiments:
     preset: medium
   restorer_params:
     tile: 0
+# hash: 9da47db123186516
 - component: baselines
   video: bear
   width: 640
@@ -1204,6 +1308,7 @@ experiments:
   target_bitrate: 30000
   codec_params:
     preset: medium
+# hash: 02e93253ec86d743
 - component: baselines
   video: bear
   width: 640
@@ -1212,6 +1317,7 @@ experiments:
   target_bitrate: 50000
   codec_params:
     preset: medium
+# hash: 586426146e74b202
 - component: baselines
   video: bear
   width: 640
@@ -1220,6 +1326,7 @@ experiments:
   target_bitrate: 80000
   codec_params:
     preset: medium
+# hash: d76955770b720d40
 - component: elvis
   video: bear
   width: 640
@@ -1233,6 +1340,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: b208cadfe544d392
 - component: elvis
   video: bear
   width: 640
@@ -1246,6 +1354,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: 65ce8788748cd0cf
 - component: elvis
   video: bear
   width: 640
@@ -1259,6 +1368,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: a772d20ae3ea7983
 - component: elvis
   video: bear
   width: 640
@@ -1272,6 +1382,7 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+# hash: 9fee58313582e1f8
 - component: baselines
   video: bear
   width: 640
@@ -1281,6 +1392,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: e977c7693c421040
 - component: baselines
   video: bear
   width: 640
@@ -1290,6 +1402,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 8e61901a52e9cb21
 - component: elvis
   video: bear
   width: 640
@@ -1306,6 +1419,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 30071c67919d1afa
 - component: elvis
   video: bear
   width: 640
@@ -1322,6 +1436,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 06e08a82002bddde
 - component: elvis
   video: bear
   width: 640
@@ -1338,6 +1453,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 4979f29a2827de20
 - component: elvis
   video: bear
   width: 640
@@ -1354,6 +1470,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: efc61192cdf794c0
 - component: baselines
   video: bear
   width: 640
@@ -1363,6 +1480,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 33
+# hash: ef236f5c48d34161
 - component: baselines
   video: bear
   width: 640
@@ -1372,6 +1490,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 912099b11fa53fc8
 - component: baselines
   video: bmx-trees
   width: 640
@@ -1381,6 +1500,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: 8d38a5e13a886895
 - component: baselines
   video: bmx-trees
   width: 640
@@ -1390,6 +1510,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: a633dca8d148e3b6
 - component: baselines
   video: bmx-trees
   width: 640
@@ -1399,6 +1520,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 38
+# hash: 9aba827a1935559f
 - component: elvis
   video: bmx-trees
   width: 640
@@ -1415,6 +1537,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 653837fed38a8adb
 - component: elvis
   video: bmx-trees
   width: 640
@@ -1431,6 +1554,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 0b0e72b91a7ccc55
 - component: elvis
   video: bmx-trees
   width: 640
@@ -1447,6 +1571,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 6e035ed22b668bc5
 - component: elvis
   video: bmx-trees
   width: 640
@@ -1464,6 +1589,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 96012299323c49fb
 - component: elvis
   video: bmx-trees
   width: 640
@@ -1481,6 +1607,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 363c9ef339377177
 - component: elvis
   video: bmx-trees
   width: 640
@@ -1498,6 +1625,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 3cc22f1888baafbe
 - component: elvis
   video: bear
   width: 640
@@ -1515,6 +1643,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 5e375f7bd72f94b9
 - component: roi
   video: bear
   width: 640
@@ -1526,6 +1655,7 @@ experiments:
   target_bitrate: 555000
   codec_params:
     qp_range: 15
+# hash: e175fbef3c54a548
 - component: presley_ai
   video: bear
   width: 640
@@ -1541,6 +1671,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: acd162585b27eea8
 - component: presley_ai
   video: bear
   width: 640
@@ -1556,6 +1687,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 818854e3a914c0a6
 - component: presley_ai
   video: bear
   width: 640
@@ -1571,6 +1703,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: b085781801f4a9bf
 - component: presley_ai
   video: bear
   width: 640
@@ -1588,6 +1721,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 76bfb3a463e21301
 - component: presley_ai
   video: bear
   width: 640
@@ -1605,6 +1739,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 335158d453df5e31
 - component: baselines
   video: camel
   width: 640
@@ -1614,6 +1749,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: ef2637de3a459c03
 - component: baselines
   video: camel
   width: 640
@@ -1623,6 +1759,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: f1fc7918fe8f05fa
 - component: baselines
   video: camel
   width: 640
@@ -1632,6 +1769,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 4a56e9a9a855aaaf
 - component: baselines
   video: camel
   width: 640
@@ -1641,6 +1779,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: fcfbb87d5704dcf9
 - component: elvis
   video: camel
   width: 640
@@ -1658,6 +1797,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 596a7176ddce4933
 - component: elvis
   video: camel
   width: 640
@@ -1675,6 +1815,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: fb5b66a9102570dd
 - component: roi
   video: camel
   width: 640
@@ -1686,6 +1827,7 @@ experiments:
   target_bitrate: 300000
   codec_params:
     qp_range: 15
+# hash: 2359080e919572f7
 - component: roi
   video: camel
   width: 640
@@ -1697,6 +1839,7 @@ experiments:
   target_bitrate: 600000
   codec_params:
     qp_range: 15
+# hash: 723ee637d29167df
 - component: baselines
   video: pigs
   width: 640
@@ -1706,6 +1849,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: facb3fb6771d16d6
 - component: baselines
   video: pigs
   width: 640
@@ -1715,6 +1859,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: bbe10cd8ef986d6b
 - component: baselines
   video: pigs
   width: 640
@@ -1724,6 +1869,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: b6d5b3c15409284f
 - component: baselines
   video: pigs
   width: 640
@@ -1733,6 +1879,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 1e07f10ef631b4e0
 - component: elvis
   video: pigs
   width: 640
@@ -1750,6 +1897,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 7fef4c1738bb7fbd
 - component: elvis
   video: pigs
   width: 640
@@ -1767,6 +1915,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 6d4ef019dd1ddb86
 - component: roi
   video: pigs
   width: 640
@@ -1778,6 +1927,7 @@ experiments:
   target_bitrate: 300000
   codec_params:
     qp_range: 15
+# hash: c67608eb01c0d7cb
 - component: roi
   video: pigs
   width: 640
@@ -1789,6 +1939,7 @@ experiments:
   target_bitrate: 600000
   codec_params:
     qp_range: 15
+# hash: 7e04556454dcca22
 - component: baselines
   video: dog
   width: 640
@@ -1798,6 +1949,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: bf87e515f266e78f
 - component: baselines
   video: dog
   width: 640
@@ -1807,6 +1959,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 2e58923ff19b5888
 - component: baselines
   video: dog
   width: 640
@@ -1816,6 +1969,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: a2f60bb3f050a780
 - component: baselines
   video: dog
   width: 640
@@ -1825,6 +1979,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 7eb4b3c9993abb8d
 - component: elvis
   video: dog
   width: 640
@@ -1842,6 +1997,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 206cf650ff3c103f
 - component: elvis
   video: dog
   width: 640
@@ -1859,6 +2015,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: e78dae2e3cbf69b8
 - component: roi
   video: dog
   width: 640
@@ -1870,6 +2027,7 @@ experiments:
   target_bitrate: 300000
   codec_params:
     qp_range: 15
+# hash: c593bc9f9bd9b118
 - component: roi
   video: dog
   width: 640
@@ -1881,6 +2039,7 @@ experiments:
   target_bitrate: 600000
   codec_params:
     qp_range: 15
+# hash: 8e7395014ef425cc
 - component: elvis
   video: dog
   width: 640
@@ -1900,6 +2059,7 @@ experiments:
     qp: 32
   inpainter_params:
     subvideo_length: 20
+# hash: 5eb42ce79b272f31
 - component: elvis
   video: bear
   width: 640
@@ -1919,6 +2079,7 @@ experiments:
     qp: 32
   inpainter_params:
     subvideo_length: 45
+# hash: 44989abd6513bf5b
 - component: presley_ai
   video: camel
   width: 640
@@ -1936,6 +2097,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: c3bae217cfc54472
 - component: presley_ai
   video: camel
   width: 640
@@ -1953,6 +2115,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 918f6f2c26bec4fc
 - component: presley_ai
   video: dog
   width: 640
@@ -1970,6 +2133,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 26ce0d691af16a2d
 - component: presley_ai
   video: dog
   width: 640
@@ -1987,6 +2151,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: a7ff6cb21ba2538a
 - component: presley_ai
   video: pigs
   width: 640
@@ -2004,6 +2169,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 5959172e7e1a2fb2
 - component: presley_ai
   video: pigs
   width: 640
@@ -2021,6 +2187,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: af57e560cc07bcb4
 - component: elvis
   video: camel
   width: 640
@@ -2038,6 +2205,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: 40e78d87ec91f13d
 - component: elvis
   video: camel
   width: 640
@@ -2055,6 +2223,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 552a1a6989a9e4d5
 - component: elvis
   video: dog
   width: 640
@@ -2072,6 +2241,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: bbcddae9c2e8cc2a
 - component: elvis
   video: dog
   width: 640
@@ -2089,6 +2259,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 4103efc06c1baaf9
 - component: elvis
   video: pigs
   width: 640
@@ -2106,6 +2277,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: 4a110defb4801533
 - component: elvis
   video: pigs
   width: 640
@@ -2123,6 +2295,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 1b63442a67927c7b
 - component: baselines
   video: bear
   width: 640
@@ -2132,23 +2305,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
-- component: elvis
-  video: bear
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 30
+# hash: bc292116525d0fbf
 - component: elvis
   video: bear
   width: 640
@@ -2165,7 +2322,26 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+    qp: 30
+# hash: 1dca3441ab00cfbd
+- component: elvis
+  video: bear
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
     qp: 34
+# hash: 594bd8edbc486862
 - component: elvis
   video: bear
   width: 640
@@ -2183,6 +2359,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 87b25339f57d7857
 - component: baselines
   video: india
   width: 640
@@ -2192,6 +2369,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: dfe269034b284e87
 - component: baselines
   video: india
   width: 640
@@ -2201,6 +2379,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 3dc45daff426e900
 - component: baselines
   video: india
   width: 640
@@ -2210,6 +2389,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 0e04dd48d0274ef4
 - component: baselines
   video: india
   width: 640
@@ -2219,112 +2399,9 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 9d90c886d7395e74
 - component: elvis
   video: india
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 30
-- component: elvis
-  video: india
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 32
-- component: elvis
-  video: india
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 34
-- component: elvis
-  video: india
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 37
-- component: baselines
-  video: tennis
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    preset: medium
-    qp: 30
-- component: baselines
-  video: tennis
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    preset: medium
-    qp: 32
-- component: baselines
-  video: tennis
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    preset: medium
-    qp: 34
-- component: baselines
-  video: tennis
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    preset: medium
-    qp: 37
-- component: elvis
-  video: tennis
   width: 640
   height: 360
   block_size: 8
@@ -2340,6 +2417,119 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: bde0bc12bff243cd
+- component: elvis
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+# hash: c729ed15905ec836
+- component: elvis
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 34
+# hash: 1550dfb903571b96
+- component: elvis
+  video: india
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 37
+# hash: 14467419f7326bb2
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 30
+# hash: 4f7edfc57e9c07c9
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 32
+# hash: 532aaf45b2d818ed
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 34
+# hash: c09ff75d95fc46de
+- component: baselines
+  video: tennis
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
+    preset: medium
+    qp: 37
+# hash: f741ff7fd2b12023
+- component: elvis
+  video: tennis
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 30
+# hash: 5c0e7020a23e7db1
 - component: elvis
   video: tennis
   width: 640
@@ -2357,6 +2547,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: c5c7223df94195c2
 - component: elvis
   video: tennis
   width: 640
@@ -2374,6 +2565,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 0bba758fb0111588
 - component: elvis
   video: tennis
   width: 640
@@ -2391,6 +2583,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 8e2bfd9f0635dbe9
 - component: elvis
   video: bmx-trees
   width: 640
@@ -2409,6 +2602,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 9e093ad8cdcb1597
 - component: presley_ai
   video: india
   width: 640
@@ -2426,6 +2620,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 82609b4df948269e
 - component: presley_ai
   video: india
   width: 640
@@ -2443,6 +2638,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 9f6d0c4b3619cb73
 - component: presley_ai
   video: tennis
   width: 640
@@ -2460,6 +2656,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 6d53d72e30e31227
 - component: presley_ai
   video: tennis
   width: 640
@@ -2477,6 +2674,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: eda55212941d11a8
 - component: roi
   video: india
   width: 640
@@ -2488,6 +2686,7 @@ experiments:
   target_bitrate: 300000
   codec_params:
     qp_range: 15
+# hash: c2d4ccd9bc73edad
 - component: roi
   video: india
   width: 640
@@ -2499,6 +2698,7 @@ experiments:
   target_bitrate: 600000
   codec_params:
     qp_range: 15
+# hash: e2b0fe61888bddd2
 - component: roi
   video: tennis
   width: 640
@@ -2510,6 +2710,7 @@ experiments:
   target_bitrate: 300000
   codec_params:
     qp_range: 15
+# hash: 2d75403a87d164a9
 - component: roi
   video: tennis
   width: 640
@@ -2521,6 +2722,7 @@ experiments:
   target_bitrate: 600000
   codec_params:
     qp_range: 15
+# hash: 81f7e7ad912afdae
 - component: baselines
   video: bear
   width: 640
@@ -2535,6 +2737,7 @@ experiments:
     embed_channels: 16
     strides: 5,4,2
     channels: 32,16,8
+# hash: 61af711f7f4045c0
 - component: baselines
   video: bear
   width: 640
@@ -2549,6 +2752,7 @@ experiments:
     embed_channels: 32
     strides: 5,4,2
     channels: 64,32,16
+# hash: ebc6b30fca94a5f7
 - component: baselines
   video: bear
   width: 640
@@ -2563,6 +2767,7 @@ experiments:
     embed_channels: 64
     strides: 5,4,2
     channels: 128,64,32
+# hash: e24d5154f0b3694c
 - component: baselines
   video: bear
   width: 640
@@ -2577,6 +2782,7 @@ experiments:
     embed_channels: 128
     strides: 5,4,2
     channels: 256,128,64
+# hash: 536aad7facf8abf4
 - component: baselines
   video: camel
   width: 640
@@ -2591,6 +2797,7 @@ experiments:
     embed_channels: 16
     strides: 5,4,2
     channels: 32,16,8
+# hash: 8dede781502e23ec
 - component: baselines
   video: camel
   width: 640
@@ -2605,6 +2812,7 @@ experiments:
     embed_channels: 32
     strides: 5,4,2
     channels: 64,32,16
+# hash: 7052e1eb374a92f5
 - component: baselines
   video: camel
   width: 640
@@ -2619,6 +2827,7 @@ experiments:
     embed_channels: 64
     strides: 5,4,2
     channels: 128,64,32
+# hash: 0783b1a173767f2c
 - component: baselines
   video: camel
   width: 640
@@ -2633,6 +2842,7 @@ experiments:
     embed_channels: 128
     strides: 5,4,2
     channels: 256,128,64
+# hash: 53479380d05e90d3
 - component: baselines
   video: dog
   width: 640
@@ -2647,6 +2857,7 @@ experiments:
     embed_channels: 16
     strides: 5,4,2
     channels: 32,16,8
+# hash: 3ff008189e7918a7
 - component: baselines
   video: dog
   width: 640
@@ -2661,6 +2872,7 @@ experiments:
     embed_channels: 32
     strides: 5,4,2
     channels: 64,32,16
+# hash: ab9793f907754181
 - component: baselines
   video: dog
   width: 640
@@ -2675,6 +2887,7 @@ experiments:
     embed_channels: 64
     strides: 5,4,2
     channels: 128,64,32
+# hash: e5af6298a9d6ed06
 - component: baselines
   video: dog
   width: 640
@@ -2689,6 +2902,7 @@ experiments:
     embed_channels: 128
     strides: 5,4,2
     channels: 256,128,64
+# hash: 8106fc00bc5ca913
 - component: baselines
   video: pigs
   width: 640
@@ -2703,6 +2917,7 @@ experiments:
     embed_channels: 16
     strides: 5,4,2
     channels: 32,16,8
+# hash: 87560831d894dbd7
 - component: baselines
   video: pigs
   width: 640
@@ -2717,6 +2932,7 @@ experiments:
     embed_channels: 32
     strides: 5,4,2
     channels: 64,32,16
+# hash: 07165c727a652b0e
 - component: baselines
   video: pigs
   width: 640
@@ -2731,6 +2947,7 @@ experiments:
     embed_channels: 64
     strides: 5,4,2
     channels: 128,64,32
+# hash: 65e4ed3d87f30a8e
 - component: baselines
   video: pigs
   width: 640
@@ -2745,6 +2962,7 @@ experiments:
     embed_channels: 128
     strides: 5,4,2
     channels: 256,128,64
+# hash: 98ccdf559a5470ea
 - component: baselines
   video: india
   width: 640
@@ -2759,6 +2977,7 @@ experiments:
     embed_channels: 16
     strides: 5,4,2
     channels: 32,16,8
+# hash: 4906caa23c7ebb60
 - component: baselines
   video: india
   width: 640
@@ -2773,6 +2992,7 @@ experiments:
     embed_channels: 32
     strides: 5,4,2
     channels: 64,32,16
+# hash: d8b8be1e5fddced0
 - component: baselines
   video: india
   width: 640
@@ -2787,6 +3007,7 @@ experiments:
     embed_channels: 64
     strides: 5,4,2
     channels: 128,64,32
+# hash: fe1826154a9558fa
 - component: baselines
   video: india
   width: 640
@@ -2801,6 +3022,7 @@ experiments:
     embed_channels: 128
     strides: 5,4,2
     channels: 256,128,64
+# hash: 0b98627b92dc0ebb
 - component: baselines
   video: tennis
   width: 640
@@ -2815,6 +3037,7 @@ experiments:
     embed_channels: 16
     strides: 5,4,2
     channels: 32,16,8
+# hash: c2f6eb2807029699
 - component: baselines
   video: tennis
   width: 640
@@ -2829,6 +3052,7 @@ experiments:
     embed_channels: 32
     strides: 5,4,2
     channels: 64,32,16
+# hash: 6c5f49999bd71471
 - component: baselines
   video: tennis
   width: 640
@@ -2843,6 +3067,7 @@ experiments:
     embed_channels: 64
     strides: 5,4,2
     channels: 128,64,32
+# hash: d50b707c372c0434
 - component: baselines
   video: tennis
   width: 640
@@ -2857,6 +3082,7 @@ experiments:
     embed_channels: 128
     strides: 5,4,2
     channels: 256,128,64
+# hash: 65e5efff4d2a8d4a
 - component: presley_ai
   video: bear
   width: 1280
@@ -2875,6 +3101,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 811bba17112327e1
 - component: presley_ai
   video: bear
   width: 1280
@@ -2893,6 +3120,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 8165b995faf2af85
 - component: presley_ai
   video: bear
   width: 1280
@@ -2911,6 +3139,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 19c4fd541b3f4ce9
 - component: presley_ai
   video: bear
   width: 1280
@@ -2929,6 +3158,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: dc0f734874282ab2
 - component: presley_ai
   video: bear
   width: 1280
@@ -2947,6 +3177,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: cbdb204b7798681e
 - component: presley_ai
   video: bear
   width: 1280
@@ -2965,6 +3196,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 231d1902d57f8122
 - component: presley_ai
   video: bear
   width: 1280
@@ -2983,6 +3215,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: ade8edf777896bff
 - component: presley_ai
   video: bear
   width: 1280
@@ -3001,6 +3234,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 35f49fd0070ec8c9
 - component: presley_ai
   video: bear
   width: 1280
@@ -3019,6 +3253,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 6b08e2e5058c2f31
 - component: presley_ai
   video: bear
   width: 1280
@@ -3037,6 +3272,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 7f3b30fc2a3105fd
 - component: presley_ai
   video: bear
   width: 1280
@@ -3055,6 +3291,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 517d0f0b8c9bb0b4
 - component: presley_ai
   video: bear
   width: 1280
@@ -3073,6 +3310,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 2eb45d90a6bf155d
 - component: presley_ai
   video: bear
   width: 1280
@@ -3091,6 +3329,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: fe2bb9a5bb5afa4b
 - component: presley_ai
   video: bear
   width: 1280
@@ -3109,6 +3348,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 2c2b7e1705e12111
 - component: presley_ai
   video: bear
   width: 1280
@@ -3127,6 +3367,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: a5e46436294cb738
 - component: presley_ai
   video: bear
   width: 1280
@@ -3145,6 +3386,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: c1a3099a62b8f2a9
 - component: presley_ai
   video: camel
   width: 1280
@@ -3163,6 +3405,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: bae2bd34fb533b03
 - component: presley_ai
   video: camel
   width: 1280
@@ -3181,6 +3424,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: ccf757de8de20b18
 - component: presley_ai
   video: camel
   width: 1280
@@ -3199,6 +3443,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 0dbf06df913a52c1
 - component: presley_ai
   video: camel
   width: 1280
@@ -3217,6 +3462,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 2b3b53810d711a0b
 - component: presley_ai
   video: camel
   width: 1280
@@ -3235,6 +3481,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: f96db06777b461bf
 - component: presley_ai
   video: camel
   width: 1280
@@ -3253,6 +3500,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 6afeefc17c9d99d7
 - component: presley_ai
   video: camel
   width: 1280
@@ -3271,6 +3519,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 3c7c2355ae6ec3f5
 - component: presley_ai
   video: camel
   width: 1280
@@ -3289,6 +3538,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 0c696d4d2ab9d69d
 - component: presley_ai
   video: camel
   width: 1280
@@ -3307,6 +3557,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: f4c5e713231c699d
 - component: presley_ai
   video: camel
   width: 1280
@@ -3325,6 +3576,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 6583ee1aca69776a
 - component: presley_ai
   video: camel
   width: 1280
@@ -3343,6 +3595,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: c27536c2c70179a5
 - component: presley_ai
   video: camel
   width: 1280
@@ -3361,6 +3614,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 0d0de65f0c636bb8
 - component: presley_ai
   video: camel
   width: 1280
@@ -3379,6 +3633,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: e81c8b37cffc0b8d
 - component: presley_ai
   video: camel
   width: 1280
@@ -3397,6 +3652,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: 95b667f05e872d17
 - component: presley_ai
   video: camel
   width: 1280
@@ -3415,6 +3671,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: db13dc919e6ae096
 - component: presley_ai
   video: camel
   width: 1280
@@ -3433,6 +3690,7 @@ experiments:
     qp: 32
     preset: medium
   restorer_params: {}
+# hash: f8facc4841ae925b
 - component: baselines
   video: bear
   width: 1280
@@ -3442,116 +3700,9 @@ experiments:
   codec_params:
     qp: 30
     preset: '8'
+# hash: df5dc243c11f56df
 - component: presley_ai
   video: bear
-  width: 1280
-  height: 720
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  degradation: freeze
-  restorer: propainter
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: svtav1
-  codec_params:
-    qp: 30
-    preset: '8'
-  restorer_params: {}
-- component: baselines
-  video: bear
-  width: 1280
-  height: 720
-  codec: svtav1
-  target_bitrate: 0
-  codec_params:
-    qp: 32
-    preset: '8'
-- component: presley_ai
-  video: bear
-  width: 1280
-  height: 720
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  degradation: freeze
-  restorer: propainter
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: svtav1
-  codec_params:
-    qp: 32
-    preset: '8'
-  restorer_params: {}
-- component: baselines
-  video: bear
-  width: 1280
-  height: 720
-  codec: svtav1
-  target_bitrate: 0
-  codec_params:
-    qp: 34
-    preset: '8'
-- component: presley_ai
-  video: bear
-  width: 1280
-  height: 720
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  degradation: freeze
-  restorer: propainter
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: svtav1
-  codec_params:
-    qp: 34
-    preset: '8'
-  restorer_params: {}
-- component: baselines
-  video: bear
-  width: 1280
-  height: 720
-  codec: svtav1
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: '8'
-- component: presley_ai
-  video: bear
-  width: 1280
-  height: 720
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  degradation: freeze
-  restorer: propainter
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: svtav1
-  codec_params:
-    qp: 37
-    preset: '8'
-  restorer_params: {}
-- component: baselines
-  video: camel
-  width: 1280
-  height: 720
-  codec: svtav1
-  target_bitrate: 0
-  codec_params:
-    qp: 30
-    preset: '8'
-- component: presley_ai
-  video: camel
   width: 1280
   height: 720
   block_size: 16
@@ -3568,6 +3719,123 @@ experiments:
     qp: 30
     preset: '8'
   restorer_params: {}
+# hash: a4806c1f7e76186f
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 32
+    preset: '8'
+# hash: 03ab5e467d9195de
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 32
+    preset: '8'
+  restorer_params: {}
+# hash: ae96078598c6b499
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 34
+    preset: '8'
+# hash: b45b97e4e1108ec4
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 34
+    preset: '8'
+  restorer_params: {}
+# hash: ee01b2a2246f6d04
+- component: baselines
+  video: bear
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 37
+    preset: '8'
+# hash: 1f31c5e95a5ca419
+- component: presley_ai
+  video: bear
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 37
+    preset: '8'
+  restorer_params: {}
+# hash: 99165a07e39b8b20
+- component: baselines
+  video: camel
+  width: 1280
+  height: 720
+  codec: svtav1
+  target_bitrate: 0
+  codec_params:
+    qp: 30
+    preset: '8'
+# hash: 3377ba4c8a7a38cf
+- component: presley_ai
+  video: camel
+  width: 1280
+  height: 720
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  degradation: freeze
+  restorer: propainter
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: svtav1
+  codec_params:
+    qp: 30
+    preset: '8'
+  restorer_params: {}
+# hash: a6dab81d40a6ba41
 - component: baselines
   video: camel
   width: 1280
@@ -3577,6 +3845,7 @@ experiments:
   codec_params:
     qp: 32
     preset: '8'
+# hash: c3b111c3b7bfdce5
 - component: presley_ai
   video: camel
   width: 1280
@@ -3595,6 +3864,7 @@ experiments:
     qp: 32
     preset: '8'
   restorer_params: {}
+# hash: 94ddc3b47a021fd3
 - component: baselines
   video: camel
   width: 1280
@@ -3604,6 +3874,7 @@ experiments:
   codec_params:
     qp: 34
     preset: '8'
+# hash: 7e9da4a568705203
 - component: presley_ai
   video: camel
   width: 1280
@@ -3622,6 +3893,7 @@ experiments:
     qp: 34
     preset: '8'
   restorer_params: {}
+# hash: 90bf32df367de3ed
 - component: baselines
   video: camel
   width: 1280
@@ -3631,6 +3903,7 @@ experiments:
   codec_params:
     qp: 37
     preset: '8'
+# hash: edc63af11e08f0de
 - component: presley_ai
   video: camel
   width: 1280
@@ -3649,6 +3922,7 @@ experiments:
     qp: 37
     preset: '8'
   restorer_params: {}
+# hash: a2d2a599806e629c
 - component: presley_ai
   video: bear
   width: 640
@@ -3666,6 +3940,7 @@ experiments:
   codec_params:
     preset: 8
   restorer_params: {}
+# hash: 2877f5d0f7c126c9
 - component: presley_ai
   video: bear
   width: 640
@@ -3683,6 +3958,7 @@ experiments:
   codec_params:
     preset: 8
   restorer_params: {}
+# hash: 9cda33c9b02a04c9
 - component: presley_ai
   video: bear
   width: 640
@@ -3700,6 +3976,7 @@ experiments:
   codec_params:
     preset: 8
   restorer_params: {}
+# hash: e88606070dfcbda8
 - component: presley_ai
   video: bear
   width: 640
@@ -3717,6 +3994,7 @@ experiments:
   codec_params:
     preset: 8
   restorer_params: {}
+# hash: a07560c409dc38ce
 - component: baselines
   video: bear
   width: 640
@@ -3726,6 +4004,7 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
+# hash: 21e85db5dd1062ea
 - component: baselines
   video: bear
   width: 640
@@ -3735,6 +4014,7 @@ experiments:
   codec_params:
     qp: 51
     preset: '8'
+# hash: 2214e6bfcaab7878
 - component: baselines
   video: bear
   width: 640
@@ -3744,6 +4024,7 @@ experiments:
   codec_params:
     qp: 58
     preset: '8'
+# hash: 5a2349460fcd4d65
 - component: baselines
   video: bear
   width: 640
@@ -3753,6 +4034,7 @@ experiments:
   codec_params:
     qp: 61
     preset: '8'
+# hash: 56583b02c2a0fc38
 - component: presley_ai
   video: bear
   width: 640
@@ -3771,6 +4053,7 @@ experiments:
     qp: 43
     preset: '8'
   restorer_params: {}
+# hash: 7258ff73c005b1d9
 - component: presley_ai
   video: bear
   width: 640
@@ -3789,6 +4072,7 @@ experiments:
     qp: 51
     preset: '8'
   restorer_params: {}
+# hash: ab0163f1b4af5581
 - component: presley_ai
   video: bear
   width: 640
@@ -3807,6 +4091,7 @@ experiments:
     qp: 58
     preset: '8'
   restorer_params: {}
+# hash: 8e5b84e1c9bfbd2b
 - component: presley_ai
   video: bear
   width: 640
@@ -3825,6 +4110,7 @@ experiments:
     qp: 61
     preset: '8'
   restorer_params: {}
+# hash: 3f87d371bac4baf1
 - component: elvis
   video: bear
   width: 640
@@ -3843,6 +4129,7 @@ experiments:
     qp: 43
     preset: '8'
   inpainter_params: {}
+# hash: a8118ad2e574b6cf
 - component: elvis
   video: bear
   width: 640
@@ -3861,6 +4148,7 @@ experiments:
     qp: 51
     preset: '8'
   inpainter_params: {}
+# hash: 0628265682f75015
 - component: elvis
   video: bear
   width: 640
@@ -3879,6 +4167,7 @@ experiments:
     qp: 58
     preset: '8'
   inpainter_params: {}
+# hash: 3210cd189d8c33d2
 - component: elvis
   video: bear
   width: 640
@@ -3897,6 +4186,7 @@ experiments:
     qp: 61
     preset: '8'
   inpainter_params: {}
+# hash: 64e6010ca8a3ddf5
 - component: baselines
   video: camel
   width: 640
@@ -3906,6 +4196,7 @@ experiments:
   codec_params:
     qp: 42
     preset: '8'
+# hash: 83cb00c94850f2e1
 - component: baselines
   video: camel
   width: 640
@@ -3915,6 +4206,7 @@ experiments:
   codec_params:
     qp: 50
     preset: '8'
+# hash: a2cd5ebc19a3b5db
 - component: baselines
   video: camel
   width: 640
@@ -3924,6 +4216,7 @@ experiments:
   codec_params:
     qp: 58
     preset: '8'
+# hash: 8c14ed8bdd4ef980
 - component: baselines
   video: camel
   width: 640
@@ -3933,6 +4226,7 @@ experiments:
   codec_params:
     qp: 62
     preset: '8'
+# hash: 9b075ecc5e33c5d1
 - component: presley_ai
   video: camel
   width: 640
@@ -3951,6 +4245,7 @@ experiments:
     qp: 42
     preset: '8'
   restorer_params: {}
+# hash: 8c1c34cd7c580a5d
 - component: presley_ai
   video: camel
   width: 640
@@ -3969,6 +4264,7 @@ experiments:
     qp: 50
     preset: '8'
   restorer_params: {}
+# hash: 7c7ad1400b5d096e
 - component: presley_ai
   video: camel
   width: 640
@@ -3987,6 +4283,7 @@ experiments:
     qp: 58
     preset: '8'
   restorer_params: {}
+# hash: 225d602cfe6a86e8
 - component: presley_ai
   video: camel
   width: 640
@@ -4005,6 +4302,7 @@ experiments:
     qp: 62
     preset: '8'
   restorer_params: {}
+# hash: 19bdc735a05a8f77
 - component: elvis
   video: camel
   width: 640
@@ -4023,6 +4321,7 @@ experiments:
     qp: 42
     preset: '8'
   inpainter_params: {}
+# hash: 4bae86646d765a68
 - component: elvis
   video: camel
   width: 640
@@ -4041,6 +4340,7 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
+# hash: 9024d959381a94e8
 - component: elvis
   video: camel
   width: 640
@@ -4059,6 +4359,7 @@ experiments:
     qp: 58
     preset: '8'
   inpainter_params: {}
+# hash: 0b87101ae94aeceb
 - component: elvis
   video: camel
   width: 640
@@ -4077,6 +4378,7 @@ experiments:
     qp: 62
     preset: '8'
   inpainter_params: {}
+# hash: cdbfcfb578957d21
 - component: presley_ai
   video: bear
   width: 640
@@ -4096,6 +4398,7 @@ experiments:
     None/False, never matches the 0.25/true arms). Corrected form would still control
     nothing -- this operating point has no restored downsample or blur arm. Diagnosed
     Wave 2B 2026-08-03.'
+# hash: d40d44974a4b7b94
 - component: presley_ai
   video: bear
   width: 640
@@ -4115,6 +4418,7 @@ experiments:
     None/False, never matches the 0.25/true arms). Corrected form would still control
     nothing -- this operating point has no restored downsample or blur arm. Diagnosed
     Wave 2B 2026-08-03.'
+# hash: 095a17e8cd48e2ab
 - component: elvis
   video: bear
   width: 640
@@ -4132,6 +4436,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: e34087a12ede460e
 - component: presley_ai
   video: bear
   width: 640
@@ -4151,6 +4456,7 @@ experiments:
     so they default to None/False and the entry never matches the arms it was meant
     to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
     an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+# hash: dd3a5ef02488e100
 - component: presley_ai
   video: bear
   width: 640
@@ -4170,6 +4476,7 @@ experiments:
     so they default to None/False and the entry never matches the arms it was meant
     to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
     an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+# hash: fd8127a1035bedca
 - component: elvis
   video: bear
   width: 640
@@ -4187,6 +4494,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 837457ea246192bc
 - component: presley_ai
   video: bear
   width: 640
@@ -4206,6 +4514,7 @@ experiments:
     None/False, never matches the 0.25/true arms). Corrected form would still control
     nothing -- this operating point has no restored downsample or blur arm. Diagnosed
     Wave 2B 2026-08-03.'
+# hash: 2488f7ccb50ec232
 - component: presley_ai
   video: bear
   width: 640
@@ -4225,6 +4534,7 @@ experiments:
     None/False, never matches the 0.25/true arms). Corrected form would still control
     nothing -- this operating point has no restored downsample or blur arm. Diagnosed
     Wave 2B 2026-08-03.'
+# hash: 920f8e3eb89f2793
 - component: elvis
   video: bear
   width: 640
@@ -4242,6 +4552,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 3ada28e4d229b432
 - component: presley_ai
   video: bear
   width: 640
@@ -4261,6 +4572,7 @@ experiments:
     so they default to None/False and the entry never matches the arms it was meant
     to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
     an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+# hash: 0500c272699b1327
 - component: presley_ai
   video: bear
   width: 640
@@ -4280,6 +4592,7 @@ experiments:
     so they default to None/False and the entry never matches the arms it was meant
     to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
     an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+# hash: c484f473a63e2500
 - component: elvis
   video: bear
   width: 640
@@ -4297,6 +4610,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 808cbcce9e163bd1
 - component: presley_ai
   video: camel
   width: 640
@@ -4316,6 +4630,7 @@ experiments:
     None/False, never matches the 0.25/true arms). Corrected form would still control
     nothing -- this operating point has no restored downsample or blur arm. Diagnosed
     Wave 2B 2026-08-03.'
+# hash: 78129f8dfae24287
 - component: presley_ai
   video: camel
   width: 640
@@ -4335,6 +4650,7 @@ experiments:
     None/False, never matches the 0.25/true arms). Corrected form would still control
     nothing -- this operating point has no restored downsample or blur arm. Diagnosed
     Wave 2B 2026-08-03.'
+# hash: 4d04b6bdc0ed9908
 - component: elvis
   video: camel
   width: 640
@@ -4352,6 +4668,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 30
+# hash: 833ebffb54816f20
 - component: presley_ai
   video: camel
   width: 640
@@ -4371,6 +4688,7 @@ experiments:
     so they default to None/False and the entry never matches the arms it was meant
     to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
     an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+# hash: 781dcddf6b8d5743
 - component: presley_ai
   video: camel
   width: 640
@@ -4390,6 +4708,7 @@ experiments:
     so they default to None/False and the entry never matches the arms it was meant
     to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
     an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+# hash: aacddd08584f96dc
 - component: elvis
   video: camel
   width: 640
@@ -4407,6 +4726,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: ef72cf08940bda1c
 - component: presley_ai
   video: camel
   width: 640
@@ -4426,6 +4746,7 @@ experiments:
     None/False, never matches the 0.25/true arms). Corrected form would still control
     nothing -- this operating point has no restored downsample or blur arm. Diagnosed
     Wave 2B 2026-08-03.'
+# hash: 91e30d8869627d7d
 - component: presley_ai
   video: camel
   width: 640
@@ -4445,6 +4766,7 @@ experiments:
     None/False, never matches the 0.25/true arms). Corrected form would still control
     nothing -- this operating point has no restored downsample or blur arm. Diagnosed
     Wave 2B 2026-08-03.'
+# hash: 6d81ba1dc73f6fbe
 - component: elvis
   video: camel
   width: 640
@@ -4462,6 +4784,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 7bad3db7ef61d53b
 - component: presley_ai
   video: camel
   width: 640
@@ -4481,6 +4804,7 @@ experiments:
     so they default to None/False and the entry never matches the arms it was meant
     to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
     an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+# hash: fef7493ff50ffd83
 - component: presley_ai
   video: camel
   width: 640
@@ -4500,6 +4824,7 @@ experiments:
     so they default to None/False and the entry never matches the arms it was meant
     to control (those use shrink_amount 0.25, fg_protect true). Corrected form duplicates
     an existing run at this operating point. Diagnosed Wave 2B 2026-08-03.'
+# hash: d1b42776c064391b
 - component: elvis
   video: camel
   width: 640
@@ -4517,6 +4842,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 5f0c9dae74977e05
 - component: presley_ai
   _retired: 'noise injection retired: costs 76.5-83.0% more bits than the pristine
     baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))'
@@ -4534,6 +4860,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 4855a706d4961adf
 - component: presley_ai
   _retired: 'noise injection retired: costs 76.5-83.0% more bits than the pristine
     baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))'
@@ -4551,6 +4878,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 9cef0d4ad4fc74ad
 - component: presley_ai
   _retired: 'noise injection retired: costs 76.5-83.0% more bits than the pristine
     baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))'
@@ -4568,6 +4896,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 45114e6ca4f604ed
 - component: presley_ai
   _retired: 'noise injection retired: costs 76.5-83.0% more bits than the pristine
     baseline at indistinguishable FG-PSNR (CLAIM(sec:noise-retire))'
@@ -4585,6 +4914,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: d41f37f3540c7a0e
 - component: presley_ai
   video: bear
   width: 640
@@ -4603,6 +4933,7 @@ experiments:
     qp: 51
     preset: '8'
   restorer_params: {}
+# hash: adb148e7670d631b
 - component: elvis
   video: bear
   width: 640
@@ -4621,6 +4952,7 @@ experiments:
     qp: 51
     preset: '8'
   inpainter_params: {}
+# hash: d4b3a1ffd559ced4
 - component: presley_ai
   video: bear
   width: 640
@@ -4639,6 +4971,7 @@ experiments:
     qp: 51
     preset: '8'
   restorer_params: {}
+# hash: 86ac74d27e14ecdc
 - component: elvis
   video: bear
   width: 640
@@ -4657,6 +4990,7 @@ experiments:
     qp: 51
     preset: '8'
   inpainter_params: {}
+# hash: fa78669420cd0821
 - component: presley_ai
   video: bear
   width: 640
@@ -4675,6 +5009,7 @@ experiments:
     qp: 51
     preset: '8'
   restorer_params: {}
+# hash: 2ee082ca28139295
 - component: elvis
   video: bear
   width: 640
@@ -4693,6 +5028,7 @@ experiments:
     qp: 51
     preset: '8'
   inpainter_params: {}
+# hash: 8a46d90ee67f8b73
 - component: presley_ai
   video: camel
   width: 640
@@ -4711,6 +5047,7 @@ experiments:
     qp: 50
     preset: '8'
   restorer_params: {}
+# hash: 58fabb172e182b3f
 - component: elvis
   video: camel
   width: 640
@@ -4729,6 +5066,7 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
+# hash: fba2df54b8fd9ebe
 - component: presley_ai
   video: camel
   width: 640
@@ -4747,6 +5085,7 @@ experiments:
     qp: 50
     preset: '8'
   restorer_params: {}
+# hash: 862cf617434ab8b0
 - component: elvis
   video: camel
   width: 640
@@ -4765,6 +5104,7 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
+# hash: ed0dc46b9e95ddcd
 - component: presley_ai
   video: camel
   width: 640
@@ -4783,6 +5123,7 @@ experiments:
     qp: 50
     preset: '8'
   restorer_params: {}
+# hash: 634f6ab875541291
 - component: elvis
   video: camel
   width: 640
@@ -4801,6 +5142,7 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
+# hash: 3775a385f61cf705
 - component: baselines
   video: bike-packing
   width: 640
@@ -4810,32 +5152,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
-- component: elvis
-  video: bike-packing
-  width: 640
-  height: 360
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  removal_mode: blackout
-  inpainter: none
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    qp: 32
-    preset: medium
-- component: baselines
-  video: bike-packing
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: medium
+# hash: 0d7e9f12e3d233e7
 - component: elvis
   video: bike-packing
   width: 640
@@ -4851,8 +5168,37 @@ experiments:
   target_bitrate: 0
   codec: x265
   codec_params:
+    qp: 32
+    preset: medium
+# hash: 8c19ad793182a51f
+- component: baselines
+  video: bike-packing
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
     qp: 37
     preset: medium
+# hash: 7252433604318b85
+- component: elvis
+  video: bike-packing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 37
+    preset: medium
+# hash: d4505fb4abd0b836
 - component: baselines
   video: bmx-bumps
   width: 640
@@ -4862,6 +5208,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: fa49788027b54683
 - component: elvis
   video: bmx-bumps
   width: 640
@@ -4879,6 +5226,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: c38c1b98d62d140a
 - component: baselines
   video: bmx-bumps
   width: 640
@@ -4888,6 +5236,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 450d361669b84ecd
 - component: elvis
   video: bmx-bumps
   width: 640
@@ -4905,6 +5254,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: dd5c5620540b10c7
 - component: baselines
   video: breakdance
   width: 640
@@ -4914,32 +5264,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
-- component: elvis
-  video: breakdance
-  width: 640
-  height: 360
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  removal_mode: blackout
-  inpainter: none
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    qp: 32
-    preset: medium
-- component: baselines
-  video: breakdance
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: medium
+# hash: dcdad58aa0aa496b
 - component: elvis
   video: breakdance
   width: 640
@@ -4955,8 +5280,37 @@ experiments:
   target_bitrate: 0
   codec: x265
   codec_params:
+    qp: 32
+    preset: medium
+# hash: 56bc58fe28155ba1
+- component: baselines
+  video: breakdance
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
     qp: 37
     preset: medium
+# hash: 3fedae6eeddcbe11
+- component: elvis
+  video: breakdance
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 37
+    preset: medium
+# hash: f437caf25af4a635
 - component: baselines
   video: color-run
   width: 640
@@ -4966,6 +5320,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 9ac27d78f1bf1612
 - component: elvis
   video: color-run
   width: 640
@@ -4983,6 +5338,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 1a233403fca1e5c9
 - component: baselines
   video: color-run
   width: 640
@@ -4992,6 +5348,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: db31635a02c7c8de
 - component: elvis
   video: color-run
   width: 640
@@ -5009,6 +5366,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 7118ea7ca0ac16ca
 - component: baselines
   video: dancing
   width: 640
@@ -5018,32 +5376,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
-- component: elvis
-  video: dancing
-  width: 640
-  height: 360
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  removal_mode: blackout
-  inpainter: none
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    qp: 32
-    preset: medium
-- component: baselines
-  video: dancing
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: medium
+# hash: ea3154e836c483e2
 - component: elvis
   video: dancing
   width: 640
@@ -5059,8 +5392,37 @@ experiments:
   target_bitrate: 0
   codec: x265
   codec_params:
+    qp: 32
+    preset: medium
+# hash: 871ffef320792af3
+- component: baselines
+  video: dancing
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
     qp: 37
     preset: medium
+# hash: ddf5787ac72c2283
+- component: elvis
+  video: dancing
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 37
+    preset: medium
+# hash: 9faad95b0dd1197b
 - component: baselines
   video: dogs-jump
   width: 640
@@ -5070,6 +5432,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: f783aa5b3bf365c3
 - component: elvis
   video: dogs-jump
   width: 640
@@ -5087,6 +5450,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 2993d961002cce79
 - component: baselines
   video: dogs-jump
   width: 640
@@ -5096,6 +5460,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 239ce835a413a960
 - component: elvis
   video: dogs-jump
   width: 640
@@ -5113,6 +5478,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 65395888e7f65e2d
 - component: baselines
   video: dogs-scale
   width: 640
@@ -5122,32 +5488,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
-- component: elvis
-  video: dogs-scale
-  width: 640
-  height: 360
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  removal_mode: blackout
-  inpainter: none
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    qp: 32
-    preset: medium
-- component: baselines
-  video: dogs-scale
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: medium
+# hash: 38ed33ba40adb587
 - component: elvis
   video: dogs-scale
   width: 640
@@ -5163,8 +5504,37 @@ experiments:
   target_bitrate: 0
   codec: x265
   codec_params:
+    qp: 32
+    preset: medium
+# hash: 191c7f688887f28d
+- component: baselines
+  video: dogs-scale
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
     qp: 37
     preset: medium
+# hash: 3460e959a83f5619
+- component: elvis
+  video: dogs-scale
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 37
+    preset: medium
+# hash: e5563b9f95ae1fb4
 - component: baselines
   video: drift-straight
   width: 640
@@ -5174,6 +5544,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: f4ddd04fb0db0171
 - component: elvis
   video: drift-straight
   width: 640
@@ -5191,6 +5562,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: fed423fe3bd5f3c9
 - component: baselines
   video: drift-straight
   width: 640
@@ -5200,6 +5572,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: b20ee2b30f405ef0
 - component: elvis
   video: drift-straight
   width: 640
@@ -5217,6 +5590,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 35550b0982ba2271
 - component: baselines
   video: drift-turn
   width: 640
@@ -5226,32 +5600,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
-- component: elvis
-  video: drift-turn
-  width: 640
-  height: 360
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  removal_mode: blackout
-  inpainter: none
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    qp: 32
-    preset: medium
-- component: baselines
-  video: drift-turn
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: medium
+# hash: 7179391c96d97e21
 - component: elvis
   video: drift-turn
   width: 640
@@ -5267,8 +5616,37 @@ experiments:
   target_bitrate: 0
   codec: x265
   codec_params:
+    qp: 32
+    preset: medium
+# hash: 3ba915e4d6bd9e90
+- component: baselines
+  video: drift-turn
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
     qp: 37
     preset: medium
+# hash: c5b28bcf6165db9a
+- component: elvis
+  video: drift-turn
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 37
+    preset: medium
+# hash: 7158d3081a1cc0ab
 - component: baselines
   video: elephant
   width: 640
@@ -5278,6 +5656,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 41c7874ed0f6def3
 - component: elvis
   video: elephant
   width: 640
@@ -5295,6 +5674,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 1c1eda17dbb5a471
 - component: baselines
   video: elephant
   width: 640
@@ -5304,6 +5684,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: d6a70f30170336ea
 - component: elvis
   video: elephant
   width: 640
@@ -5321,6 +5702,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 7e32559ca758d543
 - component: baselines
   video: libby
   width: 640
@@ -5330,32 +5712,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
-- component: elvis
-  video: libby
-  width: 640
-  height: 360
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  removal_mode: blackout
-  inpainter: none
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    qp: 32
-    preset: medium
-- component: baselines
-  video: libby
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: medium
+# hash: 24577df8c03196c5
 - component: elvis
   video: libby
   width: 640
@@ -5371,8 +5728,37 @@ experiments:
   target_bitrate: 0
   codec: x265
   codec_params:
+    qp: 32
+    preset: medium
+# hash: ccd8afcd279d9d81
+- component: baselines
+  video: libby
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
     qp: 37
     preset: medium
+# hash: 8b7447e894cf7452
+- component: elvis
+  video: libby
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 37
+    preset: medium
+# hash: abb89c45c36c18cf
 - component: baselines
   video: lindy-hop
   width: 640
@@ -5382,6 +5768,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 890db0bfb0900057
 - component: elvis
   video: lindy-hop
   width: 640
@@ -5399,6 +5786,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: df97b4f757651a83
 - component: baselines
   video: lindy-hop
   width: 640
@@ -5408,6 +5796,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 4507b5bf6aca2867
 - component: elvis
   video: lindy-hop
   width: 640
@@ -5425,6 +5814,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: e218d62cce11858f
 - component: baselines
   video: mallard-fly
   width: 640
@@ -5434,32 +5824,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
-- component: elvis
-  video: mallard-fly
-  width: 640
-  height: 360
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  removal_mode: blackout
-  inpainter: none
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    qp: 32
-    preset: medium
-- component: baselines
-  video: mallard-fly
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: medium
+# hash: 430f95ca3dc0b783
 - component: elvis
   video: mallard-fly
   width: 640
@@ -5475,8 +5840,37 @@ experiments:
   target_bitrate: 0
   codec: x265
   codec_params:
+    qp: 32
+    preset: medium
+# hash: 11aa94a03e1a657f
+- component: baselines
+  video: mallard-fly
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
     qp: 37
     preset: medium
+# hash: 60e95fc47c123be6
+- component: elvis
+  video: mallard-fly
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 37
+    preset: medium
+# hash: c0b198d71e005c23
 - component: baselines
   video: motorbike
   width: 640
@@ -5486,6 +5880,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: f81dc7dfa915a0ef
 - component: elvis
   video: motorbike
   width: 640
@@ -5503,6 +5898,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 49ad677647de7883
 - component: baselines
   video: motorbike
   width: 640
@@ -5512,6 +5908,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 6e42b589ebd2b3c2
 - component: elvis
   video: motorbike
   width: 640
@@ -5529,6 +5926,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 2288391206b4f005
 - component: baselines
   video: planes-water
   width: 640
@@ -5538,32 +5936,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
-- component: elvis
-  video: planes-water
-  width: 640
-  height: 360
-  block_size: 16
-  alpha: 0.5
-  beta: 0.5
-  removal_mode: blackout
-  inpainter: none
-  shrink_amount: 0.25
-  fg_protect: true
-  composite_output: true
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    qp: 32
-    preset: medium
-- component: baselines
-  video: planes-water
-  width: 640
-  height: 360
-  codec: x265
-  target_bitrate: 0
-  codec_params:
-    qp: 37
-    preset: medium
+# hash: 847eee67a6bf72c7
 - component: elvis
   video: planes-water
   width: 640
@@ -5579,8 +5952,37 @@ experiments:
   target_bitrate: 0
   codec: x265
   codec_params:
+    qp: 32
+    preset: medium
+# hash: c75d2f0088a87d06
+- component: baselines
+  video: planes-water
+  width: 640
+  height: 360
+  codec: x265
+  target_bitrate: 0
+  codec_params:
     qp: 37
     preset: medium
+# hash: bbd09a6700e104d1
+- component: elvis
+  video: planes-water
+  width: 640
+  height: 360
+  block_size: 16
+  alpha: 0.5
+  beta: 0.5
+  removal_mode: blackout
+  inpainter: none
+  shrink_amount: 0.25
+  fg_protect: true
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    qp: 37
+    preset: medium
+# hash: 8571cbb58b2f2ba9
 - component: baselines
   video: scooter-black
   width: 640
@@ -5590,6 +5992,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 14a5b545cf2e86a2
 - component: elvis
   video: scooter-black
   width: 640
@@ -5607,6 +6010,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 4f3dc585e90e66f3
 - component: baselines
   video: scooter-black
   width: 640
@@ -5616,6 +6020,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 41310cf03aea1c7f
 - component: elvis
   video: scooter-black
   width: 640
@@ -5633,6 +6038,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 4452bb5e949e8422
 - component: baselines
   video: scooter-board
   width: 640
@@ -5642,6 +6048,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 612cc0b7d6f317c2
 - component: elvis
   video: scooter-board
   width: 640
@@ -5659,6 +6066,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 25a9d364252ce6ed
 - component: baselines
   video: scooter-board
   width: 640
@@ -5668,6 +6076,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 5f34aabccdd83f0b
 - component: elvis
   video: scooter-board
   width: 640
@@ -5685,6 +6094,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: a3b1d6ae4c912c3b
 - component: baselines
   video: train
   width: 640
@@ -5694,6 +6104,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: a173fc4ebc593d68
 - component: elvis
   video: train
   width: 640
@@ -5711,6 +6122,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 088b810d9512e991
 - component: baselines
   video: train
   width: 640
@@ -5720,6 +6132,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 561459f7a269a75c
 - component: elvis
   video: train
   width: 640
@@ -5737,6 +6150,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: c2c2504f535dbdb9
 - component: elvis
   video: bike-packing
   width: 640
@@ -5754,6 +6168,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 8e373d5da9fc28bc
 - component: elvis
   video: bike-packing
   width: 640
@@ -5771,6 +6186,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: c5975033e0ecd0cb
 - component: elvis
   video: bmx-bumps
   width: 640
@@ -5788,6 +6204,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 78c83d1043047b71
 - component: elvis
   video: bmx-bumps
   width: 640
@@ -5805,6 +6222,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 9fddc0665f133c18
 - component: elvis
   video: breakdance
   width: 640
@@ -5822,6 +6240,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 16eb88db0158287d
 - component: elvis
   video: breakdance
   width: 640
@@ -5839,6 +6258,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 8ca7bb7329949316
 - component: elvis
   video: color-run
   width: 640
@@ -5856,6 +6276,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: a4bece7898980ebb
 - component: elvis
   video: color-run
   width: 640
@@ -5873,6 +6294,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: af1aebb8c2d26475
 - component: elvis
   video: dancing
   width: 640
@@ -5890,6 +6312,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 8a689dbd70821bc8
 - component: elvis
   video: dancing
   width: 640
@@ -5907,6 +6330,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 635f03523901b386
 - component: elvis
   video: dogs-jump
   width: 640
@@ -5924,6 +6348,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: f3a77450f4f83471
 - component: elvis
   video: dogs-jump
   width: 640
@@ -5941,6 +6366,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 6a44b0e607d1f98f
 - component: elvis
   video: dogs-scale
   width: 640
@@ -5958,6 +6384,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 64c9f3d673c22268
 - component: elvis
   video: dogs-scale
   width: 640
@@ -5975,6 +6402,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: b80b51a255bc3f9a
 - component: elvis
   video: drift-straight
   width: 640
@@ -5992,6 +6420,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: f049efcf4678c689
 - component: elvis
   video: drift-straight
   width: 640
@@ -6009,6 +6438,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: e51675858df017d4
 - component: elvis
   video: drift-turn
   width: 640
@@ -6026,6 +6456,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: ae454f31a795d8ba
 - component: elvis
   video: drift-turn
   width: 640
@@ -6043,6 +6474,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 7e72e8ae2801cc0e
 - component: elvis
   video: elephant
   width: 640
@@ -6060,6 +6492,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: c73ac160e9f84b00
 - component: elvis
   video: elephant
   width: 640
@@ -6077,6 +6510,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 37823956ea077e2e
 - component: elvis
   video: libby
   width: 640
@@ -6094,6 +6528,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: ad12eb78fcaba959
 - component: elvis
   video: libby
   width: 640
@@ -6111,6 +6546,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 6231ef1ff70d62d7
 - component: elvis
   video: lindy-hop
   width: 640
@@ -6128,6 +6564,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 9bd13acd64375c1e
 - component: elvis
   video: lindy-hop
   width: 640
@@ -6145,6 +6582,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: ce68c2c78f37b374
 - component: elvis
   video: mallard-fly
   width: 640
@@ -6162,6 +6600,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: fef1f349325b79cc
 - component: elvis
   video: mallard-fly
   width: 640
@@ -6179,6 +6618,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 37c2e39a53d3541f
 - component: elvis
   video: motorbike
   width: 640
@@ -6196,6 +6636,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: db7214e4ee4b6767
 - component: elvis
   video: motorbike
   width: 640
@@ -6213,6 +6654,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 95210b27eab9544e
 - component: elvis
   video: planes-water
   width: 640
@@ -6230,6 +6672,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 52dd391ffa1340f7
 - component: elvis
   video: planes-water
   width: 640
@@ -6247,6 +6690,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 170d29b5cb690e53
 - component: elvis
   video: scooter-black
   width: 640
@@ -6264,6 +6708,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 14cbba36f112c4ef
 - component: elvis
   video: scooter-black
   width: 640
@@ -6281,6 +6726,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: d225e978d2d92453
 - component: elvis
   video: scooter-board
   width: 640
@@ -6298,6 +6744,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 871a3ca40185f4d9
 - component: elvis
   video: scooter-board
   width: 640
@@ -6315,6 +6762,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: 0d5edbeee062da8e
 - component: elvis
   video: train
   width: 640
@@ -6332,6 +6780,7 @@ experiments:
   codec_params:
     qp: 32
     preset: medium
+# hash: 927ddc22c81c87ed
 - component: elvis
   video: train
   width: 640
@@ -6349,6 +6798,7 @@ experiments:
   codec_params:
     qp: 37
     preset: medium
+# hash: e8738fe49401189b
 - component: presley_ai
   video: bear
   width: 640
@@ -6367,6 +6817,7 @@ experiments:
     qp: 51
     preset: '8'
   restorer_params: {}
+# hash: 817445a274fb622f
 - component: elvis
   video: bear
   width: 640
@@ -6385,6 +6836,7 @@ experiments:
     qp: 51
     preset: '8'
   inpainter_params: {}
+# hash: c7675a8fcf52689a
 - component: presley_ai
   video: bear
   width: 640
@@ -6403,6 +6855,7 @@ experiments:
     qp: 51
     preset: '8'
   restorer_params: {}
+# hash: cc0a8075231ea976
 - component: elvis
   video: bear
   width: 640
@@ -6421,6 +6874,7 @@ experiments:
     qp: 51
     preset: '8'
   inpainter_params: {}
+# hash: c24789ac0f5a22dd
 - component: presley_ai
   video: bear
   width: 640
@@ -6439,6 +6893,7 @@ experiments:
     qp: 51
     preset: '8'
   restorer_params: {}
+# hash: 8599ec25a9472204
 - component: elvis
   video: bear
   width: 640
@@ -6457,6 +6912,7 @@ experiments:
     qp: 51
     preset: '8'
   inpainter_params: {}
+# hash: a0ee8b50c40d23de
 - component: presley_ai
   video: bear
   width: 640
@@ -6475,6 +6931,7 @@ experiments:
     qp: 51
     preset: '8'
   restorer_params: {}
+# hash: 86782aa89a0bd2e9
 - component: elvis
   video: bear
   width: 640
@@ -6493,6 +6950,7 @@ experiments:
     qp: 51
     preset: '8'
   inpainter_params: {}
+# hash: c4d188a8d3ddf6de
 - component: presley_ai
   video: camel
   width: 640
@@ -6511,6 +6969,7 @@ experiments:
     qp: 50
     preset: '8'
   restorer_params: {}
+# hash: ed2f9bbb694ebdeb
 - component: elvis
   video: camel
   width: 640
@@ -6529,6 +6988,7 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
+# hash: 877b7854c4b4999a
 - component: presley_ai
   video: camel
   width: 640
@@ -6547,6 +7007,7 @@ experiments:
     qp: 50
     preset: '8'
   restorer_params: {}
+# hash: 5d5198c0ef7675f0
 - component: elvis
   video: camel
   width: 640
@@ -6565,6 +7026,7 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
+# hash: 605b4c8d27bd5b44
 - component: presley_ai
   video: camel
   width: 640
@@ -6583,6 +7045,7 @@ experiments:
     qp: 50
     preset: '8'
   restorer_params: {}
+# hash: f6e4e92028bf4248
 - component: elvis
   video: camel
   width: 640
@@ -6601,6 +7064,7 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
+# hash: f7f86d9a21c59d15
 - component: presley_ai
   video: camel
   width: 640
@@ -6619,6 +7083,7 @@ experiments:
     qp: 50
     preset: '8'
   restorer_params: {}
+# hash: 993bce3f57adde64
 - component: elvis
   video: camel
   width: 640
@@ -6637,6 +7102,7 @@ experiments:
     qp: 50
     preset: '8'
   inpainter_params: {}
+# hash: c0cc5f978dc4c99f
 - component: elvis
   video: bear
   width: 640
@@ -6655,6 +7121,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: bb665875e6e1552c
 - component: elvis
   video: bear
   width: 640
@@ -6673,6 +7140,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 770b7a9583fe2e8c
 - component: elvis
   video: bmx-trees
   width: 640
@@ -6691,6 +7159,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 03f9308cf6a2c628
 - component: elvis
   video: bmx-trees
   width: 640
@@ -6709,6 +7178,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 8911d2e29a111443
 - component: elvis
   video: camel
   width: 640
@@ -6727,6 +7197,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 11756585ed472839
 - component: elvis
   video: camel
   width: 640
@@ -6745,6 +7216,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 761d9f8c653e4128
 - component: elvis
   video: dog
   width: 640
@@ -6763,6 +7235,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 859af0848b792c98
 - component: elvis
   video: dog
   width: 640
@@ -6781,6 +7254,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: ce66267abb4eb85e
 - component: elvis
   video: india
   width: 640
@@ -6799,6 +7273,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: c00f85574d84b59e
 - component: elvis
   video: india
   width: 640
@@ -6817,6 +7292,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 6bfb1ddfc4db5de0
 - component: elvis
   video: pigs
   width: 640
@@ -6835,6 +7311,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: faf4decac7e0927f
 - component: elvis
   video: pigs
   width: 640
@@ -6853,6 +7330,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: ca7bedc981cf79ce
 - component: elvis
   video: tennis
   width: 640
@@ -6871,6 +7349,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: e82612a5be69eeed
 - component: elvis
   video: tennis
   width: 640
@@ -6889,6 +7368,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: f09e57cbb724b9a4
 - component: baselines
   video: mosev2/fii86rku
   width: 640
@@ -6898,6 +7378,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 66186d5a141b3d38
 - component: baselines
   video: mosev2/fii86rku
   width: 640
@@ -6907,23 +7388,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-- component: elvis
-  video: mosev2/fii86rku
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 32
+# hash: 1e0586074c131092
 - component: elvis
   video: mosev2/fii86rku
   width: 640
@@ -6940,7 +7405,26 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+    qp: 32
+# hash: b2d4411804b29e69
+- component: elvis
+  video: mosev2/fii86rku
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
     qp: 37
+# hash: b1043a24872ad55e
 - component: baselines
   video: mosev2/zofozj6l
   width: 640
@@ -6950,6 +7434,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 3db278cd2e2cb968
 - component: baselines
   video: mosev2/zofozj6l
   width: 640
@@ -6959,23 +7444,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-- component: elvis
-  video: mosev2/zofozj6l
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 32
+# hash: db879441d459a49a
 - component: elvis
   video: mosev2/zofozj6l
   width: 640
@@ -6992,7 +7461,26 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+    qp: 32
+# hash: aec2615cd0a23f5a
+- component: elvis
+  video: mosev2/zofozj6l
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
     qp: 37
+# hash: 5143ad561b6f4e79
 - component: baselines
   video: mosev2/jxmcdk8k
   width: 640
@@ -7002,6 +7490,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: a1591c7128a8e66b
 - component: baselines
   video: mosev2/jxmcdk8k
   width: 640
@@ -7011,23 +7500,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-- component: elvis
-  video: mosev2/jxmcdk8k
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 32
+# hash: 7bb8065ef6cf0c45
 - component: elvis
   video: mosev2/jxmcdk8k
   width: 640
@@ -7044,7 +7517,26 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+    qp: 32
+# hash: 1493bde2cb66b192
+- component: elvis
+  video: mosev2/jxmcdk8k
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
     qp: 37
+# hash: ddcd50f71b0acbfb
 - component: baselines
   video: mosev2/8i1uo3x9
   width: 640
@@ -7054,6 +7546,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: a3ace7091b8c4da6
 - component: baselines
   video: mosev2/8i1uo3x9
   width: 640
@@ -7063,23 +7556,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-- component: elvis
-  video: mosev2/8i1uo3x9
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 32
+# hash: 7fade51db09aa8c4
 - component: elvis
   video: mosev2/8i1uo3x9
   width: 640
@@ -7096,7 +7573,26 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+    qp: 32
+# hash: 76366d6b3787af32
+- component: elvis
+  video: mosev2/8i1uo3x9
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
     qp: 37
+# hash: c727dc319da6f917
 - component: baselines
   video: mosev2/ptq7rtia
   width: 360
@@ -7106,6 +7602,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 5393b80e6c62be8a
 - component: baselines
   video: mosev2/ptq7rtia
   width: 360
@@ -7115,23 +7612,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-- component: elvis
-  video: mosev2/ptq7rtia
-  width: 360
-  height: 640
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 32
+# hash: d96a37314a0ebe83
 - component: elvis
   video: mosev2/ptq7rtia
   width: 360
@@ -7148,7 +7629,26 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+    qp: 32
+# hash: ae65db9a8959eccb
+- component: elvis
+  video: mosev2/ptq7rtia
+  width: 360
+  height: 640
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
     qp: 37
+# hash: 40c465a7f50d6af1
 - component: baselines
   video: youtube_vos/282651c6f7
   width: 640
@@ -7158,6 +7658,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 49a47cfe2090790c
 - component: baselines
   video: youtube_vos/282651c6f7
   width: 640
@@ -7167,23 +7668,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-- component: elvis
-  video: youtube_vos/282651c6f7
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 32
+# hash: b002a2f62ad9180e
 - component: elvis
   video: youtube_vos/282651c6f7
   width: 640
@@ -7200,7 +7685,26 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+    qp: 32
+# hash: b769cee36605eeac
+- component: elvis
+  video: youtube_vos/282651c6f7
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
     qp: 37
+# hash: b9051c54b141a8c2
 - component: baselines
   video: youtube_vos/b1a8a404ad
   width: 640
@@ -7210,6 +7714,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: b859305dc4459d0f
 - component: baselines
   video: youtube_vos/b1a8a404ad
   width: 640
@@ -7219,23 +7724,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
-- component: elvis
-  video: youtube_vos/b1a8a404ad
-  width: 640
-  height: 360
-  block_size: 8
-  alpha: 0.5
-  beta: 0.5
-  shrink_amount: 0.25
-  removal_mode: blackout
-  composite_output: true
-  fg_protect: true
-  inpainter: propainter
-  target_bitrate: 0
-  codec: x265
-  codec_params:
-    preset: medium
-    qp: 32
+# hash: 9ff434bac920ce55
 - component: elvis
   video: youtube_vos/b1a8a404ad
   width: 640
@@ -7252,7 +7741,26 @@ experiments:
   codec: x265
   codec_params:
     preset: medium
+    qp: 32
+# hash: ecc6973f97e19140
+- component: elvis
+  video: youtube_vos/b1a8a404ad
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  removal_mode: blackout
+  composite_output: true
+  fg_protect: true
+  inpainter: propainter
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
     qp: 37
+# hash: f91dbe8594ec1187
 - component: baselines
   video: youtube_vos/30fe0ed0ce
   width: 640
@@ -7262,6 +7770,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: d0a34bbd250a1d27
 - component: baselines
   video: youtube_vos/30fe0ed0ce
   width: 640
@@ -7271,6 +7780,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 332a09280226a384
 - component: elvis
   video: youtube_vos/30fe0ed0ce
   width: 640
@@ -7288,6 +7798,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: 977aeeb363b9137f
 - component: elvis
   video: youtube_vos/30fe0ed0ce
   width: 640
@@ -7305,6 +7816,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 94b65e318ddf5a44
 - component: baselines
   video: youtube_vos/0e4068b53f
   width: 640
@@ -7314,6 +7826,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: f59a92c4b548f98e
 - component: baselines
   video: youtube_vos/0e4068b53f
   width: 640
@@ -7323,6 +7836,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 039600c5f4cd1ac6
 - component: elvis
   video: youtube_vos/0e4068b53f
   width: 640
@@ -7340,6 +7854,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 32
+# hash: fac089022bb2c712
 - component: elvis
   video: youtube_vos/0e4068b53f
   width: 640
@@ -7357,6 +7872,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 37
+# hash: 36fb007975de0593
 - component: presley_ai
   video: bear
   width: 640
@@ -7379,6 +7895,7 @@ experiments:
     preview_start: 0.2
     num_inference_steps: 20
     batch_size: 2
+# hash: afd6dc1e5fa2ebe1
 - component: presley_ai
   video: camel
   width: 640
@@ -7401,6 +7918,7 @@ experiments:
     preview_start: 0.2
     num_inference_steps: 20
     batch_size: 2
+# hash: 432569abedc41fca
 - component: presley_ai
   video: bear
   width: 640
@@ -7419,6 +7937,7 @@ experiments:
     preset: '8'
   restorer_params:
     tile: 400
+# hash: e437776f348cadbe
 - component: presley_ai
   video: camel
   width: 640
@@ -7437,6 +7956,7 @@ experiments:
     preset: '8'
   restorer_params:
     tile: 400
+# hash: 93fcdf516cf7e363
 - component: presley_ai
   video: bear
   width: 640
@@ -7455,6 +7975,7 @@ experiments:
     preset: '8'
   restorer_params:
     width: 64
+# hash: 8d2316a5e2d6128f
 - component: presley_ai
   video: camel
   width: 640
@@ -7473,6 +7994,7 @@ experiments:
     preset: '8'
   restorer_params:
     width: 64
+# hash: 661d092654b4e18d
 - component: presley_ai
   video: bear
   width: 640
@@ -7492,6 +8014,7 @@ experiments:
   restorer_params:
     tile: 400
     tile_pad: 32
+# hash: 4ec11482c4cfc93e
 - component: presley_ai
   video: camel
   width: 640
@@ -7511,6 +8034,7 @@ experiments:
   restorer_params:
     tile: 400
     tile_pad: 32
+# hash: f27b0f17d4192d37
 - component: presley_ai
   video: bear
   width: 640
@@ -7528,6 +8052,7 @@ experiments:
   codec_params:
     qp: 51
     preset: '8'
+# hash: 4e2d1e221284c843
 - component: presley_ai
   video: bear
   width: 640
@@ -7545,6 +8070,7 @@ experiments:
   codec_params:
     qp: 58
     preset: '8'
+# hash: d1e32185eb7b57e3
 - component: presley_ai
   video: camel
   width: 640
@@ -7562,6 +8088,7 @@ experiments:
   codec_params:
     qp: 50
     preset: '8'
+# hash: 65c5aae4318036c0
 - component: presley_ai
   video: camel
   width: 640
@@ -7579,6 +8106,7 @@ experiments:
   codec_params:
     qp: 58
     preset: '8'
+# hash: 0dab871ff58ae1f2
 - component: presley_ai
   video: bear
   width: 640
@@ -7596,6 +8124,7 @@ experiments:
   codec_params:
     qp: 51
     preset: '8'
+# hash: 911bc54a2c6596da
 - component: presley_ai
   video: bear
   width: 640
@@ -7613,6 +8142,7 @@ experiments:
   codec_params:
     qp: 58
     preset: '8'
+# hash: 9a0b221f0f7b6c76
 - component: presley_ai
   video: camel
   width: 640
@@ -7630,6 +8160,7 @@ experiments:
   codec_params:
     qp: 50
     preset: '8'
+# hash: 3b8befe17cdfff80
 - component: presley_ai
   video: camel
   width: 640
@@ -7647,6 +8178,7 @@ experiments:
   codec_params:
     qp: 58
     preset: '8'
+# hash: ae7b954c11b36de2
 - component: presley_ai
   video: bear
   width: 640
@@ -7664,6 +8196,7 @@ experiments:
   codec_params:
     qp: 51
     preset: '8'
+# hash: 63b733c93c575aa1
 - component: presley_ai
   video: bear
   width: 640
@@ -7681,6 +8214,7 @@ experiments:
   codec_params:
     qp: 58
     preset: '8'
+# hash: 820f87b367b60a21
 - component: presley_ai
   video: camel
   width: 640
@@ -7698,6 +8232,7 @@ experiments:
   codec_params:
     qp: 50
     preset: '8'
+# hash: 69d73ef1eafbf9fa
 - component: presley_ai
   video: camel
   width: 640
@@ -7715,6 +8250,7 @@ experiments:
   codec_params:
     qp: 58
     preset: '8'
+# hash: 08cf9e58a63d55f1
 - component: elvis
   video: bear
   width: 640
@@ -7735,6 +8271,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: e802ae0a0a8b475d
 - component: elvis
   video: bear
   width: 640
@@ -7755,6 +8292,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 61ef4d765a5e8353
 - component: elvis
   video: bear
   width: 640
@@ -7776,6 +8314,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 754b7d6ef0998f81
 - component: elvis
   video: camel
   width: 640
@@ -7796,6 +8335,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 9d995b6c60062556
 - component: elvis
   video: camel
   width: 640
@@ -7816,6 +8356,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: bee9c70ae6dd9c95
 - component: elvis
   video: camel
   width: 640
@@ -7837,6 +8378,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 34
+# hash: 85d92dabda4b9907
 - component: presley_ai
   video: bear
   width: 640
@@ -7856,6 +8398,7 @@ experiments:
   restorer_params:
     model_id: Jamichsu/Stream-DiffVSR
     num_inference_steps: 4
+# hash: 0bcc99560e456dba
 - component: presley_ai
   video: camel
   width: 640
@@ -7875,6 +8418,7 @@ experiments:
   restorer_params:
     model_id: Jamichsu/Stream-DiffVSR
     num_inference_steps: 4
+# hash: c50f1c39cb2814c1
 - component: presley_ai
   _retired: DC-VSR is blocked upstream (weights-only release, no pipeline code); the
     restorer stub raises by design
@@ -7896,6 +8440,7 @@ experiments:
   restorer_params:
     fp32: true
     num_frames: 14
+# hash: a2fd6657af0d2ec9
 - component: presley_ai
   _retired: DC-VSR is blocked upstream (weights-only release, no pipeline code); the
     restorer stub raises by design
@@ -7917,6 +8462,7 @@ experiments:
   restorer_params:
     fp32: true
     num_frames: 14
+# hash: 79d911465fed8e66
 - component: presley_ai
   video: motorbike
   width: 640
@@ -7937,6 +8483,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: b5e34e9535e95f55
 - component: presley_ai
   video: motorbike
   width: 640
@@ -7958,6 +8505,7 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+# hash: 649a949e211996b4
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -7978,6 +8526,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 4e37c0044e896863
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -7999,6 +8548,7 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+# hash: b881ce63a6c6b4cf
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -8019,6 +8569,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 7f24116293981c8c
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -8040,6 +8591,7 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+# hash: ff1d96789ede7861
 - component: presley_ai
   video: color-run
   width: 640
@@ -8060,6 +8612,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: df95fc53aa9daa06
 - component: presley_ai
   video: color-run
   width: 640
@@ -8081,6 +8634,7 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+# hash: 9fde9ecef2bd01e5
 - component: presley_ai
   video: dancing
   width: 640
@@ -8101,6 +8655,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 37a5ba4672377d19
 - component: presley_ai
   video: dancing
   width: 640
@@ -8122,6 +8677,7 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+# hash: 2c12da814dc87f63
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -8142,6 +8698,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: a65c763b51ecdee1
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -8163,6 +8720,7 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+# hash: b70dab8d332719f2
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -8183,6 +8741,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: cb8e4b838abf0631
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -8204,6 +8763,7 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+# hash: 6330a540950be357
 - component: presley_ai
   video: bear
   width: 640
@@ -8224,6 +8784,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: c4c57169c454d595
 - component: presley_ai
   video: bear
   width: 640
@@ -8245,6 +8806,7 @@ experiments:
     denoise_strength: 1.0
     tile: 0
   downsample_levels: 3
+# hash: 7106adb92a8e9c11
 - component: baselines
   video: motorbike
   width: 640
@@ -8254,6 +8816,7 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
+# hash: 95c23f1b93c73326
 - component: baselines
   video: drift-straight
   width: 640
@@ -8263,6 +8826,7 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
+# hash: 67a351820cea1f9e
 - component: baselines
   video: drift-turn
   width: 640
@@ -8272,6 +8836,7 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
+# hash: 929ab8e3ee86cee7
 - component: baselines
   video: color-run
   width: 640
@@ -8281,6 +8846,7 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
+# hash: 3192e6d6b6e9ec4c
 - component: baselines
   video: dancing
   width: 640
@@ -8290,6 +8856,7 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
+# hash: c90ca3fcc5b7c8b8
 - component: baselines
   video: dogs-jump
   width: 640
@@ -8299,6 +8866,7 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
+# hash: 8344d4e1a9d5b80d
 - component: baselines
   video: bike-packing
   width: 640
@@ -8308,6 +8876,7 @@ experiments:
   codec_params:
     qp: 43
     preset: '8'
+# hash: 01e9cb2228c06206
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8330,6 +8899,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 2
+# hash: dfa7aea43f509937
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -8352,6 +8922,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 2
+# hash: 6ca87c33f33b642b
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -8374,6 +8945,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 2
+# hash: a916b27eb0135ade
 - component: presley_ai
   video: color-run
   width: 640
@@ -8396,6 +8968,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 2
+# hash: f0fb80c5f996a1a9
 - component: presley_ai
   video: dancing
   width: 640
@@ -8418,6 +8991,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 2
+# hash: dbe01c1d0fe8363b
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -8440,6 +9014,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 2
+# hash: 6437a590c56c629b
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -8462,6 +9037,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 2
+# hash: ba87f0fe5b901c66
 - component: presley_ai
   video: bear
   width: 640
@@ -8484,6 +9060,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 2
+# hash: 14287118971f9cbc
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8506,6 +9083,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 3
+# hash: 9f8217f163b6aa88
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -8528,6 +9106,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 3
+# hash: 762d42d2b8aeea9e
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -8550,6 +9129,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 3
+# hash: 1aa5d44a194b21aa
 - component: presley_ai
   video: color-run
   width: 640
@@ -8572,6 +9152,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 3
+# hash: 6842e622a4144120
 - component: presley_ai
   video: dancing
   width: 640
@@ -8594,6 +9175,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 3
+# hash: ab2c9c567229be90
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -8616,6 +9198,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 3
+# hash: 2cd884b123dc6ccf
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -8638,6 +9221,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 3
+# hash: 56121ae83420b24d
 - component: presley_ai
   video: bear
   width: 640
@@ -8660,6 +9244,7 @@ experiments:
     tile: 0
   downsample_levels: 3
   downsample_uniform_level: 3
+# hash: 6522ee181119d568
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8678,6 +9263,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 1d094e2f1ccd454c
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8696,6 +9282,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 00fcd405630f7bbe
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8714,6 +9301,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: 3bd409236392532e
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8732,6 +9320,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: 76341bdd4e70ad57
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8750,6 +9339,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 8a1dacc4b0a6b1cc
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8768,6 +9358,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 334de8112bcbe421
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8786,6 +9377,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 26547138728074c6
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8804,6 +9396,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 530ce797749b78fb
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8822,6 +9415,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: f64012f085c0372d
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8840,6 +9434,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 7f7f4e11650689f0
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8858,6 +9453,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 6cf34f46d17fbce0
 - component: presley_ai
   video: motorbike
   width: 640
@@ -8876,6 +9472,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 98ce0e51c17cb8c5
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -8894,6 +9491,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: d54cae8832b0e4a1
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -8912,6 +9510,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 7a4760c60cc006f9
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -8930,6 +9529,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: 64d97be611d98429
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -8948,6 +9548,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: b623f35033a823cc
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -8966,6 +9567,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: c51d1cfba578a01c
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -8984,6 +9586,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 48f5df7f1b1c0006
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -9002,6 +9605,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 79b3de771586ba78
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -9020,6 +9624,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 5bdf852463af2f57
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -9038,6 +9643,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 05ebcb131f2d374c
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -9056,6 +9662,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 2ae377361abd91b3
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -9074,6 +9681,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 59e490dd49066a4f
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -9092,6 +9700,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: d0c90c22c7e8c5d1
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9110,6 +9719,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 2fba073c7db04d6d
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9128,6 +9738,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 6a7aa037ed1ead54
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9146,6 +9757,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: ccd18843ed434d17
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9164,6 +9776,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: 1afc2f4a26625974
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9182,6 +9795,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 4a62ebfcad662b8b
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9200,6 +9814,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 14f7071c5166b8b2
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9218,6 +9833,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 9d6a7a5a431d4065
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9236,6 +9852,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 5ea61eaa0674a01f
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9254,6 +9871,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: e6dcd6b5eb2ba174
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9272,6 +9890,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: a2ce2aed3a7512b5
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9290,6 +9909,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: aaf7ef18cd0144f6
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -9308,6 +9928,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 5db09f1618ede216
 - component: presley_ai
   video: color-run
   width: 640
@@ -9326,6 +9947,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 2194db5643c440db
 - component: presley_ai
   video: color-run
   width: 640
@@ -9344,6 +9966,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: ce7851e29883c5d4
 - component: presley_ai
   video: color-run
   width: 640
@@ -9362,6 +9985,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: f140f165ecb39022
 - component: presley_ai
   video: color-run
   width: 640
@@ -9380,6 +10004,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: d38ccc3c09a05d5e
 - component: presley_ai
   video: color-run
   width: 640
@@ -9398,6 +10023,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 4d3e49a7526cd546
 - component: presley_ai
   video: color-run
   width: 640
@@ -9416,6 +10042,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 89bfd80d1e7a3866
 - component: presley_ai
   video: color-run
   width: 640
@@ -9434,6 +10061,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: cdbd0ad3536c379c
 - component: presley_ai
   video: color-run
   width: 640
@@ -9452,6 +10080,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 0a56c5a0f319098c
 - component: presley_ai
   video: color-run
   width: 640
@@ -9470,6 +10099,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 60f82e196afa002d
 - component: presley_ai
   video: color-run
   width: 640
@@ -9488,6 +10118,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 319f4495003084d0
 - component: presley_ai
   video: color-run
   width: 640
@@ -9506,6 +10137,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: afec782882969fdc
 - component: presley_ai
   video: color-run
   width: 640
@@ -9524,6 +10156,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 2ee700b2eae41923
 - component: presley_ai
   video: dancing
   width: 640
@@ -9542,6 +10175,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 5590bd75228c0631
 - component: presley_ai
   video: dancing
   width: 640
@@ -9560,6 +10194,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 99641e26eb12e9fa
 - component: presley_ai
   video: dancing
   width: 640
@@ -9578,6 +10213,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: adb1f8ee6ddfe29f
 - component: presley_ai
   video: dancing
   width: 640
@@ -9596,6 +10232,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: bc84c7d62baafbbb
 - component: presley_ai
   video: dancing
   width: 640
@@ -9614,6 +10251,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 57d3bf6f014b8d8c
 - component: presley_ai
   video: dancing
   width: 640
@@ -9632,6 +10270,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: bc1f84bab54c668c
 - component: presley_ai
   video: dancing
   width: 640
@@ -9650,6 +10289,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 09ddf229f4ec575d
 - component: presley_ai
   video: dancing
   width: 640
@@ -9668,6 +10308,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 77d59ab1dbef9104
 - component: presley_ai
   video: dancing
   width: 640
@@ -9686,6 +10327,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 8607200dc5376f25
 - component: presley_ai
   video: dancing
   width: 640
@@ -9704,6 +10346,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: c349b45b88245b93
 - component: presley_ai
   video: dancing
   width: 640
@@ -9722,6 +10365,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: aaddbad05c0646e8
 - component: presley_ai
   video: dancing
   width: 640
@@ -9740,6 +10384,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: bf56c12b7c22491e
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9758,6 +10403,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 5aa7d577516bcd6b
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9776,6 +10422,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 3004feed4d37d640
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9794,6 +10441,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: e734b9a5df8ab101
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9812,6 +10460,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: 29ab6b04f2903333
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9830,6 +10479,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: e3612f938becdf94
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9848,6 +10498,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 0d84327a57d333af
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9866,6 +10517,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 9df886920b477fd6
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9884,6 +10536,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 179ebba0412e6149
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9902,6 +10555,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 7e57c9b277444f88
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9920,6 +10574,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: e9eaa4076e2f856e
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9938,6 +10593,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 60a86259c6fcfda6
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -9956,6 +10612,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: cdf58d7e8b45ac3c
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -9974,6 +10631,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 6ccb1ab63e10b7d6
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -9992,6 +10650,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 7d6bdfa0fb50b1f4
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10010,6 +10669,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: df4c433bbfcdb1e2
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10028,6 +10688,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: cff5b5365d2097b7
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10046,6 +10707,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 0e16465e6d71cc84
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10064,6 +10726,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 49a795e8b306d2cb
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10082,6 +10745,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 733c316d081f4031
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10100,6 +10764,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: c1bb63bbfba89fd3
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10118,6 +10783,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 934ad65f8ec1679e
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10136,6 +10802,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 7bc282be83f00d43
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10154,6 +10821,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: ead673b698f3a48f
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10172,6 +10840,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 146a03a7c617c595
 - component: presley_ai
   video: bear
   width: 640
@@ -10190,6 +10859,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: 5db2a22efcd84c1a
 - component: presley_ai
   video: bear
   width: 640
@@ -10208,6 +10878,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 7
+# hash: b08fe54c140a43f4
 - component: presley_ai
   video: bear
   width: 640
@@ -10226,6 +10897,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: f60dff4c062b4cfd
 - component: presley_ai
   video: bear
   width: 640
@@ -10244,6 +10916,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 15
+# hash: a6ecd573a6f42ce8
 - component: presley_ai
   video: bear
   width: 640
@@ -10262,6 +10935,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: bdc0fcf5ba97775b
 - component: presley_ai
   video: bear
   width: 640
@@ -10280,6 +10954,7 @@ experiments:
     qp: 43
     preset: '8'
   blur_kernel: 31
+# hash: 9e14e42805c3647f
 - component: presley_ai
   video: bear
   width: 640
@@ -10298,6 +10973,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 033b2fbc588149e3
 - component: presley_ai
   video: bear
   width: 640
@@ -10316,6 +10992,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 4
+# hash: 6c2ac40f0a3ff7a8
 - component: presley_ai
   video: bear
   width: 640
@@ -10334,6 +11011,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 1e97d08e138479bf
 - component: presley_ai
   video: bear
   width: 640
@@ -10352,6 +11030,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 2
+# hash: 871d6d69bd84cd1a
 - component: presley_ai
   video: bear
   width: 640
@@ -10370,6 +11049,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 58d90c22dfa1dd34
 - component: presley_ai
   video: bear
   width: 640
@@ -10388,6 +11068,7 @@ experiments:
     qp: 43
     preset: '8'
   ac_keep: 1
+# hash: 2f007ddcc7843ba1
 - component: presley_ai
   video: bear
   width: 640
@@ -10410,6 +11091,7 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+# hash: 4eccbb57f27540f5
 - component: presley_ai
   video: motorbike
   width: 640
@@ -10432,6 +11114,7 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+# hash: 6f4f6ec71635d3c7
 - component: presley_ai
   video: drift-straight
   width: 640
@@ -10454,6 +11137,7 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+# hash: 699601fa60e90e93
 - component: presley_ai
   video: drift-turn
   width: 640
@@ -10476,6 +11160,7 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+# hash: b30e6290fe5c86ea
 - component: presley_ai
   video: color-run
   width: 640
@@ -10498,6 +11183,7 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+# hash: 009d8a655cd8bb15
 - component: presley_ai
   video: dancing
   width: 640
@@ -10520,6 +11206,7 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+# hash: 36f5031883fe8f50
 - component: presley_ai
   video: dogs-jump
   width: 640
@@ -10542,6 +11229,7 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+# hash: 386712b1534fbbfd
 - component: presley_ai
   video: bike-packing
   width: 640
@@ -10564,6 +11252,7 @@ experiments:
   fg_protect: true
   composite_output: true
   target_bitrate: 0
+# hash: 159121dd8cea42c4
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10584,6 +11273,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 48c24633eba049e0
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10604,6 +11294,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: f20c2ea872c34189
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10624,6 +11315,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 48239b018f75a9b4
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10644,6 +11336,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: cbd34c75dec37cb9
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10664,6 +11357,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 522a7bdf1ee4bde7
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10684,6 +11378,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 52163f3b053009cb
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10704,6 +11399,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 3f684a54b6138c9e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10724,6 +11420,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: e066914465c72be4
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10744,6 +11441,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: e9674c7a9de1b0c9
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10764,6 +11462,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 40a7eb9a9ccfac25
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10784,6 +11483,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 8f8910b11f7cb463
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10804,6 +11504,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 48e6c5bb63e49bb2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10824,6 +11525,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: f5c63acbe22bcd45
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10844,6 +11546,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 21bdf03c90cbdb3b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10864,6 +11567,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 75386e182e6c810d
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10884,6 +11588,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: b283dadf4b21b21f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10904,6 +11609,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 26ac9644c4bab6b2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -10924,6 +11630,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 0fb9f86a3042c109
 - component: elvis
   video: mosev2/8i1uo3x9
   width: 640
@@ -10941,6 +11648,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: 606757b9e3f330f6
 - component: elvis
   video: mosev2/8i1uo3x9
   width: 640
@@ -10958,6 +11666,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: 74ab149c86d4bd8f
 - component: elvis
   video: mosev2/fii86rku
   width: 640
@@ -10975,6 +11684,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: dcb3f42fff6704d9
 - component: elvis
   video: mosev2/fii86rku
   width: 640
@@ -10992,6 +11702,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: 053982c93cd80415
 - component: elvis
   video: mosev2/jxmcdk8k
   width: 640
@@ -11009,6 +11720,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: 059df670f1951721
 - component: elvis
   video: mosev2/jxmcdk8k
   width: 640
@@ -11026,6 +11738,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: 0e8520e6276e4521
 - component: elvis
   video: mosev2/ptq7rtia
   width: 360
@@ -11043,6 +11756,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: 001b78b5b38f1334
 - component: elvis
   video: mosev2/ptq7rtia
   width: 360
@@ -11060,6 +11774,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: 6ebeef35b93ec863
 - component: elvis
   video: mosev2/zofozj6l
   width: 640
@@ -11077,6 +11792,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: d72b81cb788d9498
 - component: elvis
   video: mosev2/zofozj6l
   width: 640
@@ -11094,6 +11810,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: 9562b93f4ec556aa
 - component: elvis
   video: youtube_vos/0e4068b53f
   width: 640
@@ -11111,6 +11828,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: c9d32e1c3f1a21de
 - component: elvis
   video: youtube_vos/0e4068b53f
   width: 640
@@ -11128,6 +11846,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: ddf8c22b387c6036
 - component: elvis
   video: youtube_vos/282651c6f7
   width: 640
@@ -11145,6 +11864,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: 13d5e1693cb7a713
 - component: elvis
   video: youtube_vos/282651c6f7
   width: 640
@@ -11162,6 +11882,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: 18e10536a42be326
 - component: elvis
   video: youtube_vos/30fe0ed0ce
   width: 640
@@ -11179,6 +11900,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: 44ab850f4d2ddf0e
 - component: elvis
   video: youtube_vos/30fe0ed0ce
   width: 640
@@ -11196,6 +11918,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: 3f7ae0cf4d770d50
 - component: elvis
   video: youtube_vos/b1a8a404ad
   width: 640
@@ -11213,6 +11936,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 42
+# hash: 44a555d7521ff41a
 - component: elvis
   video: youtube_vos/b1a8a404ad
   width: 640
@@ -11230,6 +11954,7 @@ experiments:
   codec_params:
     preset: medium
     qp: 47
+# hash: 8e5499bfa90021aa
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11250,6 +11975,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 0fa545badf8520bb
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11270,6 +11996,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 96bf9c252cb27d41
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11290,6 +12017,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 1d56338a023acba1
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11310,6 +12038,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 697cf8d2d2640b8f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11330,6 +12059,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 9cab0549a29158ce
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11350,6 +12080,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 983a23de3199c707
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11370,6 +12101,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: f0b3f1aabda4b48f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11390,6 +12122,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: c1d54cd3d5738f84
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11410,6 +12143,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: fd0fc3071ce762c2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11430,6 +12164,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: e9cdd85012f31dfa
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11450,6 +12185,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 40e1f80ae5bc8a55
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11470,6 +12206,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: ebb389a2a805b75b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11490,6 +12227,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: f3841fbfeaf7102b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11510,6 +12248,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 84bfb8aaccbd23f5
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11530,6 +12269,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: e1e41176406ffa6c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11550,6 +12290,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: cbabaef262e21c8f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11570,6 +12311,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 27f2d50d45c908de
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -11590,6 +12332,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 0
+# hash: 8925be20182b9967
 - component: probe_oracle_bits
   video: motorbike
   width: 640
@@ -11602,6 +12345,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: cdcc94a99f222a90
 - component: probe_oracle_bits
   video: drift-straight
   width: 640
@@ -11614,6 +12358,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 5d5a825d96490d1c
 - component: probe_oracle_bits
   video: drift-turn
   width: 640
@@ -11626,6 +12371,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: efaa2a75e3b4f05d
 - component: probe_oracle_bits
   video: color-run
   width: 640
@@ -11638,6 +12384,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 1fc429d1207c8dbb
 - component: probe_oracle_bits
   video: dancing
   width: 640
@@ -11650,6 +12397,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: b906d4cbb03fdbd1
 - component: probe_oracle_bits
   video: dogs-jump
   width: 640
@@ -11662,6 +12410,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 86e77a55a5c35e5a
 - component: probe_oracle_bits
   video: bike-packing
   width: 640
@@ -11674,6 +12423,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 7faf160138a5053b
 - component: probe_oracle_bits
   video: bear
   width: 640
@@ -11686,6 +12436,7 @@ experiments:
   codec_params:
     preset: '8'
     qp: 43
+# hash: 12c8b82e3a0a3846
 - codec: x265
   codec_params:
     preset: medium
@@ -11695,6 +12446,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/8i1uo3x9
   width: 640
+# hash: 8886a0e294ad7dec
 - codec: x265
   codec_params:
     preset: medium
@@ -11704,6 +12456,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/8i1uo3x9
   width: 640
+# hash: dcd01a84ec80871e
 - codec: x265
   codec_params:
     preset: medium
@@ -11713,6 +12466,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/fii86rku
   width: 640
+# hash: df03249f5d9f5eb6
 - codec: x265
   codec_params:
     preset: medium
@@ -11722,6 +12476,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/fii86rku
   width: 640
+# hash: 6d3045f12a8841a9
 - codec: x265
   codec_params:
     preset: medium
@@ -11731,6 +12486,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/jxmcdk8k
   width: 640
+# hash: afa06fa2137af5f2
 - codec: x265
   codec_params:
     preset: medium
@@ -11740,6 +12496,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/jxmcdk8k
   width: 640
+# hash: 68087aae48f94fee
 - codec: x265
   codec_params:
     preset: medium
@@ -11749,6 +12506,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/ptq7rtia
   width: 360
+# hash: 1e1adbe0cc770f1c
 - codec: x265
   codec_params:
     preset: medium
@@ -11758,6 +12516,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/ptq7rtia
   width: 360
+# hash: 5bb6dadd80a9a310
 - codec: x265
   codec_params:
     preset: medium
@@ -11767,6 +12526,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/zofozj6l
   width: 640
+# hash: c38fed3c9f9ffe96
 - codec: x265
   codec_params:
     preset: medium
@@ -11776,6 +12536,7 @@ experiments:
   target_bitrate: 0
   video: mosev2/zofozj6l
   width: 640
+# hash: b9bde9bebeb94c73
 - codec: x265
   codec_params:
     preset: medium
@@ -11785,6 +12546,7 @@ experiments:
   target_bitrate: 0
   video: youtube_vos/0e4068b53f
   width: 640
+# hash: 00bb0e2244cea0f4
 - codec: x265
   codec_params:
     preset: medium
@@ -11794,6 +12556,7 @@ experiments:
   target_bitrate: 0
   video: youtube_vos/0e4068b53f
   width: 640
+# hash: 1937e9b940148550
 - codec: x265
   codec_params:
     preset: medium
@@ -11803,6 +12566,7 @@ experiments:
   target_bitrate: 0
   video: youtube_vos/282651c6f7
   width: 640
+# hash: 27acf7f41e602bf1
 - codec: x265
   codec_params:
     preset: medium
@@ -11812,6 +12576,7 @@ experiments:
   target_bitrate: 0
   video: youtube_vos/282651c6f7
   width: 640
+# hash: 3aef8c96a12d8c5a
 - codec: x265
   codec_params:
     preset: medium
@@ -11821,6 +12586,7 @@ experiments:
   target_bitrate: 0
   video: youtube_vos/30fe0ed0ce
   width: 640
+# hash: 17afbdbddfedc53c
 - codec: x265
   codec_params:
     preset: medium
@@ -11830,6 +12596,7 @@ experiments:
   target_bitrate: 0
   video: youtube_vos/30fe0ed0ce
   width: 640
+# hash: a5218788fe431e35
 - codec: x265
   codec_params:
     preset: medium
@@ -11839,6 +12606,7 @@ experiments:
   target_bitrate: 0
   video: youtube_vos/b1a8a404ad
   width: 640
+# hash: 2ddbea4ebc00ee6f
 - codec: x265
   codec_params:
     preset: medium
@@ -11848,6 +12616,7 @@ experiments:
   target_bitrate: 0
   video: youtube_vos/b1a8a404ad
   width: 640
+# hash: cb9df986c50804f7
 - component: probe_block_damage
   width: 640
   height: 360
@@ -11868,6 +12637,7 @@ experiments:
   restorer_params: &id001
     denoise_strength: 1.0
     tile: 0
+# hash: 78c9aeb8538febd9
 - component: probe_block_damage
   width: 640
   height: 360
@@ -11886,6 +12656,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: &id002 {}
+# hash: b83799cff130f30a
 - component: probe_block_damage
   width: 640
   height: 360
@@ -11904,6 +12675,7 @@ experiments:
   degradation: downsample
   restorer: realesrgan
   restorer_params: *id001
+# hash: 55e54f2078f8f3ca
 - component: probe_block_damage
   width: 640
   height: 360
@@ -11922,6 +12694,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: *id002
+# hash: c17def7923c57344
 - component: probe_block_damage
   width: 640
   height: 360
@@ -11940,6 +12713,7 @@ experiments:
   degradation: downsample
   restorer: realesrgan
   restorer_params: *id001
+# hash: 06ad683ebec8861a
 - component: probe_block_damage
   width: 640
   height: 360
@@ -11958,6 +12732,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: *id002
+# hash: 57745cf0c8c23ae1
 - component: probe_block_damage
   width: 640
   height: 360
@@ -11976,6 +12751,7 @@ experiments:
   degradation: downsample
   restorer: realesrgan
   restorer_params: *id001
+# hash: 2594a6a1d86c3e8a
 - component: probe_block_damage
   width: 640
   height: 360
@@ -11994,6 +12770,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: *id002
+# hash: c5b41047e75936a1
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12012,6 +12789,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 7aaac7812a1c903d
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12032,6 +12810,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: de0a9637a474a42b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12050,6 +12829,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 481074be5e31ab3b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12070,6 +12850,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: e3e2ada51646fd88
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12088,6 +12869,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 0e2ce029de2a6177
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12108,6 +12890,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 4ec9e48362c0d62f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12126,6 +12909,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 5fec807bd3ad17aa
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12146,6 +12930,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 838fcd46db5ce85f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12164,6 +12949,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 83a92bf1d1c1e3a8
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12184,6 +12970,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: d83b4bb02130ef66
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12202,6 +12989,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 65c9b75de336bfaf
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12222,6 +13010,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 2a0589d4ad1d8fdd
 - component: baselines
   video: dog
   width: 640
@@ -12231,6 +13020,7 @@ experiments:
     preset: '8'
     qp: 40
   target_bitrate: 0
+# hash: bb7470c1c9838a98
 - component: baselines
   video: dog
   width: 640
@@ -12240,6 +13030,7 @@ experiments:
     preset: '8'
     qp: 45
   target_bitrate: 0
+# hash: 6634375dcfb235fb
 - component: baselines
   video: dog
   width: 640
@@ -12249,6 +13040,7 @@ experiments:
     preset: '8'
     qp: 50
   target_bitrate: 0
+# hash: cb2a0848a1c5d492
 - component: baselines
   video: dog
   width: 640
@@ -12258,6 +13050,7 @@ experiments:
     preset: '8'
     qp: 55
   target_bitrate: 0
+# hash: 458d0c7f9a2ee6dd
 - component: baselines
   video: dog
   width: 640
@@ -12267,6 +13060,7 @@ experiments:
     preset: '8'
     qp: 60
   target_bitrate: 0
+# hash: c272f2367af21fe7
 - component: baselines
   video: dog
   width: 640
@@ -12276,6 +13070,7 @@ experiments:
     preset: '8'
     qp: 63
   target_bitrate: 0
+# hash: e44530377c6147ee
 - component: baselines
   video: pigs
   width: 640
@@ -12285,6 +13080,7 @@ experiments:
     preset: '8'
     qp: 40
   target_bitrate: 0
+# hash: e967083117317008
 - component: baselines
   video: pigs
   width: 640
@@ -12294,6 +13090,7 @@ experiments:
     preset: '8'
     qp: 45
   target_bitrate: 0
+# hash: 1e45e39ca20e50d5
 - component: baselines
   video: pigs
   width: 640
@@ -12303,6 +13100,7 @@ experiments:
     preset: '8'
     qp: 50
   target_bitrate: 0
+# hash: 711c80c110a5d359
 - component: baselines
   video: pigs
   width: 640
@@ -12312,6 +13110,7 @@ experiments:
     preset: '8'
     qp: 55
   target_bitrate: 0
+# hash: db046614258cedb0
 - component: baselines
   video: pigs
   width: 640
@@ -12321,6 +13120,7 @@ experiments:
     preset: '8'
     qp: 60
   target_bitrate: 0
+# hash: 0ae8f213b5a8da3a
 - component: baselines
   video: pigs
   width: 640
@@ -12330,6 +13130,7 @@ experiments:
     preset: '8'
     qp: 63
   target_bitrate: 0
+# hash: 807e09af4e5d0c6e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12348,6 +13149,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 36d973b3d6662b9b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12368,6 +13170,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: ca38ca2b821af41c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12386,6 +13189,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 4cbfee60a8853cf2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12404,6 +13208,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 4c20beac5c69af0b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12422,6 +13227,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 8000cec54bd37459
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12442,6 +13248,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: fbe8adad37b715e2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12460,6 +13267,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: a4e94dd1f4c9e62c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12478,6 +13286,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 617bc5747387a921
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12496,6 +13305,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 4e0bbea43ba158dc
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12516,6 +13326,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 1e8f71602abf30d2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12534,6 +13345,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 4c2d30801604b72d
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12552,6 +13364,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: f67f2a531895ee8d
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12570,6 +13383,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: ebccd1f79f0927de
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12590,6 +13404,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: a5d3f8d217adbd3d
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12608,6 +13423,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 0e6cd8207a2a18b6
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12626,6 +13442,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 043f79f6fc30be0e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12644,6 +13461,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 9cdf895adbad37bd
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12664,6 +13482,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 3abf2419b1dcb4ad
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12682,6 +13501,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 2df2f7441fd86bd0
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12700,6 +13520,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: e8c528816abf1c47
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12718,6 +13539,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 66d6041e4d7844e6
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12738,6 +13560,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: d7e98276aff50ac9
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12756,6 +13579,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 35451e289f7021d5
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12774,6 +13598,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 02b26e19d0f2d4d7
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12792,6 +13617,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 5c5001ebb55b92ad
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12812,6 +13638,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: eebb2032ca0aae46
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12830,6 +13657,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 7dcdbbbf8a668268
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12848,6 +13676,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: 246045841af43528
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12866,6 +13695,7 @@ experiments:
   degradation: downsample
   restorer: none
   restorer_params: {}
+# hash: 02342c48176fe93b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12886,6 +13716,7 @@ experiments:
   restorer_params:
     denoise_strength: 1.0
     tile: 400
+# hash: 5d095b6a5fdabe69
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12904,6 +13735,7 @@ experiments:
   degradation: blur
   restorer: none
   restorer_params: {}
+# hash: 5f5fabf54767dc52
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -12922,6 +13754,7 @@ experiments:
   degradation: blur
   restorer: unsharp
   restorer_params: {}
+# hash: dc391e81cdd99801
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -12940,6 +13773,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 11aea64ab0c7a272
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -12958,6 +13792,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: f7d79cc699093c80
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -12976,6 +13811,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: fd5665faf4106609
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -12994,6 +13830,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: cd4c80b52532af82
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13012,6 +13849,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: e47c7af5ee5810ab
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13030,6 +13868,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 960daa07740e3009
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13048,6 +13887,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: b750d043f992365f
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13066,6 +13906,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 4b0536b9b7354339
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13084,6 +13925,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: d8751b3614e84674
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13102,6 +13944,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: c7b763b41b955bd6
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13120,6 +13963,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 3ec2131375bd4656
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13138,6 +13982,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 9b69de304adba162
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13156,6 +14001,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 7e00621ac44ff7ce
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13174,6 +14020,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 25574cbb687a4cb5
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13192,6 +14039,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 70fbca153d703b19
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -13210,6 +14058,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: c500f8d313a17c9b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13228,6 +14077,7 @@ experiments:
   degradation: freeze
   restorer: none
   restorer_params: {}
+# hash: 74d4c24864090da9
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13246,6 +14096,7 @@ experiments:
   degradation: freeze
   restorer: telea
   restorer_params: {}
+# hash: b1b567eec901b782
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13264,6 +14115,7 @@ experiments:
   degradation: freeze
   restorer: e2fgvi
   restorer_params: {}
+# hash: a2659081027086ba
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13282,28 +14134,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: {}
-- alpha: 0.5
-  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
-    so this entry can never run (the runner rejects it with "Unknown degradation:
-    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
-    see docs/HOLE_CLOSURE_WAVE.md H2.'
-  beta: 0.5
-  block_size: 8
-  codec: svtav1
-  codec_params:
-    preset: '8'
-    qp: 50
-  component: presley_ai
-  composite_output: true
-  fg_protect: true
-  height: 360
-  width: 640
-  shrink_amount: 0.25
-  target_bitrate: 0
-  video: dog
-  degradation: blackout
-  restorer: none
-  restorer_params: {}
+# hash: 651cd36f662f47f1
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13324,8 +14155,32 @@ experiments:
   target_bitrate: 0
   video: dog
   degradation: blackout
+  restorer: none
+  restorer_params: {}
+# hash: 6bf0b5a6c51b3115
+- alpha: 0.5
+  _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
+    so this entry can never run (the runner rejects it with "Unknown degradation:
+    blackout"). Re-queued correctly as an elvis/blackout entry with an inpainter;
+    see docs/HOLE_CLOSURE_WAVE.md H2.'
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: presley_ai
+  composite_output: true
+  fg_protect: true
+  height: 360
+  width: 640
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+  degradation: blackout
   restorer: telea
   restorer_params: {}
+# hash: 85a3a92cd58a750a
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13348,6 +14203,7 @@ experiments:
   degradation: blackout
   restorer: e2fgvi
   restorer_params: {}
+# hash: 9083b599a6736e8d
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13370,6 +14226,7 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+# hash: 2aa6947446f1c842
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13388,6 +14245,7 @@ experiments:
   degradation: freeze
   restorer: none
   restorer_params: {}
+# hash: b99c2f7830984b1b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13406,6 +14264,7 @@ experiments:
   degradation: freeze
   restorer: telea
   restorer_params: {}
+# hash: c77a7899030cf1df
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13424,6 +14283,7 @@ experiments:
   degradation: freeze
   restorer: e2fgvi
   restorer_params: {}
+# hash: bd4ba3aeb3aad546
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13442,6 +14302,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: {}
+# hash: ce47c5f24f56b92a
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13464,6 +14325,7 @@ experiments:
   degradation: blackout
   restorer: none
   restorer_params: {}
+# hash: ff4800630b005b22
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13486,6 +14348,7 @@ experiments:
   degradation: blackout
   restorer: telea
   restorer_params: {}
+# hash: 568427599a72dfa7
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13508,6 +14371,7 @@ experiments:
   degradation: blackout
   restorer: e2fgvi
   restorer_params: {}
+# hash: e5f4d9b0a75d9ee9
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13530,6 +14394,7 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+# hash: b683ca48b74eec47
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13548,6 +14413,7 @@ experiments:
   degradation: freeze
   restorer: none
   restorer_params: {}
+# hash: 3128232321b55d45
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13566,6 +14432,7 @@ experiments:
   degradation: freeze
   restorer: telea
   restorer_params: {}
+# hash: ea178b950bb121ef
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13584,6 +14451,7 @@ experiments:
   degradation: freeze
   restorer: e2fgvi
   restorer_params: {}
+# hash: 3f02ae4404c124f4
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13602,6 +14470,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: {}
+# hash: 81b63969ec2143c1
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13624,6 +14493,7 @@ experiments:
   degradation: blackout
   restorer: none
   restorer_params: {}
+# hash: 9ba1822671e2ab24
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13646,6 +14516,7 @@ experiments:
   degradation: blackout
   restorer: telea
   restorer_params: {}
+# hash: 8c767950d017bd90
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13668,6 +14539,7 @@ experiments:
   degradation: blackout
   restorer: e2fgvi
   restorer_params: {}
+# hash: 4e0a9032a4bd458b
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13690,6 +14562,7 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+# hash: 6e879687a8759643
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13708,6 +14581,7 @@ experiments:
   degradation: freeze
   restorer: none
   restorer_params: {}
+# hash: 95217e5e3a74701a
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13726,6 +14600,7 @@ experiments:
   degradation: freeze
   restorer: telea
   restorer_params: {}
+# hash: 82430799727579fd
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13744,6 +14619,7 @@ experiments:
   degradation: freeze
   restorer: e2fgvi
   restorer_params: {}
+# hash: 5ff0bf38a226e7c8
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13762,6 +14638,7 @@ experiments:
   degradation: freeze
   restorer: propainter
   restorer_params: {}
+# hash: 3ab6bf7e33eb9b97
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13784,6 +14661,7 @@ experiments:
   degradation: blackout
   restorer: none
   restorer_params: {}
+# hash: d99ecaf6ff064139
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13806,6 +14684,7 @@ experiments:
   degradation: blackout
   restorer: telea
   restorer_params: {}
+# hash: 54cf176482676c84
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13828,6 +14707,7 @@ experiments:
   degradation: blackout
   restorer: e2fgvi
   restorer_params: {}
+# hash: 913c787e9e051793
 - alpha: 0.5
   _retired: 'mis-specified: blackout is an elvis removal_mode, not a presley_ai degradation,
     so this entry can never run (the runner rejects it with "Unknown degradation:
@@ -13850,6 +14730,7 @@ experiments:
   degradation: blackout
   restorer: propainter
   restorer_params: {}
+# hash: 01a0415053552ca0
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13868,6 +14749,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 76c183f9001285e3
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13886,6 +14768,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 1fdf2a679bed0ee9
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13904,6 +14787,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 980693fb02d23d66
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13922,6 +14806,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: dog
+# hash: 483d807a34414148
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13940,6 +14825,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 2f6ae9a46b9f800b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13958,6 +14844,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 0e3a1f96995d513e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13976,6 +14863,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: c6bd9035421f97d2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -13994,6 +14882,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: pigs
+# hash: 7ac7c19b436f7688
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14012,6 +14901,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: bear
+# hash: b0f8ec4cbbb84115
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14030,6 +14920,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: bear
+# hash: 0927ac209946712b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14048,6 +14939,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: bear
+# hash: ccdc030699eade7c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14066,6 +14958,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: bear
+# hash: 5e14b23355db2f4b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14084,6 +14977,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: camel
+# hash: bb8119c2c965c690
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14102,6 +14996,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: camel
+# hash: fa5c755ca0ccb3cb
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14120,6 +15015,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: camel
+# hash: cf965f7ef594be8e
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14138,6 +15034,7 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: camel
+# hash: f4679520005fa154
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14155,6 +15052,7 @@ experiments:
   target_bitrate: 0
   video: motorbike
   width: 640
+# hash: 4a5b97329da95564
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14172,6 +15070,7 @@ experiments:
   target_bitrate: 0
   video: drift-straight
   width: 640
+# hash: 1b889e2245dab9ca
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14189,6 +15088,7 @@ experiments:
   target_bitrate: 0
   video: dancing
   width: 640
+# hash: 52c6c61cc41b2b79
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14206,6 +15106,7 @@ experiments:
   target_bitrate: 0
   video: drift-turn
   width: 640
+# hash: 0f0d192862aa97eb
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14223,6 +15124,7 @@ experiments:
   target_bitrate: 0
   video: color-run
   width: 640
+# hash: 8648db33afe78b06
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14231,6 +15133,7 @@ experiments:
   target_bitrate: 150000
   video: bear
   width: 640
+# hash: 791a4a7d211dd339
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14239,6 +15142,7 @@ experiments:
   target_bitrate: 250000
   video: bear
   width: 640
+# hash: 1e8ed9c23e6d1922
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14247,6 +15151,7 @@ experiments:
   target_bitrate: 460800
   video: bear
   width: 640
+# hash: 01cedd8356287476
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14255,6 +15160,7 @@ experiments:
   target_bitrate: 555000
   video: bear
   width: 640
+# hash: 5134094ec43407fc
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14263,6 +15169,7 @@ experiments:
   target_bitrate: 800000
   video: bear
   width: 640
+# hash: 88b8b965acf24574
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14271,6 +15178,7 @@ experiments:
   target_bitrate: 460800
   video: bmx-trees
   width: 640
+# hash: ac96dfeeea3456df
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14279,6 +15187,7 @@ experiments:
   target_bitrate: 300000
   video: camel
   width: 640
+# hash: 2904b5594f582ae7
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14287,6 +15196,7 @@ experiments:
   target_bitrate: 600000
   video: camel
   width: 640
+# hash: 54e003fd21df9935
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14295,6 +15205,7 @@ experiments:
   target_bitrate: 300000
   video: dog
   width: 640
+# hash: 433b88d2bcb0373f
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14303,6 +15214,7 @@ experiments:
   target_bitrate: 600000
   video: dog
   width: 640
+# hash: 4267ff72a682e6d0
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14311,6 +15223,7 @@ experiments:
   target_bitrate: 460800
   video: drift-chicane
   width: 640
+# hash: 7483cd84e5940907
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14319,6 +15232,7 @@ experiments:
   target_bitrate: 300000
   video: india
   width: 640
+# hash: 986b1ebbd15ffc89
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14327,6 +15241,7 @@ experiments:
   target_bitrate: 600000
   video: india
   width: 640
+# hash: a7b6391e3a6c09b3
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14335,6 +15250,7 @@ experiments:
   target_bitrate: 300000
   video: pigs
   width: 640
+# hash: 922748d11019292b
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14343,6 +15259,7 @@ experiments:
   target_bitrate: 600000
   video: pigs
   width: 640
+# hash: af0809337038f43c
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14351,6 +15268,7 @@ experiments:
   target_bitrate: 300000
   video: tennis
   width: 640
+# hash: 08245d42882938dd
 - codec: kvazaar
   codec_params:
     rate_control: cqp
@@ -14359,6 +15277,7 @@ experiments:
   target_bitrate: 600000
   video: tennis
   width: 640
+# hash: 79553e7b43a32d0c
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14377,6 +15296,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 97b843b32aada05f
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14395,6 +15315,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 77839a43a84500f6
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14412,6 +15333,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 9df7df0f83873f14
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14429,6 +15351,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 76e5cb1de557c639
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14447,6 +15370,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 24240f9ec538274e
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14465,6 +15389,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 1d179cb03cd7875d
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14482,6 +15407,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 8ec888c58da8863c
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -14499,6 +15425,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 22f6147e41fba4cc
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14519,6 +15446,7 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
+# hash: cae4b213d7c2e78a
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14539,6 +15467,7 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
+# hash: f10f5f79b1cd1d2f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14559,6 +15488,7 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
+# hash: 1753219b14a0cc65
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14579,6 +15509,7 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
+# hash: 5f2f81dfaabc8760
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14599,6 +15530,7 @@ experiments:
   target_bitrate: 0
   video: camel
   width: 640
+# hash: 67e74fa3608464fe
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14619,6 +15551,7 @@ experiments:
   target_bitrate: 0
   video: camel
   width: 640
+# hash: 70c6ddb7b98570aa
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14639,6 +15572,7 @@ experiments:
   target_bitrate: 0
   video: camel
   width: 640
+# hash: 382870c6c9dfe1b0
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14659,6 +15593,7 @@ experiments:
   target_bitrate: 0
   video: camel
   width: 640
+# hash: 84743c7c4b33b549
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14679,6 +15614,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 3ca9a60bfbeca6b4
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14699,6 +15635,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 233c3e3670003b35
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14719,6 +15656,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: d81b1d270f60b3f6
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14739,6 +15677,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: a3dd0b440aec7cf0
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14759,6 +15698,7 @@ experiments:
   target_bitrate: 0
   video: india
   width: 640
+# hash: 8b6686fb7bf30028
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14779,6 +15719,7 @@ experiments:
   target_bitrate: 0
   video: india
   width: 640
+# hash: fbbccda7bdc75c0b
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14799,6 +15740,7 @@ experiments:
   target_bitrate: 0
   video: india
   width: 640
+# hash: 2b7c18de19ec436f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14819,6 +15761,7 @@ experiments:
   target_bitrate: 0
   video: india
   width: 640
+# hash: 3b485b0921e88bd4
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14839,6 +15782,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: dd920026d06df7ec
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14859,6 +15803,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: fe14bc87b037a8f6
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14879,6 +15824,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 2d3cfbc8dd06725f
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14899,6 +15845,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 779bd1647f82f4d5
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14919,6 +15866,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: e4db65c2a3843100
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14939,6 +15887,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: 3f9bec7e8d9bc1bd
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14959,6 +15908,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: ca3719647bb726cd
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14979,6 +15929,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: 0d6fc8cf5fe2f269
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -14999,6 +15950,7 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
+# hash: b40e04550b57ed18
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -15019,6 +15971,7 @@ experiments:
   target_bitrate: 0
   video: bear
   width: 640
+# hash: 4721082d636b4d23
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15036,6 +15989,7 @@ experiments:
   target_bitrate: 0
   video: color-run
   width: 640
+# hash: 2d5665b52bac3584
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15053,6 +16007,7 @@ experiments:
   target_bitrate: 0
   video: color-run
   width: 640
+# hash: 1bd52888e5a74f7c
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15070,6 +16025,7 @@ experiments:
   target_bitrate: 0
   video: dancing
   width: 640
+# hash: ff7bbca388749d6e
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15087,6 +16043,7 @@ experiments:
   target_bitrate: 0
   video: dancing
   width: 640
+# hash: 292535fc3839432a
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15104,6 +16061,7 @@ experiments:
   target_bitrate: 0
   video: drift-turn
   width: 640
+# hash: f319efa5dd663a1b
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15121,6 +16079,7 @@ experiments:
   target_bitrate: 0
   video: drift-turn
   width: 640
+# hash: 51658477b2384aca
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15138,6 +16097,7 @@ experiments:
   target_bitrate: 0
   video: motorbike
   width: 640
+# hash: db6dc5aa1010fb9d
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15155,6 +16115,7 @@ experiments:
   target_bitrate: 0
   video: motorbike
   width: 640
+# hash: 5fb44a1978f4da88
 - ac_keep: 1
   alpha: 0.5
   beta: 0.5
@@ -15173,6 +16134,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 2c81bd7d0e081121
 - ac_keep: 1
   alpha: 0.5
   beta: 0.5
@@ -15191,6 +16153,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 7574fde48334680b
 - ac_keep: 2
   alpha: 0.5
   beta: 0.5
@@ -15209,6 +16172,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: bd765453e19c6de4
 - ac_keep: 2
   alpha: 0.5
   beta: 0.5
@@ -15227,6 +16191,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 169e2f57d2cccb20
 - ac_keep: 4
   alpha: 0.5
   beta: 0.5
@@ -15245,6 +16210,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: 37576070351a0af8
 - ac_keep: 4
   alpha: 0.5
   beta: 0.5
@@ -15263,6 +16229,7 @@ experiments:
   target_bitrate: 0
   video: dog
   width: 640
+# hash: ff541888cfead406
 - ac_keep: 1
   alpha: 0.5
   beta: 0.5
@@ -15281,6 +16248,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 9de4eb8905066db0
 - ac_keep: 1
   alpha: 0.5
   beta: 0.5
@@ -15299,6 +16267,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 9832d61b6095a375
 - ac_keep: 2
   alpha: 0.5
   beta: 0.5
@@ -15317,6 +16286,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: f97eaf19d56a3d2b
 - ac_keep: 2
   alpha: 0.5
   beta: 0.5
@@ -15335,6 +16305,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: d2fb0ec00b1ba388
 - ac_keep: 4
   alpha: 0.5
   beta: 0.5
@@ -15353,6 +16324,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 250447c5af279db8
 - ac_keep: 4
   alpha: 0.5
   beta: 0.5
@@ -15371,6 +16343,7 @@ experiments:
   target_bitrate: 0
   video: pigs
   width: 640
+# hash: 3b32ffb145ab1f0b
 - ac_keep: 1
   alpha: 0.5
   beta: 0.5
@@ -15389,6 +16362,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: 9d337ee62a5ce49d
 - ac_keep: 1
   alpha: 0.5
   beta: 0.5
@@ -15407,6 +16381,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: ac4a1f979ee90aa6
 - ac_keep: 2
   alpha: 0.5
   beta: 0.5
@@ -15425,6 +16400,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: 51b490f8728c8c3f
 - ac_keep: 2
   alpha: 0.5
   beta: 0.5
@@ -15443,6 +16419,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: 02a9bf75de847179
 - ac_keep: 4
   alpha: 0.5
   beta: 0.5
@@ -15461,6 +16438,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: dbe4f6dd1152d3dc
 - ac_keep: 4
   alpha: 0.5
   beta: 0.5
@@ -15479,6 +16457,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: 95c20338a5541dd2
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15496,6 +16475,7 @@ experiments:
   target_bitrate: 0
   video: tennis
   width: 640
+# hash: ed44b539352a1574
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -15512,4 +16492,194 @@ experiments:
   shrink_amount: 0.25
   target_bitrate: 0
   video: tennis
+  width: 640
+# hash: 5939a6e8c4b5a9e0
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: bear
+  width: 640
+# hash: 48c9b1fd5f8cb320
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 61
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: bear
+  width: 640
+# hash: 4f1e5e0f2616bf4d
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 42
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: camel
+  width: 640
+# hash: f69f010338188e6f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 62
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: camel
+  width: 640
+# hash: 3f56e715ad23ac7e
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 0e2446164d0ab869
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: d9303b02b71644a4
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 63
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 79210c07eccca01f
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: f5370952a92e971b
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: 6e41333caddf48e7
+- alpha: 0.5
+  beta: 0.5
+  block_size: 8
+  codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 63
+  component: elvis
+  composite_output: true
+  fg_protect: true
+  height: 360
+  inpainter: propainter
+  inpainter_params: {}
+  removal_mode: blackout
+  shrink_amount: 0.25
+  target_bitrate: 0
+  video: pigs
   width: 640
