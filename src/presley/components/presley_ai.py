@@ -249,6 +249,12 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
                                   .reshape(nby, block_size, nbx, block_size).max(axis=(1, 3)) > 127)
 
     prev_degraded = None
+    # Time spent choosing WHICH blocks to degrade, separated from scoring,
+    # degrading and encoding. Without this the selection goal has no computation
+    # axis at all -- every cost was folded into encoding_time_seconds. It is an
+    # OUTPUT field only: compute_experiment_hash consumes the experiment config,
+    # never the result, so recording it invalidates no existing hash.
+    selection_time = 0.0
     for i in range(len(frames)):
         frame = frames_arr[i]
         score = removability_scores[i]
@@ -256,7 +262,9 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         sel = None
         if select_amount is not None:
             excl = fg_block_masks[i] if fg_block_masks is not None and i < len(fg_block_masks) else None
+            _t_sel = time.time()
             sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
+            selection_time += time.time() - _t_sel
 
         if degradation == 'downsample':
             _lm = None
@@ -525,6 +533,7 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         "file_size_bytes": os.path.getsize(final_output),
         "transmitted_size_bytes": total_transmitted_bytes,
         "encoding_time_seconds": encoding_time,
+        "selection_time_seconds": selection_time,
         "restoration_time_seconds": restoration_time,
         "total_time_seconds": encoding_time + restoration_time
     }
