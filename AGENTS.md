@@ -400,6 +400,14 @@ which have never seen this home directory, get it inlined into each project's
 Keep it short. Every line here is loaded by every agent in every session, on
 every project — prose costs adherence, so compress rather than accumulate.
 
+### Write in plain words
+
+Use simple, everyday language. Short sentences. Pick the common word over the
+fancy one, and cut words that add nothing. Keep the technical terms that carry
+real meaning (QP, worktree, checkpoint) — drop the decorative ones. This
+applies to chat replies, commit messages, and comments; paper text keeps its
+own academic register.
+
 ### The host
 
 Shared remote Linux **GPU server, no root/sudo/apt**, headless. Home is
