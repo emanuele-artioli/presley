@@ -165,6 +165,14 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # alias would be worse -- two keys for one behaviour is one experiment with
     # two hashes. If it is ever renamed, migrate the corpus in the same commit.
     select_amount = experiment.get('shrink_amount')
+    # Which objective ranks the blocks. 'removability' (default) is the score
+    # of Eq. importance -- a bits-cost proxy and nothing else. 'restorability'
+    # divides it by predicted post-restoration damage, which is the correction
+    # the M1 diagnosis implies. Defaulting in code rather than in the config
+    # keeps every existing experiment's hash exactly where it is.
+    selection_rule = experiment.get('selection_rule', 'removability')
+    if selection_rule not in ('removability', 'restorability'):
+        raise ValueError(f"unknown selection_rule {selection_rule!r}")
     fg_protect = experiment.get('fg_protect', False)
     temporal_pool_masks = experiment.get('temporal_pool_masks', False)
     # Which foreground mask feeds removability scoring AND fg_protect below:
@@ -254,6 +262,33 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             fg_block_masks.append(m[:nby * block_size, :nbx * block_size]
                                   .reshape(nby, block_size, nbx, block_size).max(axis=(1, 3)) > 127)
 
+    # The corrected objective needs the raw EVCA cubes, not the finished score:
+    # the score has already blended, boosted and normalized them away. Loaded
+    # once here rather than per frame -- it is a cache read, but a cache read
+    # times 82 frames inside the timed selection stage would misattribute the
+    # cost of reading to the cost of selecting.
+    selection_scores_all = removability_scores
+    if selection_rule == 'restorability':
+        from presley.damagemodel import block_features, load as load_damage_model
+        from presley.preprocessing import get_evca_scores
+        ref_frames_dir = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames")
+        temporal_cube, spatial_cube = get_evca_scores(
+            video_name, width, height, block_size, raw_yuv_path, ref_frames_dir, cache_dir)
+        model_path = experiment.get('damage_model', 'config/damage_predictor.json')
+        # Raises if no model excludes this clip. That is deliberate: scoring a
+        # clip with a model that trained on it would leak the arm under test
+        # into its own prediction, and nothing downstream could detect it.
+        damage_model = load_damage_model(model_path, video_name)
+        corrected = np.empty_like(removability_scores)
+        for i in range(removability_scores.shape[0]):
+            if i >= spatial_cube.shape[0]:
+                corrected[i] = removability_scores[i]
+                continue
+            feats = block_features(spatial_cube, temporal_cube, i)
+            corrected[i] = damage_model.corrected_scores(
+                removability_scores[i].reshape(-1), feats).reshape(removability_scores[i].shape)
+        selection_scores_all = corrected
+
     prev_degraded = None
     # Time spent choosing WHICH blocks to degrade, separated from scoring,
     # degrading and encoding. Without this the selection goal has no computation
@@ -270,7 +305,12 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             excl = fg_block_masks[i] if fg_block_masks is not None and i < len(fg_block_masks) else None
             _t_sel = time.time()
             with stages('select'):
-                sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
+                # Only the ranking input changes between the two rules: the
+                # clustering blur, the hard foreground exclusion and the budget
+                # are identical, so the arms differ in WHICH blocks are chosen
+                # and in nothing else.
+                sel = select_removal_mask_global(selection_scores_all[i], select_amount,
+                                                 cluster_blocks=True, exclude=excl) > 0
             selection_time += time.time() - _t_sel
 
         with stages('degrade'):
