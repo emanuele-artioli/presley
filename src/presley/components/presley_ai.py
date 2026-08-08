@@ -10,6 +10,7 @@ from presley.degradation import (filter_frame_downsample, filter_frame_gaussian,
                                  filter_frame_mean_fill, filter_frame_freeze,
                                  select_removal_mask_global, upsample_block_mask)
 from presley.sidechannel import save_level_masks, composite_passthrough
+from presley.stagetiming import StageTimer
 
 # Degradations that punch holes to be filled by an in-painter (the ELVIS<->PRESLEY
 # bridge), rather than blur/downsample restored by a super-resolver.
@@ -210,18 +211,23 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     blur_kernel = int(experiment.get('blur_kernel', 15))
     ac_keep = int(experiment.get('ac_keep', 2))
 
-    # 1. Load data
-    raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
-    removability_scores = get_removability_scores(
-        video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir,
-        mask_source=mask_source,
-        mask_morphology=mask_morphology,
-        mask_morphology_radius=mask_morphology_radius,
-        mask_morphology_seed=mask_morphology_seed,
-    )
-    
+    stages = StageTimer()
+
+    # 1. Load data. Both of these are cached across experiments, so a run on a
+    # warm cache reports ~0 -- see stagetiming.CACHED_STAGES.
+    with stages('preprocess'):
+        raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
+    with stages('score'):
+        removability_scores = get_removability_scores(
+            video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir,
+            mask_source=mask_source,
+            mask_morphology=mask_morphology,
+            mask_morphology_radius=mask_morphology_radius,
+            mask_morphology_seed=mask_morphology_seed,
+        )
+
     start_time = time.time()
-    
+
     # 2. Degrade
     degraded_frames_list = []
     strength_maps_list = []
@@ -263,55 +269,63 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         if select_amount is not None:
             excl = fg_block_masks[i] if fg_block_masks is not None and i < len(fg_block_masks) else None
             _t_sel = time.time()
-            sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
+            with stages('select'):
+                sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
             selection_time += time.time() - _t_sel
 
-        if degradation == 'downsample':
-            _lm = None
-            if oracle_levels is not None:
-                if i >= len(oracle_levels):
-                    raise IndexError(
-                        f"oracle level map has {len(oracle_levels)} frames but frame {i} was "
-                        f"requested -- the map was built against a different frame count")
-                _lm = oracle_levels[i]
-            degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel, levels=downsample_levels,
-                                                    uniform_level=downsample_uniform_level,
-                                                    level_map=_lm)
-        elif degradation == 'blur':
-            degraded, smap = filter_frame_gaussian(frame, score, block_size, kernel_size=blur_kernel, sel=sel)
-        elif degradation == 'ac_truncate':
-            degraded, smap = filter_frame_ac_truncate(frame, score, block_size, keep=ac_keep, sel=sel)
-        elif degradation == 'noise':
-            degraded, smap = filter_frame_noise(frame, score, block_size, sel=sel)
-        elif degradation == 'mean_fill':
-            degraded, smap = filter_frame_mean_fill(frame, score, block_size, sel=sel)
-        elif degradation == 'freeze':
-            degraded, smap = filter_frame_freeze(frame, score, block_size, prev_degraded, sel=sel)
-        else:
-            raise ValueError(f"Unknown degradation: {degradation}")
+        with stages('degrade'):
+            if degradation == 'downsample':
+                _lm = None
+                if oracle_levels is not None:
+                    if i >= len(oracle_levels):
+                        raise IndexError(
+                            f"oracle level map has {len(oracle_levels)} frames but frame {i} was "
+                            f"requested -- the map was built against a different frame count")
+                    _lm = oracle_levels[i]
+                degraded, smap = filter_frame_downsample(frame, score, block_size, sel=sel, levels=downsample_levels,
+                                                        uniform_level=downsample_uniform_level,
+                                                        level_map=_lm)
+            elif degradation == 'blur':
+                degraded, smap = filter_frame_gaussian(frame, score, block_size, kernel_size=blur_kernel, sel=sel)
+            elif degradation == 'ac_truncate':
+                degraded, smap = filter_frame_ac_truncate(frame, score, block_size, keep=ac_keep, sel=sel)
+            elif degradation == 'noise':
+                degraded, smap = filter_frame_noise(frame, score, block_size, sel=sel)
+            elif degradation == 'mean_fill':
+                degraded, smap = filter_frame_mean_fill(frame, score, block_size, sel=sel)
+            elif degradation == 'freeze':
+                degraded, smap = filter_frame_freeze(frame, score, block_size, prev_degraded, sel=sel)
+            else:
+                raise ValueError(f"Unknown degradation: {degradation}")
 
         prev_degraded = degraded
         degraded_frames_list.append(degraded)
         strength_maps_list.append(smap)
-        
+
     temp_degraded_vid = os.path.join(results_dir, "temp_degraded_lossless.mkv")
-    save_frames_as_video(degraded_frames_list, temp_degraded_vid, framerate, lossless=True, codec="libx265")
-    
+    with stages('degrade'):
+        # The lossless intermediate is part of producing the degraded source,
+        # not part of the codec measurement: it exists so the encoder under
+        # test sees frames rather than an array, and its cost would otherwise
+        # be charged to `encode`.
+        save_frames_as_video(degraded_frames_list, temp_degraded_vid, framerate, lossless=True, codec="libx265")
+
     # 3. Encode degraded frames
     transmitted_video = os.path.join(results_dir, "encoded_degraded.mp4")
-    if codec == 'x265':
-        if 'qp' in codec_params:
-            encode_video_x265_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', 'medium'))
+    with stages('encode'):
+        if codec == 'x265':
+            if 'qp' in codec_params:
+                encode_video_x265_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', 'medium'))
+            else:
+                encode_video_x265(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
+        elif codec == 'svtav1':
+            if 'qp' in codec_params:
+                _tune = codec_params.get('tune')
+                encode_video_svtav1_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', '8'), tune=None if _tune is None else int(_tune))
+            else:
+                encode_video_svtav1(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', '8'))
         else:
-            encode_video_x265(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
-    elif codec == 'svtav1':
-        if 'qp' in codec_params:
-            _tune = codec_params.get('tune')
-            encode_video_svtav1_qp(temp_degraded_vid, transmitted_video, framerate, int(codec_params['qp']), preset=codec_params.get('preset', '8'), tune=None if _tune is None else int(_tune))
-        else:
-            encode_video_svtav1(temp_degraded_vid, transmitted_video, framerate, target_bitrate, preset=codec_params.get('preset', '8'))
-    else:
-        raise ValueError(f"Presley AI currently requires x265 or svtav1 for encoding, got {codec}")
+            raise ValueError(f"Presley AI currently requires x265 or svtav1 for encoding, got {codec}")
 
     encoding_time = time.time() - start_time
     restoration_start = time.time()
@@ -322,10 +336,12 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # experiment's transmitted_size_bytes moves. Multi-level maps used to be
     # written as raw savez'd int32, ~2.3x larger than necessary.
     strength_maps_path = os.path.join(results_dir, "strength_maps.npz")
-    save_level_masks(strength_maps_list, strength_maps_path)
-    
+    with stages('sidechannel'):
+        save_level_masks(strength_maps_list, strength_maps_path)
+
     # 4. Decode degraded frames
-    decoded_degraded = load_frames_from_video(transmitted_video)
+    with stages('decode'):
+        decoded_degraded = load_frames_from_video(transmitted_video)
 
     import cv2
 
@@ -496,16 +512,18 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
             restored_frames.append(cv2.imread(f))
 
         restoration_time = time.time() - restoration_start
+        stages.add('restore', restoration_time)
         import shutil
         shutil.rmtree(temp_frames_dir, ignore_errors=True)
 
     # Passthrough compositing: keep the decoded transmitted pixels (bit-exact FG)
     # and take restored pixels only where the frame was degraded (strength > 0).
     if composite_output:
-        pix_masks = [upsample_block_mask((strength_maps_list[i] > 0).astype(np.uint8),
-                                         block_size, width, height).astype(bool)
-                     for i in range(len(restored_frames))]
-        restored_frames = composite_passthrough(decoded_degraded, restored_frames, pix_masks)
+        with stages('composite'):
+            pix_masks = [upsample_block_mask((strength_maps_list[i] > 0).astype(np.uint8),
+                                             block_size, width, height).astype(bool)
+                         for i in range(len(restored_frames))]
+            restored_frames = composite_passthrough(decoded_degraded, restored_frames, pix_masks)
 
     # ffv1/bgr0 (verified bit-exact, unlike libx265's yuv420p "lossless" which
     # still chroma-subsamples): matters here because composited pixels are
@@ -535,5 +553,6 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         "encoding_time_seconds": encoding_time,
         "selection_time_seconds": selection_time,
         "restoration_time_seconds": restoration_time,
-        "total_time_seconds": encoding_time + restoration_time
+        "total_time_seconds": encoding_time + restoration_time,
+        "stage_times_seconds": stages.as_dict(),
     }

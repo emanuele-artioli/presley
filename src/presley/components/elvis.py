@@ -8,6 +8,7 @@ from presley.encode_utils import save_frames_as_video, load_frames_from_video, e
 from presley.degradation import apply_selective_removal, select_removal_mask_global, upsample_block_mask
 from presley.restoration import stretch_frame
 from presley.sidechannel import save_binary_masks, composite_passthrough
+from presley.stagetiming import StageTimer
 
 def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cache_dir: str) -> Dict[str, Any]:
     video_name = experiment['video']
@@ -57,17 +58,23 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # Speed/quality knobs for the in-painter (forwarded to the restoration fn).
     inpainter_params = experiment.get('inpainter_params', {})
 
-    # 1. Load data
-    raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
-    removability_scores = get_removability_scores(
-        video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir,
-        mask_source=mask_source,
-        mask_morphology=mask_morphology,
-        mask_morphology_radius=mask_morphology_radius,
-        mask_morphology_seed=mask_morphology_seed,
-    )
-    
+    stages = StageTimer()
+
+    # 1. Load data. Both cached across experiments -- see
+    # stagetiming.CACHED_STAGES for why a warm run reports ~0 here.
+    with stages('preprocess'):
+        raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
+    with stages('score'):
+        removability_scores = get_removability_scores(
+            video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir,
+            mask_source=mask_source,
+            mask_morphology=mask_morphology,
+            mask_morphology_radius=mask_morphology_radius,
+            mask_morphology_seed=mask_morphology_seed,
+        )
+
     start_time = time.time()
+    degrade_start = time.time()
 
     # 2. Remove blocks (mode-dependent representation)
     import cv2
@@ -127,9 +134,15 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # Save uncompressed degraded frames temporarily for encoding
     temp_shrunk_vid = os.path.join(results_dir, "temp_shrunk_lossless.mkv")
     save_frames_as_video(shrunk_frames_list, temp_shrunk_vid, framerate, lossless=True, codec="libx265")
-    
+    # Everything from `degrade_start` to here is block selection and removal:
+    # elvis interleaves the two per frame, so unlike presley_ai they cannot be
+    # split without restructuring the loop, and reporting them merged is more
+    # honest than attributing the whole of it to either one.
+    stages.add('degrade', time.time() - degrade_start)
+
     # 3. Encode transmitted video
     encoded_shrunk = os.path.join(results_dir, "encoded_shrunk.mp4")
+    encode_start = time.time()
     if codec == 'x265':
         if 'qp' in codec_params:
             # Fixed-QP mode: where the blackout/freeze transports actually win
@@ -148,16 +161,19 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     else:
         raise ValueError(f"Elvis currently requires x265 or svtav1 for encoding, got {codec}")
         
+    stages.add('encode', time.time() - encode_start)
     encoding_time = time.time() - start_time
     restoration_start = time.time()
-    
+
     # Save masks (transmitted side information), bit-packed to minimise the
     # fixed side-channel cost that dominates the starved-bitrate budget.
     masks_path = os.path.join(results_dir, "removal_masks.npz")
-    save_binary_masks(masks_list, masks_path)
-    
+    with stages('sidechannel'):
+        save_binary_masks(masks_list, masks_path)
+
     # 4. Decode transmitted video
-    decoded_shrunk = load_frames_from_video(encoded_shrunk)
+    with stages('decode'):
+        decoded_shrunk = load_frames_from_video(encoded_shrunk)
 
     # 5. Restore native geometry. shrink mode needs unpacking (stretch);
     # blackout/freeze are already native-resolution — decode is the input.
@@ -244,9 +260,10 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     # both composite sources are identical there -- so an FG-spread check across
     # restorers cannot detect it.
     if composite_output:
-        pix_masks = [upsample_block_mask(m.astype(np.uint8), block_size, width, height).astype(bool)
-                     for m in masks_list]
-        inpainted_frames = composite_passthrough(stretched_frames_list, inpainted_frames, pix_masks)
+        with stages('composite'):
+            pix_masks = [upsample_block_mask(m.astype(np.uint8), block_size, width, height).astype(bool)
+                         for m in masks_list]
+            inpainted_frames = composite_passthrough(stretched_frames_list, inpainted_frames, pix_masks)
 
     # ffv1/bgr0 (verified bit-exact, unlike libx265's yuv420p "lossless" which
     # still chroma-subsamples): matters here because composited pixels are
@@ -255,7 +272,11 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
     save_frames_as_video(inpainted_frames, final_output, framerate, lossless=True, codec="ffv1")
     
     restoration_time = time.time() - restoration_start
-    
+    # `restore` is the in-painter plus the compositing and lossless writeout
+    # that follow it; `composite` above is charged separately, so subtracting it
+    # keeps the stages disjoint and their sum equal to restoration_time.
+    stages.add('restore', restoration_time - stages.as_dict().get('composite', 0.0))
+
     # Clean up temp dirs
     import shutil
     shutil.rmtree(stretched_dir, ignore_errors=True)
@@ -282,5 +303,6 @@ def run_elvis(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, ca
         "transmitted_size_bytes": total_transmitted_bytes,
         "encoding_time_seconds": encoding_time,
         "restoration_time_seconds": restoration_time,
-        "total_time_seconds": encoding_time + restoration_time
+        "total_time_seconds": encoding_time + restoration_time,
+        "stage_times_seconds": stages.as_dict(),
     }

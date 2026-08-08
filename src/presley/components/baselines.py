@@ -2,6 +2,7 @@ import os
 import time
 from typing import Dict, Any
 from presley.preprocessing import get_reference_frames
+from presley.stagetiming import StageTimer
 from presley.encode_utils import (
     encode_video_x264, encode_video_x265,
     encode_video_svtav1, encode_video_kvazaar, derive_rate_control
@@ -15,14 +16,19 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
     target_bitrate = experiment['target_bitrate']
     codec_params = experiment.get('codec_params', {})
     
-    # Get reference frames (caches YUV + PNGs)
-    raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
+    stages = StageTimer()
+
+    # Get reference frames (caches YUV + PNGs). Cached across experiments, so a
+    # run hitting a warm cache reports ~0 here -- see stagetiming.CACHED_STAGES.
+    with stages('preprocess'):
+        raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_pattern = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames", "%05d.png")
-    
+
     output_video = os.path.join(results_dir, "encoded.mp4")
-    
+
     start_time = time.time()
-    
+    encode_start = time.time()
+
     if codec == 'x264':
         encode_video_x264(ref_frames_pattern, output_video, framerate, target_bitrate, preset=codec_params.get('preset', 'medium'))
     elif codec == 'x265':
@@ -66,8 +72,9 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
     else:
         raise ValueError(f"Unsupported baseline codec: {codec}")
         
+    stages.add('encode', time.time() - encode_start)
     encoding_time = time.time() - start_time
-    
+
     if codec == 'hnerv':
         file_size = os.path.getsize(os.path.join(results_dir, "hnerv_checkpoint.pt.gz"))
     else:
@@ -86,5 +93,6 @@ def run_baseline(experiment: Dict[str, Any], dataset_dir: str, results_dir: str,
         "transmitted_size_bytes": file_size,
         "encoding_time_seconds": encoding_time,
         "restoration_time_seconds": 0.0,
-        "total_time_seconds": encoding_time
+        "total_time_seconds": encoding_time,
+        "stage_times_seconds": stages.as_dict(),
     }

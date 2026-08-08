@@ -3,6 +3,7 @@ import time
 from typing import Dict, Any
 import numpy as np
 from presley.preprocessing import get_reference_frames, get_removability_scores
+from presley.stagetiming import StageTimer
 from presley.encode_utils import (
     encode_with_roi_kvazaar, derive_rate_control,
     # other roi encoding functions can be imported here once implemented
@@ -27,22 +28,28 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
     mask_morphology_radius = int(experiment.get('mask_morphology_radius', 0))
     mask_morphology_seed = int(experiment.get('mask_morphology_seed', 0))
 
-    # Get reference frames and removability scores
-    raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
+    stages = StageTimer()
+
+    # Get reference frames and removability scores. Both cached across
+    # experiments -- see stagetiming.CACHED_STAGES.
+    with stages('preprocess'):
+        raw_yuv_path, frames, framerate = get_reference_frames(video_name, width, height, dataset_dir, cache_dir)
     ref_frames_pattern = os.path.join(cache_dir, f"{video_name}_{width}x{height}", "reference_frames", "%05d.png")
 
-    removability_scores = get_removability_scores(
-        video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir,
-        mask_source=mask_source,
-        mask_morphology=mask_morphology,
-        mask_morphology_radius=mask_morphology_radius,
-        mask_morphology_seed=mask_morphology_seed,
-    )
-    
+    with stages('score'):
+        removability_scores = get_removability_scores(
+            video_name, width, height, block_size, alpha, beta, dataset_dir, cache_dir,
+            mask_source=mask_source,
+            mask_morphology=mask_morphology,
+            mask_morphology_radius=mask_morphology_radius,
+            mask_morphology_seed=mask_morphology_seed,
+        )
+
     output_video = os.path.join(results_dir, "encoded.mp4")
-    
+
     start_time = time.time()
-    
+    encode_start = time.time()
+
     if roi_method == 'kvazaar':
         qp_range = codec_params.get('qp_range', 15)
         encode_with_roi_kvazaar(ref_frames_pattern, output_video, removability_scores, block_size, framerate, width, height, target_bitrate, qp_range=qp_range)
@@ -110,8 +117,12 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
     else:
         raise ValueError(f"Unsupported ROI method: {roi_method}")
         
+    # ROI folds the QP-map construction into the encoder call itself, so there
+    # is no separable `select` stage to charge it to -- unlike presley_ai, where
+    # selection is a distinct step before encoding.
+    stages.add('encode', time.time() - encode_start)
     encoding_time = time.time() - start_time
-    
+
     file_size = os.path.getsize(output_video)
     duration = len(frames) / framerate
     actual_bitrate = (file_size * 8) / duration
@@ -126,5 +137,6 @@ def run_roi(experiment: Dict[str, Any], dataset_dir: str, results_dir: str, cach
         "transmitted_size_bytes": file_size,
         "encoding_time_seconds": encoding_time,
         "restoration_time_seconds": 0.0,
-        "total_time_seconds": encoding_time
+        "total_time_seconds": encoding_time,
+        "stage_times_seconds": stages.as_dict(),
     }
