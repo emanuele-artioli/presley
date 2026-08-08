@@ -1,0 +1,721 @@
+experiments:
+# hash: a07560c409dc38ce
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: bear
+  width: 640
+# hash: 4c565401f836861a
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: bear
+  width: 640
+# hash: b8058d995c801462
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: bear
+  width: 640
+# hash: 1cda3faebeb28ede
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: bear
+  width: 640
+# hash: f1a08e897da66a65
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: bear
+  width: 1280
+# hash: a2f67dfa70b8b300
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: bear
+  width: 1280
+# hash: 890524d0e7081416
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: bear
+  width: 1280
+# hash: afbf057277630824
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: bear
+  width: 1280
+# hash: ea3a5c41fc771671
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: bear
+  width: 1920
+# hash: 0844667f3520695c
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: bear
+  width: 1920
+# hash: 9dd2a98e4035791b
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: bear
+  width: 1920
+# hash: 000bc478dcd62996
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: bear
+  width: 1920
+# hash: 74001ea32ac8ce54
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: camel
+  width: 640
+# hash: 83cb00c94850f2e1
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: camel
+  width: 640
+# hash: 05c43e4a94ecc84f
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: camel
+  width: 640
+# hash: 75668da3f45feb24
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: camel
+  width: 640
+# hash: 2b29f0c5f987759e
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: camel
+  width: 1280
+# hash: dc89ffce910bd92d
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: camel
+  width: 1280
+# hash: 8ceb27800b0f3894
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: camel
+  width: 1280
+# hash: dd1db9f043d27f72
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: camel
+  width: 1280
+# hash: d57ae064204bb17f
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: camel
+  width: 1920
+# hash: 784246bb08f4b272
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: camel
+  width: 1920
+# hash: 50e877211d0aaf97
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: camel
+  width: 1920
+# hash: 30e29eeec50d8fe9
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: camel
+  width: 1920
+# hash: 215da31337c64072
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 6634375dcfb235fb
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: cb2a0848a1c5d492
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 458d0c7f9a2ee6dd
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: dog
+  width: 640
+# hash: 9cf669cd3016c990
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: dog
+  width: 1280
+# hash: b7fb74cf6a129b1e
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: dog
+  width: 1280
+# hash: e0b74b42c9382369
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: dog
+  width: 1280
+# hash: fd57d45b8b3a803b
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: dog
+  width: 1280
+# hash: 6ed153bea1b830f2
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: dog
+  width: 1920
+# hash: 5009128458bff594
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: dog
+  width: 1920
+# hash: 5d671434483cd3c6
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: dog
+  width: 1920
+# hash: 6e7c14065af762a7
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: dog
+  width: 1920
+# hash: 5abcd85d79e0efc3
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: 1e45e39ca20e50d5
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: 711c80c110a5d359
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: db046614258cedb0
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: pigs
+  width: 640
+# hash: 8aefb1be518dfefa
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: pigs
+  width: 1280
+# hash: 35c7705f47f73360
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: pigs
+  width: 1280
+# hash: 3d36974f7e6a495f
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: pigs
+  width: 1280
+# hash: 4b1cc4feceee51ea
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: pigs
+  width: 1280
+# hash: 564139f0ffa19812
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: pigs
+  width: 1920
+# hash: 3c99dff5356e1144
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: pigs
+  width: 1920
+# hash: 76f4ef99875066f8
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: pigs
+  width: 1920
+# hash: 4b98c86fc676be6e
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: pigs
+  width: 1920
+# hash: 9dc6941bd7ba7292
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: tennis
+  width: 640
+# hash: be04a6b64985be95
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: tennis
+  width: 640
+# hash: 4df39f7f9643cf99
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: tennis
+  width: 640
+# hash: b76506e57fc38035
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: tennis
+  width: 640
+# hash: e92e6f9cf1e99e5e
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: tennis
+  width: 1280
+# hash: 4091a665f5b9bf94
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: tennis
+  width: 1280
+# hash: c469f821d1f35d36
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: tennis
+  width: 1280
+# hash: a045de56c0fa979d
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: tennis
+  width: 1280
+# hash: 95464b172173f8c4
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: tennis
+  width: 1920
+# hash: 3cc10372769a9617
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: tennis
+  width: 1920
+# hash: e65f68e706b72825
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: tennis
+  width: 1920
+# hash: 82e11b5389eb3ac6
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: tennis
+  width: 1920
+# hash: de4d32ed28c9a420
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: train
+  width: 640
+# hash: 8a83e8549c1c8a02
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: train
+  width: 640
+# hash: 97eb83891d6dccd6
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: train
+  width: 640
+# hash: 6796613915894b15
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: train
+  width: 640
+# hash: c43a46fc6fc28649
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: train
+  width: 1280
+# hash: bedbb168370c9662
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: train
+  width: 1280
+# hash: e59aade6276d3d53
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: train
+  width: 1280
+# hash: de12f8d9f8e79bb6
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: train
+  width: 1280
+# hash: b188701115620963
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: train
+  width: 1920
+# hash: 03f207a557711704
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: train
+  width: 1920
+# hash: e1c7c623edd9b394
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: train
+  width: 1920
+# hash: 2c27df0401a7989a
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: train
+  width: 1920
