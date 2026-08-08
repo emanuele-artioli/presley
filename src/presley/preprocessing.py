@@ -13,6 +13,67 @@ def normalize_array(arr: np.ndarray) -> np.ndarray:
     return (arr - min_val) / (max_val - min_val) if max_val > min_val else arr
 
 
+# How much more removable a background block is than a foreground one, before
+# the selection step's hard exclusion. This is a SOFT priority: it reorders the
+# two populations without separating them, so a complex enough foreground block
+# can still outrank a simple background one -- measured on bmx-trees, where the
+# foreground mean score (0.127) exceeds the background mean (0.113). That is
+# why `select_removal_mask_global` takes an explicit exclusion set rather than
+# trusting this factor. Equation `eq:priority` in the paper.
+BACKGROUND_PRIORITY = 10.0
+
+
+def combine_removability(spatial: np.ndarray, temporal: np.ndarray,
+                         background_blocks: np.ndarray, alpha: float, beta: float,
+                         gamma: float = BACKGROUND_PRIORITY) -> np.ndarray:
+    """The removability score, as a pure function of its inputs.
+
+    Split out of `get_removability_scores` so the arithmetic the paper's
+    Equations 1-4 describe can be tested without EVCA, UFO, a dataset or a
+    cache. Behaviour is byte-identical to the inlined version it replaces, so
+    no cached score file and no experiment hash moves.
+
+    Three details here are load-bearing and each was wrong in the manuscript
+    before 2026-08-07, which is why `tests/test_paper_equations.py` pins them:
+
+    * **The temporal term comes from the NEXT frame.** EVCA reports the
+      complexity of the transition *into* a frame, so the motion a decision at
+      frame n must survive is ``temporal[n+1]``. The last frame has no
+      successor and falls back to spatial complexity alone.
+    * **Background priority is a multiplication, not a sign inversion.**
+      Both populations keep positive scores and stay on one ordering.
+    * **Smoothing runs after the priority step, and is not recursive.** It
+      mixes frame n's post-priority score with frame n-1's *unsmoothed*
+      post-priority score, so one frame's influence decays after a single step
+      instead of propagating down the sequence. ``beta = 1`` disables it.
+
+    Args:
+        spatial, temporal: (N, I, J) EVCA complexity tensors.
+        background_blocks: (N, I, J) bool, True where the block is background.
+        alpha: spatial/temporal blend in [0, 1].
+        beta: temporal smoothing in (0, 1]; 1 disables smoothing.
+        gamma: background priority factor.
+
+    Returns:
+        (N, I, J) scores min-max normalized to [0, 1]; higher = more removable.
+    """
+    scores = np.zeros_like(spatial)
+    scores[:-1] = alpha * spatial[:-1] + (1 - alpha) * temporal[1:]
+    scores[-1] = spatial[-1]
+
+    num_frames = scores.shape[0]
+    for i in range(num_frames):
+        scores[i][background_blocks[i]] *= gamma
+
+    if beta < 1.0 and num_frames >= 2:
+        smoothed = np.zeros_like(scores)
+        smoothed[0] = scores[0]
+        smoothed[1:] = beta * scores[1:] + (1 - beta) * scores[:-1]
+        scores = smoothed
+
+    return normalize_array(scores)
+
+
 # Per-dataset native frame rates for pre-extracted frame-sequence sources
 # (DAVIS/MOSEv2/YouTube-VOS all ship as directories of still images with no
 # embedded timing metadata, so there is no way to *measure* their rate the
@@ -652,27 +713,19 @@ def get_removability_scores(video_name: str, width: int, height: int, block_size
         mask_morphology_seed=mask_morphology_seed,
     )
 
-    removability_scores = np.zeros_like(spatial_3d)
-    removability_scores[:-1] = alpha * spatial_3d[:-1] + (1 - alpha) * temporal_3d[1:]
-    removability_scores[-1] = spatial_3d[-1]
-    
     num_blocks_x = width // block_size
     num_blocks_y = height // block_size
-    num_frames = removability_scores.shape[0]
-    
-    for i in range(num_frames):
-        mask = ufo_masks[i]
-        resized_mask = cv2.resize(mask, (num_blocks_x, num_blocks_y), interpolation=cv2.INTER_NEAREST)
-        background_blocks = resized_mask == 0
-        removability_scores[i][background_blocks] *= 10.0
-        
-    if beta < 1.0 and num_frames >= 2:
-        smoothed = np.zeros_like(removability_scores)
-        smoothed[0] = removability_scores[0]
-        smoothed[1:] = beta * removability_scores[1:] + (1 - beta) * removability_scores[:-1]
-        removability_scores = smoothed
-        
-    removability_scores = normalize_array(removability_scores)
+
+    # Pixel masks down to the block grid, nearest-neighbour so a block counts as
+    # foreground on any foreground pixel rather than on a majority.
+    background_blocks = np.stack([
+        cv2.resize(ufo_masks[i], (num_blocks_x, num_blocks_y),
+                   interpolation=cv2.INTER_NEAREST) == 0
+        for i in range(spatial_3d.shape[0])
+    ])
+
+    removability_scores = combine_removability(
+        spatial_3d, temporal_3d, background_blocks, alpha, beta)
     np.save(score_path, removability_scores)
     
     return removability_scores
