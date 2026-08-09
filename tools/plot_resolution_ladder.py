@@ -51,6 +51,13 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--data-root", default=str(REPO_ROOT))
     ap.add_argument("--figures-dir", default=None)
+    # Same contract as analyze_resolution_ladder.py: extensions are passed in,
+    # never appended to the published run-files, so the clips behind the figure
+    # are visible in the command that drew it.
+    ap.add_argument("--baselines", nargs="+",
+                    default=["config/w1f_ladder_baselines.yaml"])
+    ap.add_argument("--presley", nargs="+",
+                    default=["config/w1f_ladder_presley.yaml"])
     args = ap.parse_args()
     data_root = pathlib.Path(args.data_root).resolve()
 
@@ -60,17 +67,21 @@ def main() -> int:
     from presley import db as _db
     from presley.runner import compute_experiment_hash
 
-    def arm(path):
+    def arm(paths):
         out = {}
-        for cfg in yaml.safe_load(open(data_root / path))["experiments"]:
+        entries = []
+        for path in paths:
+            q = pathlib.Path(path)
+            entries += yaml.safe_load(open(q if q.is_absolute() else data_root / q))["experiments"]
+        for cfg in entries:
             d = _db.load_run(str(data_root / "results"), compute_experiment_hash(cfg))
             if d is None or d.get("invariant_failures"):
                 continue          # uncitable runs never reach a figure
             out.setdefault((cfg["video"], cfg["width"], cfg["height"]), []).append(d)
         return out
 
-    base = arm("config/w1f_ladder_baselines.yaml")
-    pres = arm("config/w1f_ladder_presley.yaml")
+    base = arm(args.baselines)
+    pres = arm(args.presley)
 
     per_res, videos = {}, sorted({k[0] for k in pres})
     for w, h in LADDER:

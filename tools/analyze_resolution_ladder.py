@@ -71,6 +71,13 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data-root", default=str(REPO_ROOT))
+    # The published ladder lives in two run-files. Extensions are passed in
+    # rather than appended to those files, so the set of clips behind any
+    # printed number is visible in the command that produced it.
+    ap.add_argument("--baselines", nargs="+",
+                    default=["config/w1f_ladder_baselines.yaml"])
+    ap.add_argument("--presley", nargs="+",
+                    default=["config/w1f_ladder_presley.yaml"])
     ap.add_argument("--include-flagged", action="store_true",
                     help="include runs with non-empty invariant_failures (NOT citable)")
     args = ap.parse_args()
@@ -83,8 +90,11 @@ def main() -> int:
     from presley import db as _db
     from presley.runner import compute_experiment_hash
 
-    def load_arm(path):
-        entries = yaml.safe_load(open(data_root / path))["experiments"]
+    def load_arm(paths):
+        entries = []
+        for path in paths:
+            p = pathlib.Path(path)
+            entries += yaml.safe_load(open(p if p.is_absolute() else data_root / p))["experiments"]
         out, flagged = {}, []
         for cfg in entries:
             d = _db.load_run(str(data_root / "results"), compute_experiment_hash(cfg))
@@ -98,8 +108,8 @@ def main() -> int:
             out.setdefault(key, []).append(d)
         return out, flagged
 
-    base, base_flagged = load_arm("config/w1f_ladder_baselines.yaml")
-    pres, pres_flagged = load_arm("config/w1f_ladder_presley.yaml")
+    base, base_flagged = load_arm(args.baselines)
+    pres, pres_flagged = load_arm(args.presley)
 
     if pres_flagged or base_flagged:
         print("EXCLUDED as not citable (non-empty invariant_failures):")

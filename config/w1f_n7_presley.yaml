@@ -1,4 +1,5 @@
 experiments:
+# hash: c42d2a7a1f6809ec
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -17,6 +18,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 640
+# hash: 8e8bc5365b616b44
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -35,6 +37,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 640
+# hash: 989681a48de03bdf
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -53,6 +56,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 640
+# hash: 73c11c24e2daa7b2
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -71,6 +75,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 640
+# hash: fefc8cdbccdbd4a5
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -89,6 +94,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 1280
+# hash: 0546411a74c9ed83
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -107,6 +113,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 1280
+# hash: fa4e0f0076c22e14
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -125,6 +132,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 1280
+# hash: 44ea6ebf72b76c85
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -143,6 +151,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 1280
+# hash: 27775440853200da
 - alpha: 0.5
   beta: 0.5
   block_size: 24
@@ -161,6 +170,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 1920
+# hash: 310474566bad5c13
 - alpha: 0.5
   beta: 0.5
   block_size: 24
@@ -179,6 +189,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 1920
+# hash: 02ddc366d4fafcf4
 - alpha: 0.5
   beta: 0.5
   block_size: 24
@@ -197,6 +208,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 1920
+# hash: 483ade0bc2d96466
 - alpha: 0.5
   beta: 0.5
   block_size: 24
@@ -215,6 +227,7 @@ experiments:
   target_bitrate: 0
   video: breakdance
   width: 1920
+# hash: 46ebb6e08231669c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -233,6 +246,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 640
+# hash: 2209bad6254c761c
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -251,6 +265,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 640
+# hash: b3404f64565888fd
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -269,6 +284,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 640
+# hash: c3276b4bc95d1820
 - alpha: 0.5
   beta: 0.5
   block_size: 8
@@ -287,6 +303,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 640
+# hash: ab38c915e223c900
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -305,6 +322,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 1280
+# hash: 5de54ea8cd417954
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -323,6 +341,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 1280
+# hash: d99b37e2b4796708
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -341,6 +360,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 1280
+# hash: b1d1f8b29d16c222
 - alpha: 0.5
   beta: 0.5
   block_size: 16
@@ -359,6 +379,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 1280
+# hash: e7300b7c6bedd7c6
 - alpha: 0.5
   beta: 0.5
   block_size: 24
@@ -377,6 +398,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 1920
+# hash: 144f4adc82244d5a
 - alpha: 0.5
   beta: 0.5
   block_size: 24
@@ -395,6 +417,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 1920
+# hash: 0bad7459181c1b4b
 - alpha: 0.5
   beta: 0.5
   block_size: 24
@@ -413,6 +436,7 @@ experiments:
   target_bitrate: 0
   video: bmx-bumps
   width: 1920
+# hash: 78a9d8a125ed4a53
 - alpha: 0.5
   beta: 0.5
   block_size: 24
