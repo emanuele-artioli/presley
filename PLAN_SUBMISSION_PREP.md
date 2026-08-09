@@ -13,23 +13,23 @@ already went wrong here.
 
 | | 2026-08-07 | prev | now | comparison set |
 |---|---|---|---|---|
-| main body pages | 46 | 28 | **23** | 21 / 19 / 15 |
-| total PDF pages | — | 32 | **29** (30 in `acmsmall`) | 30 / 21 / 17 |
-| appendix pages | 0 | 4 | **5** | none |
+| body + references (budget 23) | — | 25 | **23** | — |
+| total PDF pages | — | 32 | **28** | 30 / 21 / 17 |
+| appendix pages (budget 5) | 0 | 4 | **5** | none |
 | body words | 21,192 | 12,134 | **13,112** (PDF text) | 11,455 / 8,401 / 6,905 |
-| method share of body | — | — | **29%** | 39–50% ⚠ we are low |
-| evaluation share | — | 50% | **48%** | 18–25% ⚠ we are high |
+| method share of body | — | 29% | **31%** | 39–50% ⚠ we are low |
+| evaluation share | — | 48% | **46%** | 18–25% ⚠ we are high |
 | figures / tables in body | 8 / 32 | 15 / 9 | **13 / 3** | 16/4, 7/7, 9/1 |
 | abstract words | 503 | 313 | **295** | ~250 / ~160 / ~260 |
 | unresolved `\ref` | ? | 3 | **0** | — |
-| CLAIM anchors | 44 | 44 | **44** | unchanged, always |
+| CLAIM anchors | 44 | 44 | **45** | never delete one |
 
 Comparison set = the three extended papers accepted at last year's TOMM special
 issue, in `68e8b6bb11d0dd9e62a67aef/last_year_paper/` (bola360 / v2nerf /
 mature). Full analysis in the paper repo's `research-log/operational.md`.
 
-- Paper repo `main` @ `d912d9c`, clean, pushed to Overleaf.
-- Code branch `claude/presley-submission-prep-eef0a0` @ `a891c2f`, clean,
+- Paper repo `main` @ `b13aaa3`, clean, pushed to Overleaf.
+- Code branch `claude/presley-submission-prep-eef0a0` @ `478d480`, clean,
   pushed. It fast-forwarded `...-8b3b2d`, so that branch is an ancestor.
 - Nothing is running. Full suite green: 535 passed, 17 deselected.
 
@@ -129,40 +129,41 @@ on rate. Full write-up: `docs/W1G_SELECTION_RACE.md`.
 Everything the previous plan listed is now done. What follows is what a next
 session should actually do, in order.
 
-**1. Check TOMM's page limit before cutting another word.** The 23-page target
-came down through earlier plans unsourced, and it is stricter than the three
-extended papers accepted at last year's special issue, which ran to **30, 21
-and 17** pages (`68e8b6bb11d0dd9e62a67aef/last_year_paper/`, analysed in
-`research-log/operational.md`). Ours is 30 total, body 23, in both the
-`manuscript` and `acmsmall` renders. If references count inside the limit the
-real number is 25, since the bibliography prints after the appendix.
+**1. DONE — the paper fits.** 28 pages: body 22 + references = **23 counted**,
+appendix **5**. The budget is 23 *including references* plus 5 for the appendix
+(hard rule 10 in the paper repo; an earlier version of that rule said
+references were capped at 2, which was wrong and was corrected before anything
+was cut for it). References print before the appendix now — conventional order,
+and it is what makes the count unambiguous.
 
-**2. The section balance is the real structural defect, and it is the opposite
-of what we have been fixing.** The comparison set puts the method at **39–50%**
-of body and the evaluation at **18–25%**. We are at 29% and 48%. Three sessions
-have trimmed the method to buy pages, which moves away from the shape of an
-accepted paper. Any further cut comes out of the evaluation; if pages free up,
-they go to the method.
+**2. DONE — the resolution ladder is a claim at 720p.** 8 clips, pre-registered
+extension. 720p 7/7, median −5.3%, p=0.0156 (Holm 0.047). **1080p is 6/7 at
+p=0.125 and is not a claim** — do not word the two rungs together. One bound
+fired and is recorded: `breakdance`'s 360p rung is 0.214 bpp against a
+registered 0.03–0.15, reported unpooled. Full entry in the paper repo's
+`research-log/standing-results.md`.
 
-**3. Submission mechanics — verified, re-verify after any structural edit.**
+**3. The section balance is still the open structural defect.** The comparison
+set puts the method at **39–50%** of body and the evaluation at **18–25%**. We
+are at **31% and 46%** — closer than the 29/48 of this morning, but still
+inverted. Sessions have repeatedly trimmed the method to buy pages, which moves
+away from the shape of an accepted paper. Any further cut comes out of the
+evaluation; if pages free up, they go to the method.
+
+**4. Submission mechanics — verified, re-verify after any structural edit.**
 
 ```bash
-tools/render_paper.sh /tmp/presley_render
-pdftotext /tmp/presley_render/main.pdf - | grep -c '⁇'          # must be 0
+tools/render_paper.sh /tmp/presley_render     # splits and checks 23 / 5, greps for the ?? glyph
 python tools/make_submission_copy.py --paper 68e8b6bb11d0dd9e62a67aef --out /tmp/presley_submission
 ```
 
 `make_submission_copy.py` strips **all** markers including CLAIM by default;
-`--keep-claim` keeps them. The earlier plan said it strips "non-CLAIM markers",
-which is the `--keep-claim` behaviour, not the default. The stripped tree
-renders identically to the source, so the choice is presentational: CLAIM lines
-carry `results/<hash>` identifiers that mean nothing to a referee.
+`--keep-claim` keeps them. The stripped tree renders identically to the source.
 
-**4. Still genuinely open.** A 6th usable video at 720p/1080p would turn the
-resolution result from 5/5 at $p=0.0625$ into a claim — see decision A below,
-which is what blocks it. And the paper still has no demonstrated win over
-uniform downscale + client-side SR, which splits 2–4; closing that is new
-science, not a rewrite.
+**5. Still genuinely open.** No demonstrated win over uniform downscale +
+client-side SR, which splits 2–4 — closing that is new science, not a rewrite.
+And the content property that decides whether bit relocation pays is still
+unidentified, with foreground area refuted three times.
 
 ## 4. Open decisions — the user's, not yours
 
