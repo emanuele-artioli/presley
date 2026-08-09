@@ -1,0 +1,241 @@
+experiments:
+# hash: 00f2989b7b90f79b
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: breakdance
+  width: 640
+# hash: 90b5da3813f5a5e0
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: breakdance
+  width: 640
+# hash: 3e3965316ac1b17d
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: breakdance
+  width: 640
+# hash: 3085f6ff0d114064
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: breakdance
+  width: 640
+# hash: b3bf0e9a2c05fc99
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: breakdance
+  width: 1280
+# hash: 666d740ee2dc1653
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: breakdance
+  width: 1280
+# hash: f7e4e653b2931dbc
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: breakdance
+  width: 1280
+# hash: 2ca5091c91448963
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: breakdance
+  width: 1280
+# hash: 5cefb7c94ff77393
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: breakdance
+  width: 1920
+# hash: 8dce8866a4cf95fe
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: breakdance
+  width: 1920
+# hash: 89711e13dbc77a09
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: breakdance
+  width: 1920
+# hash: 2bc163a4fed193c1
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: breakdance
+  width: 1920
+# hash: 23ee42d18f00fbf2
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 640
+# hash: 03c75c5bd96b9087
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 640
+# hash: 240024b4636b5b4f
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 640
+# hash: ab17ff8fb964d333
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 360
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 640
+# hash: 2ed823a8a25fda01
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 1280
+# hash: 82b36e2a0a030a53
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 1280
+# hash: 060936e50c61aaeb
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 1280
+# hash: faad334dd5a41234
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 720
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 1280
+# hash: 43631def68df155b
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 43
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 1920
+# hash: efa6ed201a70247f
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 50
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 1920
+# hash: 280e006a811c4c80
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 55
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 1920
+# hash: af73ce7c9585dba0
+- codec: svtav1
+  codec_params:
+    preset: '8'
+    qp: 60
+  component: baselines
+  height: 1080
+  target_bitrate: 0
+  video: bmx-bumps
+  width: 1920
