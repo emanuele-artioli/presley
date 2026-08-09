@@ -48,27 +48,25 @@ tectonic -X compile main.tex --keep-logs >"$OUT/render.log" 2>&1 || {
 PAGES=$(pdfinfo main.pdf | awk '/^Pages:/{print $2}')
 echo "rendered: $OUT/main.pdf"
 
-# TOMM budgets three things separately -- body 23, appendix 5, references 2 --
-# so comparing the TOTAL against 23 is meaningless and was actively misleading:
-# it reported "over budget by 6" for a manuscript whose body was inside its
-# limit. Split the PDF at the headings instead.
+# TOMM counts body + references against 23, with the appendix outside it and
+# capped at 5. Comparing the TOTAL against 23 is the mistake this replaces: it
+# reported "over budget by 6" for a manuscript whose counted pages were inside
+# the limit, and real content was cut chasing it.
 pdftotext main.pdf - 2>/dev/null | awk -v T="$PAGES" '
   /Methodological Pitfalls/ { if (!a) a = p + 1 }
   /^References$/            { if (!r) r = p + 1 }
   /\f/                      { p++ }
   END {
     if (!a || !r) { print "pages:    " T "   (could not find the appendix/references split)"; exit }
-    body = a - 1; app = r - a; refs = T - r + 1
-    printf "pages:    %d total = body %d, appendix %d, references %d\n", T, body, app, refs
+    body = a - 1; app = r - a; refs = T - r + 1; counted = body + refs
+    printf "pages:    %d total = body %d + references %d = %d counted, appendix %d\n",
+           T, body, refs, counted, app
     over = 0
-    if (body > 23) { printf "  BODY OVER by %d (%d vs 23)\n", body - 23, body; over = 1 }
-    if (app  >  5) { printf "  APPENDIX OVER by %d (%d vs 5)\n", app - 5, app;  over = 1 }
-    if (refs >  2) { printf "  REFERENCES OVER by %d (%d vs 2)\n", refs - 2, refs; over = 1 }
-    if (!over) print "  all three within budget"
+    if (counted > 23) { printf "  OVER by %d (%d vs 23 incl. references)\n", counted - 23, counted; over = 1 }
+    if (app > 5)      { printf "  APPENDIX OVER by %d (%d vs 5)\n", app - 5, app; over = 1 }
+    if (!over) print "  within budget"
   }'
 
-# A cited-but-missing figure renders as a glyph, not an error, and has survived
-# a full session before now. One grep, every time.
 BROKEN=$(pdftotext main.pdf - 2>/dev/null | grep -c '⁇' || true)
 [ "$BROKEN" -gt 0 ] && echo "  ${BROKEN} UNRESOLVED REFERENCE(S) -- grep the text for the ?? glyph"
 exit 0

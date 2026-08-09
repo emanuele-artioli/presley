@@ -24,13 +24,11 @@ import pathlib
 import re
 import sys
 
-# TOMM's budget, which is three separate limits rather than one total. Recorded
-# 2026-08-09 from the venue's own call. `--pages` alone cannot check these: it
-# is a total, and a total under 30 can still bust the reference limit. Pass the
-# three measured counts (see BUDGET_HOWTO) to check them properly.
-PAGE_BUDGET = 23            # main body, excluding appendix and references
-APPENDIX_BUDGET = 5
-REFERENCES_BUDGET = 2
+# TOMM counts body + references against one limit, with the appendix outside it.
+# Recorded 2026-08-09. `--pages` alone cannot check this: it is a total, and the
+# appendix must come out of it first. Pass the measured split (see BUDGET_HOWTO).
+COUNTED_BUDGET = 23         # main body PLUS references
+APPENDIX_BUDGET = 5         # outside the 23
 
 BUDGET_HOWTO = """measure the split from the rendered PDF with:
   pdftotext main.pdf - | awk '/Methodological Pitfalls/{a=p+1} /^References$/{r=p+1} \
@@ -43,7 +41,7 @@ FILES = ["main.tex", "sections/background.tex",
 
 # (name, hard?, description). Hard rules fail --strict; soft ones only warn.
 RULES = """
-HARD  body/appendix/references each within its own venue budget
+HARD  body + references <= 23; appendix <= 5, counted separately
 HARD  no section exceeds 40% of body words        (one section eating the paper)
 HARD  no prose stretch > 2 pages without a float  (wall of text)
 SOFT  every section is longer than the abstract   (a section shorter than the
@@ -153,23 +151,25 @@ def main() -> int:
     # the body limit is the mistake this replaces: it reported "over budget by
     # 6 pages" for a manuscript whose body was inside its limit, for three
     # sessions, because the appendix and references were being counted into it.
-    measured = ((a.body, PAGE_BUDGET, "main body"),
-                (a.appendix, APPENDIX_BUDGET, "appendix"),
-                (a.references, REFERENCES_BUDGET, "references"))
-    if any(v is not None for v, _, _ in measured):
-        for value, budget, label in measured:
-            if value is None:
-                warns.append(f"{label} pages not measured -- its budget was not checked")
-            elif value > budget:
-                fails.append(f"{label.upper()} OVER BUDGET by {value - budget} "
-                             f"({value} vs {budget})")
-            else:
-                print(f"  {label:12s} {value:2d} / {budget}  ok")
+    if a.body is not None and a.references is not None:
+        counted = a.body + a.references
+        if counted > COUNTED_BUDGET:
+            fails.append(f"OVER BUDGET by {counted - COUNTED_BUDGET}: body {a.body} + "
+                         f"references {a.references} = {counted} vs {COUNTED_BUDGET}. "
+                         f"Cut the body -- the bibliography has no padding to remove")
+        else:
+            print(f"  body+references {counted:2d} / {COUNTED_BUDGET}  ok "
+                  f"(body {a.body}, references {a.references})")
     else:
-        warns.append("no page split given, so no budget was checked. " + BUDGET_HOWTO)
-        if pages > PAGE_BUDGET + APPENDIX_BUDGET + REFERENCES_BUDGET:
-            fails.append(f"total {pages} exceeds even the sum of all three budgets "
-                         f"({PAGE_BUDGET}+{APPENDIX_BUDGET}+{REFERENCES_BUDGET})")
+        warns.append("body and/or references pages not given, so the 23-page "
+                     "budget was not checked. " + BUDGET_HOWTO)
+    if a.appendix is not None:
+        if a.appendix > APPENDIX_BUDGET:
+            fails.append(f"APPENDIX OVER BUDGET by {a.appendix - APPENDIX_BUDGET} "
+                         f"({a.appendix} vs {APPENDIX_BUDGET})")
+        else:
+            print(f"  appendix        {a.appendix:2d} / {APPENDIX_BUDGET}  ok")
+
     for name, w, *_ in secs:
         if w / body > 0.40:
             fails.append(f"'{name}' is {100*w/body:.0f}% of the body (>40%) -- "
