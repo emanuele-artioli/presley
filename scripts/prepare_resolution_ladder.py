@@ -84,7 +84,12 @@ def main() -> int:
     ap.add_argument("--cache-dir", default="cache")
     ap.add_argument("--dry-run", action="store_true",
                     help="report which cells are cold, compute nothing")
+    ap.add_argument("--videos", default=None,
+                    help="comma-separated subset/superset of VIDEOS; scopes a run-file to new clips without disturbing the published cells")
     args = ap.parse_args()
+    global VIDEOS
+    if args.videos:
+        VIDEOS = tuple(v.strip() for v in args.videos.split(",") if v.strip())
 
     cells = [(v, w, h, bs) for v in VIDEOS for (w, h, bs) in LADDER]
     cold = [c for c in cells if not cell_is_warm(*c, cache_dir=args.cache_dir)]

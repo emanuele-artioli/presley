@@ -192,7 +192,12 @@ def main() -> int:
     ap.add_argument("-o", "--out")
     ap.add_argument("--check", metavar="RESULTS_DIR",
                     help="report realized rate/quality span per resolution")
+    ap.add_argument("--videos", default=None,
+                    help="comma-separated subset/superset of VIDEOS; scopes a run-file to new clips without disturbing the published cells")
     args = ap.parse_args()
+    global VIDEOS
+    if args.videos:
+        VIDEOS = tuple(v.strip() for v in args.videos.split(",") if v.strip())
 
     if args.check:
         return check(args.check)
