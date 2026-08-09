@@ -654,7 +654,7 @@ def filter_frame_noise(image: np.ndarray, frame_scores: np.ndarray, block_size: 
     ``round(score) > 0`` i.e. score >= 0.5. Strength still scales with
     ``score * noise_variance``; do not threshold on ``round(score * variance)``,
     which selected ~95% of blocks vs ~9-13% for blur at the same alpha/beta
-    (see ``NOISE_MODE_DECISION_REPORT.md``).
+    (see ``docs/NOISE_MODE_DECISION_REPORT.md``).
     """
     (h, w, c) = image.shape
     pad_y = (block_size - h % block_size) % block_size

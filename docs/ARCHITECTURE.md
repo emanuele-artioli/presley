@@ -57,6 +57,7 @@ evaluation/  ──►  metrics per region  ──►  invariants.check_result
 | `encode_utils.py` | Encoder invocations, rate-control derivation, QP-offset mapping, decode. |
 | `sidechannel.py` | Packs the strength maps transmitted alongside the video. |
 | `blockdamage.py` | 64x64 superblock geometry for the damage denominator: area-exact pooling, MSE-space (never PSNR) averaging. Shared by `components/probe_block_damage.py` and `tools/mine_block_damage.py` so the two cannot drift apart on where boundaries fall. |
+| `stagetiming.py` | The per-stage cost vocabulary. All four components record `stage_times_seconds` against one set of stage names, and it is output-only so adding a timing never moves an experiment hash. |
 | `io.py` | Frame and mask loading, directory hygiene. |
 | `utils.py` | Small shared helpers. |
 | `hnerv_arch.py`, `hnerv_utils.py` | HNeRV learned-codec baseline. |
@@ -86,6 +87,7 @@ evaluation/  ──►  metrics per region  ──►  invariants.check_result
 | `suite.py` | The suite significance layer on top of `compare.py`: exact sign/Wilcoxon tests, bootstrap CI, effect size and Holm correction over N>1 paired runs. Adds the `sub_jnd_significant` verdict; never overrides a JND call, never promotes a sub-JND effect to a perceptual win. |
 | `db.py` | The results store, and the source of truth for run metadata. Holds each run as a canonical document plus derived query rows (narrow `metrics`, `artifacts`), and encodes the citability rules as SQL views — `v_citable` (empty `invariant_failures` and evaluated), `v_fg_metrics` (the union-bbox metrics are absent, not merely discouraged), `v_rate`. `result.json` is a derived mirror; either side rebuilds the other. |
 | `invariants.py` | The methodology rules as code: fixed-QP mandate, bitrate accounting, restoration not regressing. Writes `invariant_failures` into each result. |
+| `damagemodel.py` | The restorability denominator the selection objective was missing: a ridge fit over the five pre-registered transmit-time features, held out by video. The loader refuses a model whose training set contains the clip being scored, so a leaked fold cannot silently produce a result. |
 
 ## Contracts worth knowing before changing anything
 

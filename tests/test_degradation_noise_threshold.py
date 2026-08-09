@@ -8,7 +8,7 @@ from presley.degradation import (
 
 
 def test_noise_default_selection_matches_blur_not_score_times_variance():
-    """Regression for the coverage bug in NOISE_MODE_DECISION_REPORT.md.
+    """Regression for the coverage bug in docs/NOISE_MODE_DECISION_REPORT.md.
 
     With noise_variance=50, the old code selected when round(score*50)>0
     (score >= 0.01, ~95% of blocks). Blur selects round(score)>0 (score >= 0.5).

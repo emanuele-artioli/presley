@@ -69,4 +69,4 @@ blur       → InstantIR (kill stands) | NAFNet (gauge, ties unsharp) | DiffBIR 
   code repo; no official GitHub release found. Stub `RuntimeError` stands.
 - **Q6** DiffBIR — human-gated mechanism argument only
 
-See `HANDOFF.md` for the next-session pickup prompt.
+See `PLAN_SUBMISSION_PREP.md` for the next-session pickup prompt.

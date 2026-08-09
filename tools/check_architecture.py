@@ -17,7 +17,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SRC = REPO_ROOT / "src" / "presley"
-DOC = REPO_ROOT / "ARCHITECTURE.md"
+DOC = REPO_ROOT / "docs" / "ARCHITECTURE.md"
 
 # Files that are structure rather than content.
 SKIP = {"__init__.py"}
