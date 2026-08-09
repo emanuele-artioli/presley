@@ -24,8 +24,17 @@ import pathlib
 import re
 import sys
 
-# Page budget of the venue's MAIN BODY (references/appendices usually excluded).
-PAGE_BUDGET = 23
+# TOMM's budget, which is three separate limits rather than one total. Recorded
+# 2026-08-09 from the venue's own call. `--pages` alone cannot check these: it
+# is a total, and a total under 30 can still bust the reference limit. Pass the
+# three measured counts (see BUDGET_HOWTO) to check them properly.
+PAGE_BUDGET = 23            # main body, excluding appendix and references
+APPENDIX_BUDGET = 5
+REFERENCES_BUDGET = 2
+
+BUDGET_HOWTO = """measure the split from the rendered PDF with:
+  pdftotext main.pdf - | awk '/Methodological Pitfalls/{a=p+1} /^References$/{r=p+1} \
+    /\f/{p++} END{print "--body",a-1,"--appendix",r-a,"--references",p+1-r+1}'"""
 # Measured from the rendered PDF: total prose words / total pages.
 WORDS_PER_PAGE = 467
 
@@ -34,7 +43,7 @@ FILES = ["main.tex", "sections/background.tex",
 
 # (name, hard?, description). Hard rules fail --strict; soft ones only warn.
 RULES = """
-HARD  total pages <= venue budget
+HARD  body/appendix/references each within its own venue budget
 HARD  no section exceeds 40% of body words        (one section eating the paper)
 HARD  no prose stretch > 2 pages without a float  (wall of text)
 SOFT  every section is longer than the abstract   (a section shorter than the
@@ -113,7 +122,11 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--paper", default="68e8b6bb11d0dd9e62a67aef")
     ap.add_argument("--pages", type=int, default=None,
-                    help="rendered page count; else estimated from words")
+                    help="TOTAL rendered page count; else estimated from words")
+    ap.add_argument("--body", type=int, default=None,
+                    help="main-body pages, excluding appendix and references")
+    ap.add_argument("--appendix", type=int, default=None, help="appendix pages")
+    ap.add_argument("--references", type=int, default=None, help="reference pages")
     ap.add_argument("--strict", action="store_true")
     a = ap.parse_args()
     root = pathlib.Path(a.paper)
@@ -132,15 +145,31 @@ def main() -> int:
         print(f"{name:44}{w:>7}{100*w/body:>7.1f}%{tb:>5}{fg:>5}{al:>5}{eq:>4}")
     T = sum(s[2] for s in secs); F = sum(s[3] for s in secs); A = sum(s[4] for s in secs)
     print(f"{'TOTAL':44}{body:>7}{'':>8}{T:>5}{F:>5}{A:>5}")
-    print(f"\nabstract: {abs_w} words | rendered/estimated pages: {pages} "
-          f"| budget: {PAGE_BUDGET}")
+    print(f"\nabstract: {abs_w} words | rendered/estimated pages: {pages}")
 
     fails, warns = [], []
 
-    if pages > PAGE_BUDGET:
-        fails.append(f"OVER PAGE BUDGET by {pages - PAGE_BUDGET} pages "
-                     f"({pages} vs {PAGE_BUDGET}); cut ~{body - PAGE_BUDGET*WORDS_PER_PAGE} words "
-                     f"({100*(1 - PAGE_BUDGET/pages):.0f}%)")
+    # The three budgets, when the caller measured them. Checking a TOTAL against
+    # the body limit is the mistake this replaces: it reported "over budget by
+    # 6 pages" for a manuscript whose body was inside its limit, for three
+    # sessions, because the appendix and references were being counted into it.
+    measured = ((a.body, PAGE_BUDGET, "main body"),
+                (a.appendix, APPENDIX_BUDGET, "appendix"),
+                (a.references, REFERENCES_BUDGET, "references"))
+    if any(v is not None for v, _, _ in measured):
+        for value, budget, label in measured:
+            if value is None:
+                warns.append(f"{label} pages not measured -- its budget was not checked")
+            elif value > budget:
+                fails.append(f"{label.upper()} OVER BUDGET by {value - budget} "
+                             f"({value} vs {budget})")
+            else:
+                print(f"  {label:12s} {value:2d} / {budget}  ok")
+    else:
+        warns.append("no page split given, so no budget was checked. " + BUDGET_HOWTO)
+        if pages > PAGE_BUDGET + APPENDIX_BUDGET + REFERENCES_BUDGET:
+            fails.append(f"total {pages} exceeds even the sum of all three budgets "
+                         f"({PAGE_BUDGET}+{APPENDIX_BUDGET}+{REFERENCES_BUDGET})")
     for name, w, *_ in secs:
         if w / body > 0.40:
             fails.append(f"'{name}' is {100*w/body:.0f}% of the body (>40%) -- "
