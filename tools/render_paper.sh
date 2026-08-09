@@ -53,12 +53,15 @@ echo "rendered: $OUT/main.pdf"
 # reported "over budget by 6" for a manuscript whose counted pages were inside
 # the limit, and real content was cut chasing it.
 pdftotext main.pdf - 2>/dev/null | awk -v T="$PAGES" '
-  /Methodological Pitfalls/ { if (!a) a = p + 1 }
   /^References$/            { if (!r) r = p + 1 }
+  /Methodological Pitfalls/ { if (!a) a = p + 1 }
   /\f/                      { p++ }
   END {
-    if (!a || !r) { print "pages:    " T "   (could not find the appendix/references split)"; exit }
-    body = a - 1; app = r - a; refs = T - r + 1; counted = body + refs
+    if (!a || !r) { print "pages:    " T "   (could not find the references/appendix split)"; exit }
+    # References now print before the appendix, so body+references is a
+    # contiguous block and the counted total does not depend on where a
+    # mid-page boundary happens to fall.
+    counted = a - 1; body = r - 1; refs = counted - body; app = T - a + 1
     printf "pages:    %d total = body %d + references %d = %d counted, appendix %d\n",
            T, body, refs, counted, app
     over = 0

@@ -119,7 +119,7 @@ def main() -> int:
 
     figkit.style()
     fig, (ax, bx) = plt.subplots(1, 2, figsize=(figkit.FULL_WIDTH,
-                                                0.34 * len(rows) + 1.3), sharey=True)
+                                                0.24 * len(rows) + 1.0), sharey=True)
 
     labels, ypos = [], []
     for i, (fam, transport, restorer, vals) in enumerate(rows):
