@@ -11,36 +11,45 @@ already went wrong here.
 
 ## 1. Status at a glance
 
-| | 2026-08-07 | now | target |
-|---|---|---|---|
-| main body pages | 46 | **28** | 23 |
-| appendix pages | 0 | **4** | ≤5 |
-| total words | 21,192 | **12,134** | ~10,700 |
-| evaluation prose | 13,519 | **6,090** | ~4,300 |
-| tables | 32 | **9** | 6–8 |
-| figures | 8 | **15** | ~13 |
-| abstract words | 503 | 313 | ~250 |
-| JND in reviewer-visible text | ~60 | **0** | 0 |
-| CLAIM anchors | 44 | **44** | unchanged, always |
+| | 2026-08-07 | prev | now | target |
+|---|---|---|---|---|
+| main body pages | 46 | 28 | **23** | 23 |
+| appendix pages | 0 | 4 | **5** | ≤5 |
+| references pages | — | 2 | **2** | outside |
+| total PDF pages | — | 32 | **29** | — |
+| total words | 21,192 | 12,134 | **10,155** | — |
+| tables | 32 | 9 | **4** | 6–8 |
+| figures | 8 | 15 | **16** | ~13 |
+| abstract words | 503 | 313 | **301** | ~250 |
+| unresolved `\ref` | ? | **3** | **0** | 0 |
+| CLAIM anchors | 44 | 44 | **44** | unchanged, always |
 
-- Paper repo `main` @ `f357940`, clean, pushed to Overleaf.
-- Code branch `claude/presley-submission-prep-8b3b2d` @ `7dfd1f4`, clean, pushed.
-- Nothing is running. Full fast test tier green.
+- Paper repo `main` @ `4386f0b`, clean, pushed to Overleaf.
+- Code branch `claude/presley-submission-prep-eef0a0` @ `c8ee22a`, clean,
+  pushed. It fast-forwarded `...-8b3b2d`, so that branch is an ancestor.
+- Nothing is running. Full suite green: 535 passed, 17 deselected.
 
 Render and measure with, from the code repo root:
 
 ```bash
-tools/render_paper.sh /tmp/presley_render && python tools/paper_metrics.py --pages 28
+tools/render_paper.sh /tmp/presley_render && python tools/paper_metrics.py --pages 29
 ```
 
-`paper_metrics.py --pages` counts the **whole PDF including the appendix**. The
-23-page limit applies to the main body only, so find the split with:
+`paper_metrics.py --pages` counts the **whole PDF**, so it still reports
+"over budget"; that is the tool comparing 29 against 23, not a real overflow.
+The 23-page limit applies to the main body, which is measured by where the
+appendix starts:
 
 ```bash
-pdftotext /tmp/presley_render/main.pdf - | awk '/Methodological Pitfalls/{print NR" -> page "p+1; exit} /\f/{p++}'
+pdftotext /tmp/presley_render/main.pdf - | awk '/Methodological Pitfalls/{print "body ends p"p+1; exit} /\f/{p++}'
 ```
 
----
+**A caveat worth resolving before submitting.** That measure puts references
+*outside* the 23 pages, because the bibliography currently prints after the
+appendix. If TOMM counts references inside the limit, the real figure is 25,
+not 23, and two more pages have to come out. Nobody has checked the venue's
+wording; the 23/appendix-excluded convention was inherited from the previous
+plan and this session kept it rather than re-litigating it.
 
 ## 2. What is done
 
@@ -113,25 +122,42 @@ on rate. Full write-up: `docs/W1G_SELECTION_RACE.md`.
 
 ## 3. What is left, in order
 
-**1. Finish the cut: 28 → 23 main-body pages (~2,300 words).**
-Evaluation is still 50% of the body against a 40% target. The remaining fat, by
-size: `Restoration and Regime Results` (~1,390 w), `Bridge Evaluation` (~590),
-`Is Spatial Selectivity Worth Anything?` (~480), the metrics methodology (~340).
-Introduction (9%) and Background (7%) are *under* their 8–15% bands, so do not
-cut them — the imbalance fixes itself as the evaluation shrinks.
+**1. DONE — the cut, 28 → 23 main-body pages.** What actually moved the
+number, in rough order of yield:
 
-**Do not repeat this session's mistake:** rephrasing is not cutting. One pass
-rewrote two subsections and moved the total from 12,118 to 12,134 words. What
-actually moves the number is (a) deleting whole results, or (b) relocating them
-to the appendix, which sits outside the 23-page limit. The appendix has ~1 page
-of headroom left.
+- *Figures were the budget, not words.* At 430×560pt the plots and their
+  captions were ~3.4 of the 28 pages. Two were mostly whitespace by
+  construction: `breadth` forced every panel to the tallest panel's row count,
+  and `regime_reversal` drew four ladders as a 2×2 square. Redrawn wide in
+  `tools/`, they went from h/w 0.87→0.64 and 0.76→0.33 at unchanged label size.
+- *Relocation to the appendix*, which sits outside the limit: three detail
+  tables, the metrics/significance methodology, and the two leaf restoration
+  algorithms. The appendix is now full at 5 pages, so this lever is spent —
+  three of the eight pitfalls were dropped to make room.
+- *Deleting things said twice.* `sec:downsample-vs-uniform` carried ~330 words
+  of verbatim duplicate paragraphs; the dog/pigs reversal was stated three
+  times; the restorer catalogue appeared in both the method and the evaluation.
+- Prose compression everywhere else, and caption trims.
 
-**2. Abstract 313 → ~250.**
+**A defect was found and fixed on the way:** `fig:restorers` was cited three
+times and the figure environment did not exist. The catalogue plot was
+generated last session and never inserted, so the PDF rendered "Figure ??"
+three times — through a render, a metrics pass and a commit. **Grep the
+rendered text for `⁇` after every structural edit;** it is one command and it
+would have caught this a session earlier:
 
-**3. Remaining figures** (optional, the float ratio is already 15:9): qualitative
-crops (degraded / restored / pristine) is the one real gap — a generative
-restoration paper with no visual example, and referee 2 asked. Frames are under
-`results/<hash>/restored_frames/`.
+```bash
+pdftotext /tmp/presley_render/main.pdf - | grep -c '⁇'
+```
+
+**2. DONE-ish — abstract 313 → 301.** Short of the ~250 target. It is three
+paragraphs and the third carries the article's main contribution; getting to
+250 means dropping a claim, which is an editorial call rather than a trim.
+
+**3. Remaining figures.** Qualitative crops (degraded / restored / pristine)
+is still the one real gap — a generative restoration paper with no visual
+example, and referee 2 asked. Frames are under `results/<hash>/restored_frames/`.
+Note there is no page headroom left: a new figure has to displace something.
 
 **4. Wave 3 — submission mechanics.**
 - Rebuild `response_letter.tex`. It is **frozen and stale**: it cites tables by
@@ -237,6 +263,21 @@ block-level, and the resolution-ladder band was stated for the Goal-1 rate
 saving and then applied to BG-LPIPS, where a positive value is the *accepted
 cost* of relocation. Revise the bound with a stated reason; do not quietly widen
 it.
+
+**A figure can be cited and not exist, and everything still looks fine.**
+`fig:restorers` was referenced three times with no figure environment
+anywhere. `tectonic` printed no warning this session's tooling surfaced, the
+page count looked plausible, and the render "succeeded". The check is one
+command against the rendered text, and it belongs after every structural edit:
+`pdftotext main.pdf - | grep -c '⁇'`.
+
+**Redrawing a figure's layout breaks code that hardcoded the old shape.**
+Turning `regime_reversal` from 2×2 to 1×4 raised `'Axes' object is not
+subscriptable` from three separate places — axis labels, the annotated panels
+and the legend handles — each indexing `axes[i][j]`. And the first 1×4 attempt
+rendered with the four panel titles overlapping into each other, which the
+page count does not notice. **Look at the rendered page after changing a
+figure's aspect**, do not just read the new page total.
 
 **Never delete a CLAIM.** 44 anchors, verified against `HEAD` after every
 structural edit in this session. Once a script reported "0 comments kept" and
