@@ -130,7 +130,7 @@ def main() -> int:
     # Print conventions: colourblind-safe, and separable in greyscale through
     # marker shape and line style, not colour alone.
     C_BASE, C_BRIDGE = "#4d4d4d", "#0072B2"
-    fig, axes = plt.subplots(2, 2, figsize=(7.0, 5.2))
+    fig, axes = plt.subplots(1, 4, figsize=(7.0, 2.35))
     for ax, v in zip(axes.ravel(), ORDER):
         b, g = curves[v]
         ax.plot([r for r, _ in b], [q for _, q in b], color=C_BASE,
@@ -139,18 +139,17 @@ def main() -> int:
                 marker="s", ms=4.5, lw=1.6, ls="--", label="bridge (blackout)")
         verdict = "frees bits" if PUBLISHED[v] < 0 else "costs bits"
         ax.set_title(f"\\texttt{{{v}}}  ({PUBLISHED[v]:+.1f}\\% BD-rate, {verdict})"
-                     if False else f"{v}   {PUBLISHED[v]:+.1f}% BD-rate — {verdict}",
-                     fontsize=9, pad=4,
+                     if False else f"{v}\n{PUBLISHED[v]:+.1f}% BD-rate, {verdict}",
+                     fontsize=7, pad=3,
                      fontweight="bold" if v not in INCUMBENTS else "normal")
         ax.grid(alpha=0.25, lw=0.5)
         ax.tick_params(labelsize=8)
         for s in ("top", "right"):
             ax.spines[s].set_visible(False)
 
-    axes[1][0].set_xlabel("bitrate (kbit/s)", fontsize=9)
-    axes[1][1].set_xlabel("bitrate (kbit/s)", fontsize=9)
-    axes[0][0].set_ylabel("foreground PSNR (dB)", fontsize=9)
-    axes[1][0].set_ylabel("foreground PSNR (dB)", fontsize=9)
+    for ax in axes.ravel():
+        ax.set_xlabel("bitrate (kbit/s)", fontsize=9)
+    axes.ravel()[0].set_ylabel("foreground PSNR (dB)", fontsize=9)
 
     # Say what to look for, once, and show it as the horizontal gap that BD-rate
     # actually integrates -- not as the vertical gap, which is a different claim.
@@ -163,7 +162,8 @@ def main() -> int:
                 return math.exp(math.log(r0) + t * (math.log(r1) - math.log(r0)))
         return None
 
-    for panel, v in ((axes[0][0], "bear"), (axes[1][0], "dog")):
+    panel_by_video = dict(zip(ORDER, axes.ravel()))
+    for panel, v in ((panel_by_video["bear"], "bear"), (panel_by_video["dog"], "dog")):
         b, g = curves[v]
         # a quality level both ladders actually reach, so nothing is extrapolated
         q = max(b[0][1], g[0][1]) + 0.55 * (min(b[-1][1], g[-1][1]) - max(b[0][1], g[0][1]))
@@ -177,11 +177,11 @@ def main() -> int:
         word = "fewer" if saved > 0 else "more"
         panel.annotate(f"at equal FG quality:\n{abs(saved):.0f}% {word} bits",
                        xy=((rb + rg) / 2, q), xytext=(0.30, 0.08),
-                       textcoords="axes fraction", fontsize=7.0, ha="left",
+                       textcoords="axes fraction", fontsize=5.5, ha="left",
                        color="#B00020",
                        arrowprops=dict(arrowstyle="-", lw=0.6, color="#B00020"))
 
-    handles, labels = axes[0][0].get_legend_handles_labels()
+    handles, labels = axes.ravel()[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=2, fontsize=8.5,
                frameon=False, bbox_to_anchor=(0.5, -0.005))
     fig.tight_layout(rect=(0, 0.045, 1, 1))

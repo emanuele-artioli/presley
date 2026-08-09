@@ -118,7 +118,7 @@ def main() -> int:
     figkit.style()
     tallest = max(len(r) for _, r in panels)
     fig, axes = plt.subplots(1, len(panels), sharex=True,
-                             figsize=(figkit.FULL_WIDTH, 0.14 * tallest + 1.5))
+                             figsize=(figkit.FULL_WIDTH, 0.105 * tallest + 1.1))
     axes = np.atleast_1d(axes)
 
     summary = {}
