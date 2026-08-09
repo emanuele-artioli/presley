@@ -11,21 +11,25 @@ already went wrong here.
 
 ## 1. Status at a glance
 
-| | 2026-08-07 | prev | now | target |
+| | 2026-08-07 | prev | now | comparison set |
 |---|---|---|---|---|
-| main body pages | 46 | 28 | **23** | 23 |
-| appendix pages | 0 | 4 | **5** | ≤5 |
-| references pages | — | 2 | **2** | outside |
-| total PDF pages | — | 32 | **29** | — |
-| total words | 21,192 | 12,134 | **10,155** | — |
-| tables | 32 | 9 | **4** | 6–8 |
-| figures | 8 | 15 | **16** | ~13 |
-| abstract words | 503 | 313 | **301** | ~250 |
-| unresolved `\ref` | ? | **3** | **0** | 0 |
+| main body pages | 46 | 28 | **23** | 21 / 19 / 15 |
+| total PDF pages | — | 32 | **29** (30 in `acmsmall`) | 30 / 21 / 17 |
+| appendix pages | 0 | 4 | **5** | none |
+| body words | 21,192 | 12,134 | **13,112** (PDF text) | 11,455 / 8,401 / 6,905 |
+| method share of body | — | — | **29%** | 39–50% ⚠ we are low |
+| evaluation share | — | 50% | **48%** | 18–25% ⚠ we are high |
+| figures / tables in body | 8 / 32 | 15 / 9 | **13 / 3** | 16/4, 7/7, 9/1 |
+| abstract words | 503 | 313 | **295** | ~250 / ~160 / ~260 |
+| unresolved `\ref` | ? | 3 | **0** | — |
 | CLAIM anchors | 44 | 44 | **44** | unchanged, always |
 
-- Paper repo `main` @ `4386f0b`, clean, pushed to Overleaf.
-- Code branch `claude/presley-submission-prep-eef0a0` @ `c8ee22a`, clean,
+Comparison set = the three extended papers accepted at last year's TOMM special
+issue, in `68e8b6bb11d0dd9e62a67aef/last_year_paper/` (bola360 / v2nerf /
+mature). Full analysis in the paper repo's `research-log/operational.md`.
+
+- Paper repo `main` @ `d912d9c`, clean, pushed to Overleaf.
+- Code branch `claude/presley-submission-prep-eef0a0` @ `a891c2f`, clean,
   pushed. It fast-forwarded `...-8b3b2d`, so that branch is an ancestor.
 - Nothing is running. Full suite green: 535 passed, 17 deselected.
 
@@ -122,60 +126,43 @@ on rate. Full write-up: `docs/W1G_SELECTION_RACE.md`.
 
 ## 3. What is left, in order
 
-**1. DONE — the cut, 28 → 23 main-body pages.** What actually moved the
-number, in rough order of yield:
+Everything the previous plan listed is now done. What follows is what a next
+session should actually do, in order.
 
-- *Figures were the budget, not words.* At 430×560pt the plots and their
-  captions were ~3.4 of the 28 pages. Two were mostly whitespace by
-  construction: `breadth` forced every panel to the tallest panel's row count,
-  and `regime_reversal` drew four ladders as a 2×2 square. Redrawn wide in
-  `tools/`, they went from h/w 0.87→0.64 and 0.76→0.33 at unchanged label size.
-- *Relocation to the appendix*, which sits outside the limit: three detail
-  tables, the metrics/significance methodology, and the two leaf restoration
-  algorithms. The appendix is now full at 5 pages, so this lever is spent —
-  three of the eight pitfalls were dropped to make room.
-- *Deleting things said twice.* `sec:downsample-vs-uniform` carried ~330 words
-  of verbatim duplicate paragraphs; the dog/pigs reversal was stated three
-  times; the restorer catalogue appeared in both the method and the evaluation.
-- Prose compression everywhere else, and caption trims.
+**1. Check TOMM's page limit before cutting another word.** The 23-page target
+came down through earlier plans unsourced, and it is stricter than the three
+extended papers accepted at last year's special issue, which ran to **30, 21
+and 17** pages (`68e8b6bb11d0dd9e62a67aef/last_year_paper/`, analysed in
+`research-log/operational.md`). Ours is 30 total, body 23, in both the
+`manuscript` and `acmsmall` renders. If references count inside the limit the
+real number is 25, since the bibliography prints after the appendix.
 
-**A defect was found and fixed on the way:** `fig:restorers` was cited three
-times and the figure environment did not exist. The catalogue plot was
-generated last session and never inserted, so the PDF rendered "Figure ??"
-three times — through a render, a metrics pass and a commit. **Grep the
-rendered text for `⁇` after every structural edit;** it is one command and it
-would have caught this a session earlier:
+**2. The section balance is the real structural defect, and it is the opposite
+of what we have been fixing.** The comparison set puts the method at **39–50%**
+of body and the evaluation at **18–25%**. We are at 29% and 48%. Three sessions
+have trimmed the method to buy pages, which moves away from the shape of an
+accepted paper. Any further cut comes out of the evaluation; if pages free up,
+they go to the method.
+
+**3. Submission mechanics — verified, re-verify after any structural edit.**
 
 ```bash
-pdftotext /tmp/presley_render/main.pdf - | grep -c '⁇'
+tools/render_paper.sh /tmp/presley_render
+pdftotext /tmp/presley_render/main.pdf - | grep -c '⁇'          # must be 0
+python tools/make_submission_copy.py --paper 68e8b6bb11d0dd9e62a67aef --out /tmp/presley_submission
 ```
 
-**2. DONE-ish — abstract 313 → 301.** Short of the ~250 target. It is three
-paragraphs and the third carries the article's main contribution; getting to
-250 means dropping a claim, which is an editorial call rather than a trim.
+`make_submission_copy.py` strips **all** markers including CLAIM by default;
+`--keep-claim` keeps them. The earlier plan said it strips "non-CLAIM markers",
+which is the `--keep-claim` behaviour, not the default. The stripped tree
+renders identically to the source, so the choice is presentational: CLAIM lines
+carry `results/<hash>` identifiers that mean nothing to a referee.
 
-**3. Remaining figures.** Qualitative crops (degraded / restored / pristine)
-is still the one real gap — a generative restoration paper with no visual
-example, and referee 2 asked. Frames are under `results/<hash>/restored_frames/`.
-Note there is no page headroom left: a new figure has to displace something.
-
-**4. Wave 3 — submission mechanics.**
-- Rebuild `response_letter.tex`. It is **frozen and stale**: it cites tables by
-  label and 23 of them no longer exist. Rebuild in one pass against final
-  labels. A letter contradicting the manuscript is the worst available failure.
-- `python tools/make_submission_copy.py` writes a referee-safe tree with the
-  ~117 non-CLAIM markers stripped. The `.tex` source goes to TOMM, and the
-  markers contain retraction histories and notes addressed to agents.
-- Confirm the rendered bibliography contains FVMD (a past entry had no key).
-
-**5. Optional, if a performance claim is wanted later.** The user has said this
-must eventually become a performance paper. On current evidence it is not one:
-the only unambiguous win is against ELVIS, our own predecessor, and there is no
-demonstrated win over uniform downscale + client-side SR, which splits 2–4.
-Closing that gap is new science, not a rewrite. A 6th usable video at 720p/1080p
-would at least turn the resolution result from 5/5 p=0.0625 into a claim.
-
----
+**4. Still genuinely open.** A 6th usable video at 720p/1080p would turn the
+resolution result from 5/5 at $p=0.0625$ into a claim — see decision A below,
+which is what blocks it. And the paper still has no demonstrated win over
+uniform downscale + client-side SR, which splits 2–4; closing that is new
+science, not a rewrite.
 
 ## 4. Open decisions — the user's, not yours
 
