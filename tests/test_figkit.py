@@ -13,7 +13,9 @@ a stale figure is detectable by regenerating and diffing the sidecar.
 
 import importlib.util
 import json
+import os
 import pathlib
+import re
 
 import pytest
 
@@ -99,3 +101,62 @@ def test_paper_dir_is_overridable_by_environment(monkeypatch, tmp_path):
     monkeypatch.setenv("PRESLEY_PAPER_DIR", str(tmp_path))
     _spec.loader.exec_module(figkit)
     assert figkit.FIGURES == tmp_path / "Figures"
+
+
+# --- the manuscript's side of the contract ------------------------------------
+#
+# figkit guarantees that a figure it emits has a description carrying the data.
+# It cannot guarantee the manuscript actually \input's it, and that gap has bitten
+# twice: four figures shipped with no \Description at all, and then four more with
+# a hand-written one that had the prose but not the JSON -- which reads fine to a
+# sighted reviewer and gives a screen-reader user "four line charts" instead of
+# the four ladders' values. Both were caught by eye. This catches them instead.
+#
+# Skips when the paper is not checked out, which is the normal case in CI: the
+# manuscript is a separate, gitignored repository.
+
+_PAPER = pathlib.Path(
+    os.environ.get("PRESLEY_PAPER_DIR",
+                   pathlib.Path(__file__).resolve().parent.parent / "68e8b6bb11d0dd9e62a67aef"))
+_TEX = ("main.tex", "sections/presley.tex", "sections/evaluation.tex",
+        "sections/appendix.tex")
+
+
+def _rendered_figures():
+    """(label, body) for every figure environment that is not commented out."""
+    for name in _TEX:
+        path = _PAPER / name
+        if not path.exists():
+            continue
+        src = path.read_text()
+        for m in re.finditer(r"\\begin\{figure\*?\}(.*?)\\end\{figure\*?\}", src, re.S):
+            block = m.group(1)
+            # A commented-out figure never renders. Test the line the \begin sits
+            # on, not the body: "% \begin{figure}[t]" leaves the body starting at
+            # "[t]", so looking at the body alone reports a live figure.
+            line_start = src.rfind("\n", 0, m.start()) + 1
+            if src[line_start:m.start()].lstrip().startswith("%"):
+                continue
+            label = re.search(r"\\label\{([^}]+)\}", block)
+            yield (label.group(1) if label else f"{name}:unlabelled"), block
+
+
+@pytest.mark.skipif(not (_PAPER / "main.tex").exists(),
+                    reason="manuscript not checked out (it is a separate repo)")
+def test_every_rendered_figure_has_a_description_carrying_its_data():
+    missing = []
+    for label, block in _rendered_figures():
+        inc = re.search(r"\\input\{(Figures/[^}]+\.desc)\}", block)
+        if inc:
+            desc = _PAPER / (inc.group(1) + ".tex")
+            text = desc.read_text() if desc.exists() else ""
+        elif "\\Description" in block:
+            text = block
+        else:
+            missing.append(f"{label}: no \\Description and no .desc input")
+            continue
+        if "\\Description" not in text:
+            missing.append(f"{label}: .desc file has no \\Description block")
+        elif "Data:" not in text:
+            missing.append(f"{label}: description has prose but no machine-readable data")
+    assert not missing, "figures a screen reader cannot get the numbers from:\n  " + "\n  ".join(missing)

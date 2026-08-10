@@ -31,6 +31,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
 from bd_rate import bd_rate  # noqa: E402
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import figkit  # noqa: E402
+
 RESULTS = pathlib.Path(__file__).resolve().parents[1] / "results"
 OUT = (pathlib.Path(__file__).resolve().parents[1]
        / "68e8b6bb11d0dd9e62a67aef" / "Figures" / "regime_reversal.pdf")
@@ -185,9 +188,38 @@ def main() -> int:
     fig.legend(handles, labels, loc="lower center", ncol=2, fontsize=8.5,
                frameon=False, bbox_to_anchor=(0.5, -0.005))
     fig.tight_layout(rect=(0, 0.045, 1, 1))
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT, format="pdf", bbox_inches="tight")  # vector, for print
-    print(f"\nwrote {OUT}")
+    # Emit through figkit so this figure carries the same three artefacts as
+    # every other one: the PDF, the data as JSON, and a \Description that holds
+    # a plain sentence AND the same numbers. A reader using a screen reader gets
+    # the ladders as values rather than "four line charts".
+    sentence = (
+        "Four rate-distortion panels side by side, one per video: bear, camel, dog "
+        "and pigs. Each plots foreground PSNR in decibels against bitrate in kilobits "
+        "per second over four fixed-QP rungs, with a grey line for the pristine "
+        "SVT-AV1 baseline and a dashed blue line for the bridge arm. A bridge curve "
+        "lying left of the baseline delivers the same foreground quality for fewer "
+        "bits. On bear and camel it does; on dog and pigs it lies to the right "
+        "instead, and the two curves converge at the most starved rung rather than "
+        "separating."
+    )
+    data = {
+        "quantity": "foreground PSNR (dB) against transmitted bitrate (kbit/s), four fixed-QP rungs per video",
+        "arms": {"baseline": "pristine SVT-AV1", "bridge": "blackout fill, block size 16, ProPainter"},
+        "bd_rate_fg_percent": {v: PUBLISHED[v] for v in ORDER},
+        "ladders": {
+            v: {
+                "baseline": [[round(r, 1), round(q, 3)] for r, q in curves[v][0]],
+                "bridge": [[round(r, 1), round(q, 3)] for r, q in curves[v][1]],
+            }
+            for v in ORDER
+        },
+        "reading": ("negative BD-rate means fewer bits for equal foreground quality; "
+                    "bear and camel free bits, dog and pigs cost them and do so at the "
+                    "most starved rung, which is the inversion a single BD-rate integral hides"),
+    }
+    paths = figkit.emit("regime_reversal", fig, sentence, data)
+    for kind, path in paths.items():
+        print(f"{kind}: {path}")
     return 0
 
 
