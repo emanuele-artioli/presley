@@ -273,6 +273,27 @@ def upsample_block_mask(block_mask: np.ndarray, block_size: int, width: int, hei
     return out
 
 
+def random_score_map(shape: Tuple[int, int], seed: int, frame_index: int) -> np.ndarray:
+    """A seeded random stand-in for the removability score, in [0, 1).
+
+    The control arm for "does score-based *placement* buy anything". It is fed to
+    `select_removal_mask_global` in place of the real score, so the budget, the
+    clustering blur and the foreground exclusion all still apply -- only the
+    ranking is replaced. That matters: the blur is what turns the top-k into
+    contiguous patches, and an UNBLURRED random map scatters into singletons,
+    which this project already measures as expensive to code. A random arm that
+    skipped the blur would lose on fragmentation rather than on placement, which
+    is a different question than the one being asked.
+
+    Seeded per (seed, frame_index) so a run reproduces exactly and successive
+    frames are independent. No temporal smoothing is applied to the random arm:
+    smoothing would only correlate consecutive frames, which is not part of what
+    this control isolates.
+    """
+    rng = np.random.default_rng((int(seed) << 32) ^ int(frame_index))
+    return rng.random(shape).astype(np.float32)
+
+
 def select_removal_mask_global(frame_scores: np.ndarray, amount: float, cluster_blocks: bool = True, exclude: Optional[np.ndarray] = None) -> np.ndarray:
     """Select the globally top-k most-removable blocks (no per-row constraint).
 

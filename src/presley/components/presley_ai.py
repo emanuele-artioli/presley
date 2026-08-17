@@ -165,6 +165,14 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
     # two hashes. If it is ever renamed, migrate the corpus in the same commit.
     select_amount = experiment.get('shrink_amount')
     fg_protect = experiment.get('fg_protect', False)
+    # Placement control. 'score' (default) ranks by removability; 'random'
+    # substitutes a seeded random map of the same shape, leaving budget,
+    # clustering blur and foreground exclusion untouched, so the contrast
+    # isolates the RANKING alone. Crossed with fg_protect this gives the 2x2
+    # that separates the ranking from the exclusion. Default keeps every
+    # existing hash byte-identical.
+    selection = str(experiment.get('selection', 'score')).lower()
+    selection_seed = int(experiment.get('selection_seed', 0))
     temporal_pool_masks = experiment.get('temporal_pool_masks', False)
     # Which foreground mask feeds removability scoring AND fg_protect below:
     # 'ufo' (default, existing behavior), 'gt' (ground-truth annotations), or
@@ -263,7 +271,11 @@ def run_presley_ai(experiment: Dict[str, Any], dataset_dir: str, results_dir: st
         if select_amount is not None:
             excl = fg_block_masks[i] if fg_block_masks is not None and i < len(fg_block_masks) else None
             _t_sel = time.time()
-            sel = select_removal_mask_global(score, select_amount, cluster_blocks=True, exclude=excl) > 0
+            rank_score = score
+            if selection == 'random':
+                from presley.degradation import random_score_map
+                rank_score = random_score_map(score.shape, selection_seed, i)
+            sel = select_removal_mask_global(rank_score, select_amount, cluster_blocks=True, exclude=excl) > 0
             selection_time += time.time() - _t_sel
 
         if degradation == 'downsample':
