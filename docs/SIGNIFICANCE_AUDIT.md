@@ -136,3 +136,68 @@ winner appears.
    strength changes, so neither was applied.
 3. **`HOLE(tab:goal2)` / `HOLE(tab:conditioned)` n>2 are now quantified**: with
    k=6 candidates the target is **n≥8 paired videos**, not "more than 2".
+
+---
+
+# Extension — every CLAIM anchor, 2026-08-17
+
+The 2026-07-29 audit above covered the restorer twins, the Wave-1 F3/F6 rows and
+the α/β ablation. This extension sweeps **all 45 CLAIM anchors** in the
+manuscript and classifies each, because "have we tested significance everywhere"
+had never been answered for the anchors that landed after July.
+
+## Method
+
+For each `% CLAIM(...)` block: collect its inline `src=` hashes, resolve each to a
+video via `results/<hash>/result.json`, and classify the claim as **comparative**
+(asserts a direction or ordering between arms — needs a test) or **descriptive**
+(reports a magnitude, a timing, or a dispersion — owes no test). The relevant
+floor is the exact two-tailed sign test's 2/2ⁿ, so n≥6 uncorrected and n≥8 once
+Holm-corrected over a candidate family of 6.
+
+## Result
+
+| | count |
+|---|---|
+| CLAIM anchors with on-disk provenance | 34 |
+| — comparative (a test is owed) | **11** |
+| — descriptive (no test owed) | 23 |
+| comparative **and** below the n≥6 floor | **7, of which ~5 are real** |
+
+The seven, with a judgement on each:
+
+| claim | n (inline) | verdict |
+|---|---|---|
+| `sec:downsample-vs-uniform` | 1 | **artefact of the count** — genuinely n=6; only `bear`'s hashes are inline, the rest are in `docs/PLAN_DOWNSAMPLE_VS_UNIFORM.md` |
+| `tab:ratecontrol` | 3 | **artefact** — the VBR finding is 25/25 matched *pairs*, paired at (video, method), not at video |
+| `block-damage` | 4 | **descriptive, misclassified** — a within-run dispersion, not a directional comparison |
+| `tab:budget-knee` | 2 | borderline; it asserts the lever is "inert below 0.25", which is an equivalence claim and wants TOST rather than more videos |
+| `tab:conditioned-twins` | 2 | **real and already known** — the sign test floors at p=0.5 |
+| `tab:conditioned-stream-diffvsr` | 2 | **real and already known** — same family |
+| `sec:restoration-comparison` | 2 | **real** — the same twins claim, restated in `presley.tex` |
+
+## What this changes
+
+**The picture is much better than a raw count of claims-below-n=6 suggests.** Most
+CLAIM anchors are descriptive — timings, throughput, dispersions, side-channel
+cost — and owe no significance test at all. The genuine shortfall is concentrated
+in **one family**: the conditioned-restorer twins, which is exactly what the July
+audit identified and what `HOLE(tab:goal2)`/`HOLE(tab:conditioned)` already
+record. Plan item F17 (extend to n≥8) closes all of it.
+
+Two smaller actions fall out:
+
+1. **`tab:budget-knee` is an equivalence claim wearing a difference claim's
+   clothes.** "Inert below 0.25" asserts no effect; a failed difference test
+   cannot support that. Run `suite.equivalence_tost` against the JND margin, the
+   same fix the July audit applied to `tab:ablation`.
+2. **Inline `src=` lists that carry only a representative subset are a provenance
+   hazard**, because any future audit undercounts them exactly as this one did
+   twice. Either inline every hash or state the count in the CLAIM line.
+
+## Standing rule this establishes
+
+A CLAIM block should say which kind it is. Adding `kind=comparative` or
+`kind=descriptive` to the anchor line would make this audit mechanical instead of
+a judgement call over 45 blocks, and would stop a descriptive claim from being
+read as an untested comparison.
