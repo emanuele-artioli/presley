@@ -625,3 +625,35 @@ Consequences for the article:
    to interpret on its own — the per-rung table is the honest presentation.
 4. **Hard rule 8 stays. Nothing is removed.** The audit of "why the rule appeared to
    hold" is answered: it holds, and it held for the reason it states.
+
+# LPIPS-bleed audit — scope is ONE claim, not three
+
+Swept every CLAIM anchor for hashes belonging to hole transports evaluated
+*without* restoration (166 such runs on disk; 242 more have an in-painter and are
+unaffected, since the holes are filled before the metric sees them).
+
+Three claims cite such hashes:
+
+| claim | risky hashes | affected? |
+|---|---|---|
+| `tab:breadth` | 36 | **YES** — the ELVIS breadth arm is `inpainter: none` and the claim uses **FG**-LPIPS |
+| `tab:goal2` | 4 | **no** | 
+| `tab:goal2-breadth` | 8 | **no** |
+
+The two Goal-2 tables use their `[none]` runs as the **matched unrestored control**
+for a *background* gain. The bleed is an FG-side artefact — a black hole next to a
+foreground block contaminates the foreground's deep features — whereas on the
+background of a hole arm the holes *are* the content being measured, which is the
+intended measurement, not an error.
+
+**So the correction is confined to `tab:breadth`'s foreground statement.** Its
+sentence "the LPIPS delta staying under 0.02 on every clip at both rungs" covers
+both arms; it holds for the PRESLEY arm (no holes, measured delta 0.0047 median,
+0/101 points beyond the margin) and is contaminated for the ELVIS arm (median
++0.0686 while FG-PSNR moves only −0.10 dB). Scope the sentence to the arm it is
+true of, and use FG-PSNR for the hole arm.
+
+**Standing rule this establishes:** a mask-restricted deep-feature metric (LPIPS,
+DISTS) is only valid on a region whose *neighbourhood* is also intact. On a
+transport that empties neighbouring blocks, use a pixel-exact metric for the
+protected region, or measure after restoration.
