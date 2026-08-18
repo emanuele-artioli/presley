@@ -1,0 +1,542 @@
+[
+  {
+    "arm": "baseline (SVT-AV1)",
+    "component": "baselines",
+    "device": "cuda:0",
+    "stages": {
+      "encode": {
+        "cv": 0.009,
+        "mean_s": 0.8254,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.003,
+        "mean_s": 0.4206,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "bear",
+    "wall_mean_s": 1.253
+  },
+  {
+    "arm": "baseline (SVT-AV1)",
+    "component": "baselines",
+    "device": "cuda:0",
+    "stages": {
+      "encode": {
+        "cv": 0.04,
+        "mean_s": 0.8823,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.077,
+        "mean_s": 0.4927,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "camel",
+    "wall_mean_s": 1.381
+  },
+  {
+    "arm": "baseline (SVT-AV1)",
+    "component": "baselines",
+    "device": "cuda:0",
+    "stages": {
+      "encode": {
+        "cv": 0.011,
+        "mean_s": 0.6048,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.069,
+        "mean_s": 0.2789,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "dog",
+    "wall_mean_s": 0.888
+  },
+  {
+    "arm": "elvis blackout + ProPainter",
+    "component": "elvis",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.3,
+        "mean_s": 0.3252,
+        "measurable": false
+      },
+      "decode": {
+        "cv": 0.062,
+        "mean_s": 0.233,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.009,
+        "mean_s": 2.5378,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.036,
+        "mean_s": 0.9348,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.021,
+        "mean_s": 0.3862,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.025,
+        "mean_s": 39.5388,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.432,
+        "mean_s": 0.0017,
+        "measurable": false
+      },
+      "sidechannel": {
+        "cv": 0.095,
+        "mean_s": 0.0041,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "bear",
+    "wall_mean_s": 43.774
+  },
+  {
+    "arm": "elvis blackout + ProPainter",
+    "component": "elvis",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.426,
+        "mean_s": 0.3551,
+        "measurable": false
+      },
+      "decode": {
+        "cv": 0.012,
+        "mean_s": 0.2222,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.047,
+        "mean_s": 2.8696,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.007,
+        "mean_s": 1.3486,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.057,
+        "mean_s": 0.4037,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.015,
+        "mean_s": 39.8965,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.044,
+        "mean_s": 0.0011,
+        "measurable": true
+      },
+      "sidechannel": {
+        "cv": 0.185,
+        "mean_s": 0.0031,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "camel",
+    "wall_mean_s": 44.927
+  },
+  {
+    "arm": "elvis blackout + ProPainter",
+    "component": "elvis",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.108,
+        "mean_s": 0.1877,
+        "measurable": true
+      },
+      "decode": {
+        "cv": 0.038,
+        "mean_s": 0.1978,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.044,
+        "mean_s": 2.1151,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.015,
+        "mean_s": 0.9504,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.161,
+        "mean_s": 0.2662,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.011,
+        "mean_s": 26.829,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.352,
+        "mean_s": 0.0016,
+        "measurable": false
+      },
+      "sidechannel": {
+        "cv": 0.045,
+        "mean_s": 0.0032,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "dog",
+    "wall_mean_s": 30.379
+  },
+  {
+    "arm": "presley downsample + Real-ESRGAN",
+    "component": "presley_ai",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.403,
+        "mean_s": 0.3095,
+        "measurable": false
+      },
+      "decode": {
+        "cv": 0.021,
+        "mean_s": 0.2235,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.045,
+        "mean_s": 3.0375,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.031,
+        "mean_s": 1.0881,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.107,
+        "mean_s": 0.3998,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.093,
+        "mean_s": 13.3553,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.213,
+        "mean_s": 0.0018,
+        "measurable": true
+      },
+      "select": {
+        "cv": 0.082,
+        "mean_s": 0.0057,
+        "measurable": true
+      },
+      "sidechannel": {
+        "cv": 0.136,
+        "mean_s": 0.0052,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "bear",
+    "wall_mean_s": 18.758
+  },
+  {
+    "arm": "presley downsample + Real-ESRGAN",
+    "component": "presley_ai",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.079,
+        "mean_s": 0.2468,
+        "measurable": true
+      },
+      "decode": {
+        "cv": 0.091,
+        "mean_s": 0.199,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.036,
+        "mean_s": 3.3061,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.047,
+        "mean_s": 1.2696,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.047,
+        "mean_s": 0.4234,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.009,
+        "mean_s": 13.8933,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.484,
+        "mean_s": 0.0018,
+        "measurable": false
+      },
+      "select": {
+        "cv": 0.105,
+        "mean_s": 0.0067,
+        "measurable": true
+      },
+      "sidechannel": {
+        "cv": 0.131,
+        "mean_s": 0.0049,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "camel",
+    "wall_mean_s": 19.778
+  },
+  {
+    "arm": "presley downsample + Real-ESRGAN",
+    "component": "presley_ai",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.069,
+        "mean_s": 0.1643,
+        "measurable": true
+      },
+      "decode": {
+        "cv": 0.064,
+        "mean_s": 0.1756,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.028,
+        "mean_s": 2.7109,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.034,
+        "mean_s": 1.0976,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.112,
+        "mean_s": 0.3155,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.017,
+        "mean_s": 9.0269,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.213,
+        "mean_s": 0.0016,
+        "measurable": true
+      },
+      "select": {
+        "cv": 0.003,
+        "mean_s": 0.0049,
+        "measurable": true
+      },
+      "sidechannel": {
+        "cv": 0.173,
+        "mean_s": 0.0039,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "dog",
+    "wall_mean_s": 13.71
+  },
+  {
+    "arm": "presley freeze + ProPainter",
+    "component": "presley_ai",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.023,
+        "mean_s": 0.2282,
+        "measurable": true
+      },
+      "decode": {
+        "cv": 0.014,
+        "mean_s": 0.2147,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.031,
+        "mean_s": 2.4631,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.075,
+        "mean_s": 1.1927,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.123,
+        "mean_s": 0.3795,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.046,
+        "mean_s": 38.0969,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.222,
+        "mean_s": 0.0017,
+        "measurable": true
+      },
+      "select": {
+        "cv": 0.076,
+        "mean_s": 0.0051,
+        "measurable": true
+      },
+      "sidechannel": {
+        "cv": 0.259,
+        "mean_s": 0.0112,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "bear",
+    "wall_mean_s": 42.874
+  },
+  {
+    "arm": "presley freeze + ProPainter",
+    "component": "presley_ai",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.037,
+        "mean_s": 0.24,
+        "measurable": true
+      },
+      "decode": {
+        "cv": 0.007,
+        "mean_s": 0.2226,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.056,
+        "mean_s": 2.6383,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.077,
+        "mean_s": 1.2526,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.057,
+        "mean_s": 0.4095,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.013,
+        "mean_s": 38.6836,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.123,
+        "mean_s": 0.0023,
+        "measurable": true
+      },
+      "select": {
+        "cv": 0.024,
+        "mean_s": 0.0059,
+        "measurable": true
+      },
+      "sidechannel": {
+        "cv": 0.025,
+        "mean_s": 0.0118,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "camel",
+    "wall_mean_s": 43.839
+  },
+  {
+    "arm": "presley freeze + ProPainter",
+    "component": "presley_ai",
+    "device": "cuda:0",
+    "stages": {
+      "composite": {
+        "cv": 0.035,
+        "mean_s": 0.1628,
+        "measurable": true
+      },
+      "decode": {
+        "cv": 0.01,
+        "mean_s": 0.173,
+        "measurable": true
+      },
+      "degrade": {
+        "cv": 0.022,
+        "mean_s": 2.0445,
+        "measurable": true
+      },
+      "encode": {
+        "cv": 0.114,
+        "mean_s": 1.0621,
+        "measurable": true
+      },
+      "preprocess": {
+        "cv": 0.138,
+        "mean_s": 0.28,
+        "measurable": true
+      },
+      "restore": {
+        "cv": 0.007,
+        "mean_s": 25.2832,
+        "measurable": true
+      },
+      "score": {
+        "cv": 0.349,
+        "mean_s": 0.0021,
+        "measurable": false
+      },
+      "select": {
+        "cv": 0.016,
+        "mean_s": 0.0039,
+        "measurable": true
+      },
+      "sidechannel": {
+        "cv": 0.166,
+        "mean_s": 0.0084,
+        "measurable": true
+      }
+    },
+    "trials": 3,
+    "video": "dog",
+    "wall_mean_s": 29.212
+  }
+]

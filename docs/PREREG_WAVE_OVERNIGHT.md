@@ -375,3 +375,56 @@ more such clips would make instability, not BD-rate, the headline finding.
 
 **Stopping rule, fixed now:** n is set by these three clips. We do not add clips
 until the sign test crosses a threshold.
+
+## A7. W1-A: bounds fired, and the investigation found a METRIC ARTEFACT, not a result
+
+Observed at matched quality (BD-rate on FG-LPIPS over the new four-rung ladders):
+
+| arm | saves bits at matched QUALITY | median BD-rate | for contrast, at matched QP |
+|---|---|---|---|
+| ELVIS (blackout, `inpainter: none`) | **1/24** | **+81.7%** | 23/24 "save" |
+| PRESLEY (downsample+realesrgan) | 5/22 | +12.3% | 19/22 "save" |
+
+Both breach the pre-registered band (0.30–0.80 of clips saving). Per the alarm rule
+the numbers were investigated before being reported, and **the ELVIS row does not
+survive that investigation.**
+
+**The two foreground metrics disagree, and only for the arm with holes.**
+
+| arm | median ΔFG-PSNR | beyond the 0.5 dB margin | median ΔFG-LPIPS | beyond the 0.05 margin |
+|---|---|---|---|---|
+| ELVIS | **−0.10 dB** | **10/104 (10%)** | **+0.0686** | **72/104 (69%)** |
+| PRESLEY | — | — | +0.0047 | **0/101 (0%)** |
+
+By PSNR the ELVIS foreground is essentially untouched; by LPIPS it is damaged on
+nearly every point. Those cannot both describe the same pixels, and PSNR is the one
+computed exactly on the mask.
+
+**Diagnosis: LPIPS bleeds across the mask boundary.** LPIPS compares deep features
+whose receptive fields span tens of pixels, so a *black hole* adjacent to a
+foreground block changes the foreground's feature map even though the foreground
+pixels are unchanged — which is exactly what the flat FG-PSNR says. The control is
+the PRESLEY arm: downsampling leaves content in every block, there are no holes, and
+its FG-LPIPS delta is 0.0047 with **zero** points beyond the margin. Holes bleed;
+degraded-but-present content does not.
+
+**Consequences.**
+
+1. **The ELVIS-arm BD-rate on FG-LPIPS is not usable**, and neither is any
+   FG-LPIPS claim on a *transport-only* hole arm. This affects `fig:breadth`'s ELVIS
+   panel and any other mask-restricted-LPIPS number taken on an un-inpainted frame.
+   It does **not** affect arms evaluated after in-painting, where the holes are
+   filled before the metric sees them.
+2. **The original matched-QP framing was not simply wrong.** The project rule already
+   says that at matched QP, with foreground quality verified indistinguishable, the
+   question is "who encodes fewest bits at indistinguishable FG quality". For the
+   PRESLEY arm that verification now **passes at every one of 101 points**, so its
+   matched-QP saving on 19/22 clips is legitimate and does not need a BD-rate.
+   For the ELVIS arm the verification must be done on **FG-PSNR**, where it passes on
+   90% of points.
+3. **What the crosses in `fig:breadth` were marking is real** but was attributed to
+   the wrong cause: they flag LPIPS bleed on hole arms, not foreground damage.
+
+**This supersedes the plan's E1j-2**, which assumed the fix was to redraw everything
+as a BD-rate. The correct fix is per-arm: verify indistinguishability on a metric
+that does not bleed, then report matched-QP rate where it passes.
