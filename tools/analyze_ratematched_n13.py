@@ -98,8 +98,41 @@ ARMS = {
     "elvis": {"removal_mode": "blackout", "inpainter": "propainter",
               "fg_protect": True, "shrink_amount": 0.25},
     "presley_ai": {"degradation": "downsample", "restorer": "realesrgan",
-                   "fg_protect": True, "shrink_amount": 0.25},
+                   "fg_protect": True, "shrink_amount": 0.25,
+                   # Pin the RESTORER PARAMS as a WHITELIST of the two values
+                   # the published corpus uses: tile=400 on the DAVIS/SVT-AV1
+                   # ladders, tile=0 on the nine non-DAVIS x265 clips. Both
+                   # state them explicitly.
+                   #
+                   # This is what disambiguates the arm. The 2026-08 resolution
+                   # ladder and selection race run the same recipe but pass
+                   # restorer_params {}, so they resolve to full-frame inference
+                   # by default rather than by declaration. Tiling changes the
+                   # computation at tile boundaries, so those runs are near-twins
+                   # of the published ones, not duplicates of them, and they are
+                   # a separate experiment that this tool must not absorb.
+                   "restorer_params": ({"denoise_strength": 1.0, "tile": 400},
+                                       {"denoise_strength": 1.0, "tile": 0}),
+                   # Pin the SELECTION RULE, not just the transport. W1g added a
+                   # `restorability` arm that is identical on every other key, so
+                   # without this the selector matches two runs per rung and the
+                   # tool (correctly) refuses to guess which is the published
+                   # one. The published result is the incumbent rule, which
+                   # carries no `selection_rule` key at all -- hence the default.
+                   "selection_rule": "removability"},
 }
+
+
+def _mismatch(actual, expected) -> bool:
+    """A tuple in the spec is a whitelist of acceptable values, not a value."""
+    if isinstance(expected, tuple):
+        return actual not in expected
+    return actual != expected
+
+
+# Config keys introduced after some cited runs were produced. A run written
+# before the key existed behaves as this value, so that is what it compares as.
+_DEFAULTS = {"selection_rule": "removability"}
 
 
 def curves(conn):
@@ -119,7 +152,10 @@ def curves(conn):
         if cfg.get("block_size") != 8:
             continue
         spec = ARMS.get(row["component"], {})
-        if any(cfg.get(k) != v for k, v in spec.items()):
+        # `.get(k, default)` rather than `.get(k)`: keys added to the config
+        # schema after these runs were produced are absent from their stored
+        # config, and must compare equal to the behaviour they default to.
+        if any(_mismatch(cfg.get(k, _DEFAULTS.get(k)), v) for k, v in spec.items()):
             continue
         ident = (row["component"], *key, row["qp"])
         if ident in seen and seen[ident] != row["hash"]:
