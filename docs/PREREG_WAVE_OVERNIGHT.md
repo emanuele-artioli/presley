@@ -739,3 +739,64 @@ sentence.
 
 **Action: delete the table, keep the figure, move the freeze contrast into the
 running text.** A genuine page saving that no pending result can invalidate.
+
+# Wave 2 results
+
+## W2-B — graded vs binary at n=10: direction holds, significance does not
+
+| | |
+|---|---|
+| clean clips | **10** (`camel` excluded, see below) |
+| graded worse | **8 of 10**, median BD-rate **+5.6%** |
+| exact two-tailed sign | **p = 0.109** — still underpowered |
+| max FG delta between arms | 0.0026 (validity bound 0.02) — **passes** |
+| min overlap | 0.89 (gate 0.50) — **passes** |
+| clipping breaches | graded **4**, binary **0**, all on `camel` |
+
+The pre-registered direction bound (graded worse on ≥7 of 9) is met. Significance is
+not: 8/10 gives p=0.109, and only 9/10 (p=0.021) or 10/10 (p=0.002) would clear it.
+The two clips where graded wins are `tennis` (−11.1%) and `motorbike` (−4.2%).
+
+**The stopping rule fixed in advance applies: we stop here.** n was declared as these
+three clips and is not extended because the p-value is close. The honest statement is
+that grading is worse on the large majority of clips measured in a regime where it can
+work, without reaching significance at this n.
+
+`camel` remains the only clip whose graded arm breaches the clipping invariant, on
+all four rungs, with binary at 0 of 40. That asymmetry is evidence about the graded
+transport and is reported, not dropped.
+
+## W2-A — the exclusion protects the foreground on PSNR, not on LPIPS
+
+Six clips selected on the pre-outcome criterion, so the mechanism is exercised
+(8.6–16.1% of foreground degraded when protection is off).
+
+| metric | result |
+|---|---|
+| **FG-PSNR**, dropping protection | worse on **6 of 6**, median **−0.56 dB**, beyond the 0.5 dB margin on 3 of 6, exact two-tailed **p = 0.031** |
+| **FG-LPIPS**, dropping protection | median **+0.0013**, beyond the pre-registered 0.03 on **0 of 6**, beyond the 0.05 margin on **0 of 6**, worse on 4/6, p = 0.69 |
+| background BD-rate | median **−6.0%** — dropping protection is cheaper, as expected |
+
+**The pre-registered bound was set on the wrong metric, and I should say so plainly.**
+The bound was "FG-LPIPS delta ≥0.03 on ≥4 of 6", but its stated *basis* was a **3 dB
+FG-PSNR** figure. Setting an LPIPS threshold from PSNR evidence is the same
+axis-mismatch error as the retracted rule-8 test. Reporting the PSNR outcome is
+therefore not post-hoc metric shopping — it is the axis the basis was always on — but
+the mis-specification is mine and is recorded rather than quietly corrected.
+
+**Reading:** hard exclusion buys about half a dB of foreground fidelity and no
+measurable perceptual difference. Both halves matter. The fidelity gain is real and
+significant at 6/6; the perceptual null means a viewer would probably not see the
+difference on this content, which bounds how strongly the mechanism can be sold.
+
+## The paper's 3 dB `bmx-trees` figure does not reproduce
+
+`sections/presley.tex` states that without exclusion a score-based top-k "degraded
+12.8% of foreground blocks and cost 3 dB of foreground PSNR on `bmx-trees`". Measured
+here under a controlled A/C contrast on the same clip: **−0.42 dB**, not −3 dB.
+
+The configurations differ (the original figure predates this contrast and was not run
+as a matched pair), so this is not a refutation of the original measurement — but the
+article cannot keep quoting 3 dB as *the* cost of dropping exclusion when a controlled
+six-clip experiment puts the median at −0.56 dB. **Replace the 3 dB figure with the
+controlled result.**
