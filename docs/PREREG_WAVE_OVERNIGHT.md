@@ -657,3 +657,44 @@ true of, and use FG-PSNR for the hole arm.
 DISTS) is only valid on a region whose *neighbourhood* is also intact. On a
 transport that empties neighbouring blocks, use a pixel-exact metric for the
 protected region, or measure after restoration.
+
+# F3 — boundary-artifact analysis: there is no seam, and the boundary is the best place to be
+
+**Why.** The introduction argues ROI coding stalled on the *seam* — coding
+neighbouring regions at different quality leaves a visible boundary — and that a
+generative layer removes the need for one. That is currently asserted, not measured.
+
+**Method.** Among **degraded** blocks only, compare those touching an undegraded
+neighbour ("seam") against those whose four neighbours are all degraded
+("interior"). Both got the identical operator at the identical strength, so any
+difference is positional.
+
+**First pass was confounded, and the confound was large.** Comparing raw block PSNR
+gave seam blocks +1.753 dB better (303/308 runs, p=4e-52) — an implausibly clean
+result in an unexpected direction, which is what flagged it. The cause: the
+clustering blur makes selections contiguous, so *interior* blocks sit in the middle
+of large degraded regions, which the selector chose because they are the most
+removable — the most complex content, which has lower PSNR before anything is done
+to it. Raw PSNR compared content difficulty, not position.
+
+**Controlled result — per-block damage against each block's own pristine baseline:**
+
+| | |
+|---|---|
+| median seam-minus-interior damage | **−0.517 dB** (negative = the seam is damaged *less*) |
+| seam damaged more | 23 of 149 runs |
+| Wilcoxon signed-rank | p = 3.2e-19 |
+| runs beyond the 0.5 dB margin | 75 of 149 |
+
+**Blocks at the degraded/undegraded boundary come back better than blocks in the
+interior of degraded regions, by about the perceptual margin.** The mechanism is
+the conditioning the architecture is built on: a degraded block adjacent to intact
+content gives the restorer real high-frequency neighbours to work from, while a
+block surrounded by other degraded blocks has none.
+
+**What this supports, and what it does not.** It refutes the specific worry that
+this transport concentrates damage at region borders — the mechanism a visible seam
+would require. It is *not* a measurement of seam **visibility**: a discontinuity can
+exist with low damage on both sides, and testing that needs a gradient statistic
+across the boundary, which this does not compute. So B1 may say the boundary is not
+where damage concentrates, and may not say "no visible seam".
