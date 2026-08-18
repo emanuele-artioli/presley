@@ -461,3 +461,114 @@ a null rather than as evidence of stability. That wording is now confirmed corre
 by a second test. What must NOT be written is "restoration is regime-stable" as a
 demonstrated equivalence; the honest phrase is that no dependence is detectable and
 none is ruled out.
+
+---
+
+# F14 — what predicts the relocation sign. Registered 2026-08-18, before computing.
+
+**Why.** Bit relocation succeeds on some content and fails on others, and five
+earlier attempts to explain the split all failed. Foreground *area* was the most
+recent, and its failure is informative: area is a geometric proxy for bits, so the
+sixth attempt measures bits and complexity directly instead of another geometry.
+
+**Outcome variable.** The PRESLEY arm's **matched-QP bitrate delta** against the
+pristine baseline, averaged over the four rungs, at 640×360/x265. Matched QP rather
+than BD-rate because A7 established that this arm's foreground is indistinguishable
+from baseline at **0 of 101** operating points — which is precisely the condition
+that makes a matched-QP rate comparison the sanctioned analysis. The ELVIS arm is
+excluded: its FG-LPIPS carries the mask-bleed artefact.
+
+**Candidates — the whole family, declared now.**
+
+| # | candidate | mechanism |
+|---|---|---|
+| 1 | background share of total EVCA complexity | if the background carries few bits, degrading it cannot free many, whatever its area |
+| 2 | FG/BG mean-complexity ratio | relocation should pay when the background is complex *relative to* the foreground |
+| 3 | baseline bits per pixel at the reference rung | the starved-bitrate rule says generative transports pay only when the codec is starved |
+| 4 | mean temporal complexity | motion governs how much inter prediction already removes before we degrade anything |
+| 5 | spatial-complexity dispersion (CV) | a flat score map gives selection nothing to choose between |
+
+**Statistic.** Spearman rank correlation between each candidate and the bitrate
+delta across clips, **Holm-corrected over all five**, losers reported in full.
+
+**Bounds.**
+
+| quantity | plausible band | basis |
+|---|---|---|
+| best candidate's \|rho\| | 0.0 … 0.8 | five prior attempts found nothing; a very high rho would be suspicious at this n |
+| number of candidates significant after Holm | 0 … 2 | if three or more fire, suspect they are the same quantity in different clothes |
+
+**Alarms.**
+- \|rho\| > 0.8 on any candidate → check for circularity: the candidate must be
+  computable from the *source* clip alone, never from anything downstream of the
+  degradation or the encode.
+- Candidates 1 and 2 both firing → they share the EVCA complexity term; report as
+  one finding, not two.
+- Any candidate significant *before* Holm but not after → report as a loser, and do
+  not narrate it as "trending".
+
+**Pre-declared negative outcome.** If nothing survives Holm, that is the result:
+*relocation is content-dependent and six families of explanation have now failed to
+predict it.* That is publishable and is what the content-dependence subsection
+(plan E1j-1) reports.
+
+# F14 result — nothing valid predicts the split, and the outcome variable revealed something bigger
+
+## F14 proper: 0 of 5 candidates survive
+
+| candidate | rho | p raw | p Holm | verdict |
+|---|---|---|---|---|
+| background share of complexity | −0.032 | 0.886 | 0.886 | loser |
+| FG/BG complexity ratio | +0.244 | 0.262 | 0.541 | loser |
+| **baseline bits per pixel** | **−0.571** | **0.004** | **0.022** | **survives Holm, then FAILS validity** |
+| mean temporal complexity | −0.321 | 0.135 | 0.541 | loser |
+| spatial-complexity dispersion | +0.319 | 0.138 | 0.541 | loser |
+
+**The one survivor is a shared-denominator artefact.** The outcome is
+`presley_rate/baseline_rate − 1` and the candidate is `baseline_rate/pixels`, so
+both contain the baseline rate. The pre-registered circularity rule (candidates must
+come from the source clip alone, never from anything downstream of an encode) is
+what caught it — the magnitude alarm at |rho|>0.8 did not fire.
+
+Permutation control, breaking the real baseline/PRESLEY pairing while keeping both
+marginals: **rho = −0.678 ± 0.092 under the null**, against **−0.583 observed**
+(z = +1.03). *The null pairing produces a stronger correlation than the data do.*
+The relationship is arithmetic, not empirical.
+
+**So the pre-declared negative outcome stands: six families of explanation have now
+failed.** The four source-only candidates lost cleanly. Relocation is content
+dependent and nothing we have tried predicts which content.
+
+## The bigger finding: the saving REVERSES across the rate ladder
+
+Computing the outcome per rung rather than averaged, on 23 clips with all four rungs,
+foreground indistinguishable throughout (median gap 0.0007–0.0047, all far inside the
+0.05 margin, so a matched-QP rate comparison is valid at every rung):
+
+| QP | saves bits | median delta | median FG-LPIPS gap |
+|---|---|---|---|
+| 32 (richest) | **19/23** | **−6.6%** | +0.0047 |
+| 37 | 16/23 | −2.5% | +0.0028 |
+| 42 | 5/23 | +10.4% | +0.0044 |
+| 47 (most starved) | **1/23** | **+31.4%** | +0.0007 |
+
+**This contradicts the project's starved-bitrate rule**, which states that generative
+transports "only pay off where the codec is bit-starved" and that a comfortable-rate
+result *understates* them. Measured across a real ladder, the opposite holds: the
+saving is largest where the codec is comfortable and becomes a large penalty where it
+is starved.
+
+Plausible mechanism, not yet tested: at coarse quantization the encoder has already
+discarded the high-frequency background detail that degradation exists to remove, so
+there is nothing left to free — while the resampled block content and the edges at
+degraded/undegraded boundaries are new signal the encoder must still code. The
+side channel cannot explain it (4.19 kbps against a penalty of tens of percent).
+
+**Consequences.**
+1. The starved-bitrate rule in `research-log/hard-rules.md` is **contradicted by
+   direct measurement** and must not keep steering experiment design until
+   reconciled.
+2. Any single-rung result inherits the rung's sign. `fig:breadth`'s original two-rung
+   view sat at QP 32/37 — the two rungs where the saving exists.
+3. This is *bit relocation* only. It does not touch `sec:regime-equivalence`, which
+   is about restoration and is measured on background LPIPS.
