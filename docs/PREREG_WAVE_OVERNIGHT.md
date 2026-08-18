@@ -698,3 +698,44 @@ would require. It is *not* a measurement of seam **visibility**: a discontinuity
 exist with low damage on both sides, and testing that needs a gradient statistic
 across the boundary, which this does not compute. So B1 may say the boundary is not
 where damage concentrates, and may not say "no visible seam".
+
+# Two audit items closed
+
+## `tab:budget-knee` — the inertness claim is consistent with equivalence, but n=2
+
+The claim that the rate lever is "inert below 0.25" is an equivalence claim, which
+a difference test cannot support (significance audit, item 1). Tested properly:
+
+Bitrate change from `shrink_amount` 0.10 to 0.25 is **−0.24%** and **+1.18%**;
+TOST returns `equivalent` against a ±5% bound. For contrast, 0.25 → 0.50 moves
+**−22.1%**, so the knee itself is real and sharp.
+
+**But the effective n is 2, not 4.** The four cells are two videos × two restorer
+settings, and **bitrate is fixed at encode time**, so restorer variants of the same
+encode carry an identical rate — the duplicate rows inflate n without adding
+information. At n=2 the tool's own warning applies: a bootstrap over two points
+reproduces the observed range rather than a sampling distribution and will certify
+almost any tight pair.
+
+**Verdict: "consistent with equivalence", not evidence of it.** Wording must not be
+upgraded to "demonstrably inert" on this evidence. Two more videos would settle it,
+and this is the cheapest outstanding significance item in the article.
+
+**Generalisable trap, worth the research log:** when pooling runs for a *rate*
+statistic, deduplicate by whatever fixes the rate. Any arm that differs only after
+the encode contributes one measurement, not several.
+
+## `tab:av1-breadth` vs `fig:regime-reversal` — 4 of 6 rows are redundant
+
+The figure plots the SVT-AV1 starved bridge arm (bs16) on `bear`, `camel`, `dog`,
+`pigs` at four recalibrated rungs — the *blackout* fill. The table carries those
+same four plus two extra rows: `dog`/freeze and `pigs`/freeze.
+
+So they are **not** two renderings of one experiment, as an earlier plan entry
+claimed; the table adds a fill comparison the figure does not show. But the extra
+content is two numbers (freeze costs +34.4% and +30.4% against blackout's +27.3%
+and +18.3%, i.e. freeze is the worse fill in the starved regime), which is one
+sentence.
+
+**Action: delete the table, keep the figure, move the freeze contrast into the
+running text.** A genuine page saving that no pending result can invalidate.
