@@ -572,3 +572,56 @@ side channel cannot explain it (4.19 kbps against a penalty of tens of percent).
    view sat at QP 32/37 — the two rungs where the saving exists.
 3. This is *bit relocation* only. It does not touch `sec:regime-equivalence`, which
    is about restoration and is measured on background LPIPS.
+
+## RETRACTION — the starved-bitrate rule is NOT contradicted
+
+The previous entry claimed hard rule 8 was falsified. **That was wrong**, and the
+error was a category mistake: the rule is about a **quality** payoff, and I tested a
+**rate** delta.
+
+Rule 8 says generative methods "only pay off where the baseline is visibly
+quality-limited: hallucinating detail is only cheaper than coding it when the codec
+can't afford the detail." Its recorded basis is SVT-AV1 measured as *bits for equal
+quality*. My test was x265 measured as *bits at equal QP*. Neither the codec nor the
+comparison basis matched.
+
+Testing the quality axis on the same 23 x265 clips, background LPIPS, PRESLEY minus
+baseline (negative = PRESLEY better):
+
+| QP | median BG gap | PRESLEY better | median rate delta |
+|---|---|---|---|
+| 32 (richest) | **+0.0409** | **0/23** | −6.6% |
+| 37 | +0.0286 | 2/23 | −2.5% |
+| 42 | +0.0131 | 3/23 | +10.4% |
+| 47 (most starved) | **−0.0153** | **17/23** | +31.4% |
+
+**The quality advantage flips exactly as rule 8 predicts.** At the starved rung
+PRESLEY's restored background beats the baseline's crushed background on 17 of 23
+clips. The rule is confirmed on a second codec and a larger corpus than it was
+written from.
+
+## What is actually true, and it is still worth reporting
+
+**The method trades rate against quality, and the ladder decides which side you are
+on.** Foreground stays indistinguishable throughout (median gap 0.0007–0.0047), so
+the background is the whole story:
+
+- **Comfortable rungs:** PRESLEY is *cheaper and worse* — −6.6% bits at a background
+  gap of +0.0409, which is close to the 0.05 perceptual margin.
+- **Starved rungs:** PRESLEY is *dearer and better* — +31.4% bits at a background gap
+  of −0.0153.
+
+Consequences for the article:
+
+1. **`fig:breadth`'s two rungs are QP 32/37 — the comfortable end.** So its "saves
+   bits on 22 of 33" reports the regime where the saving is real *and the background
+   is measurably worse*. That is what the crosses were marking, and it is why the
+   figure needs its quality qualification stated in the running text, not just in the
+   caption.
+2. **A single-rung claim in either direction is not a claim about the method.** The
+   four-rung ladder is what makes the trade visible, which is the strongest argument
+   yet for W1-A's harmonization.
+3. **The BD-rate over the whole ladder mixes the two regimes** and is therefore hard
+   to interpret on its own — the per-rung table is the honest presentation.
+4. **Hard rule 8 stays. Nothing is removed.** The audit of "why the rule appeared to
+   hold" is answered: it holds, and it held for the reason it states.
