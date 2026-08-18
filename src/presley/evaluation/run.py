@@ -1,6 +1,7 @@
 """The evaluation pass over one experiment or a whole results tree."""
 
 import os
+import zlib
 import json
 import numpy as np
 import torch
@@ -266,11 +267,35 @@ def run_evaluation(experiment_hash: str, results_dir: str, cache_dir: str, datas
         _db.write_mirror(data, result_path)
 
     print(f"Evaluated metrics for {experiment_hash}")
-def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False) -> None:
-    for entry in os.listdir(results_dir):
+def evaluate_all(results_dir: str, cache_dir: str, dataset_dir: str, fast: bool = False,
+                 shard: str = None) -> None:
+    """Evaluate every result directory, optionally a disjoint slice of them.
+
+    ``shard`` is "idx/total" (e.g. "0/6"). Entries are partitioned by a stable
+    hash of the directory name, so N processes with N different idx values
+    cover every result exactly once and never write the same result.json.
+    Without it the whole tree is one pass, which is a single core against an
+    NFS-bound workload and is what made the overnight evaluation the bottleneck
+    rather than the runs themselves.
+
+    Partitioning by name (not by list position) keeps a shard's membership
+    stable if the directory listing changes between passes -- otherwise a
+    re-run after new results land would silently reshuffle which shard owns
+    which result.
+    """
+    shard_idx = shard_total = None
+    if shard:
+        shard_idx, shard_total = (int(x) for x in shard.split('/'))
+        if not (0 <= shard_idx < shard_total):
+            raise ValueError(f"--shard idx must be in [0,{shard_total}), got {shard_idx}")
+
+    for entry in sorted(os.listdir(results_dir)):
         # Skip bookkeeping dirs (e.g. _superseded) — not experiment hashes.
         if entry.startswith('_'):
             continue
+        if shard_total is not None:
+            if zlib.crc32(entry.encode()) % shard_total != shard_idx:
+                continue
         exp_dir = os.path.join(results_dir, entry)
         if os.path.isdir(exp_dir):
             # Isolate failures: one un-evaluatable result must not abort the pass

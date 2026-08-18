@@ -106,7 +106,7 @@ def main():
     elif args.fvmd_setlevel:
         fvmd_setlevel_report(args.fvmd_setlevel, args.results_dir, args.cache_dir, args.dataset_dir, args.fvmd_out)
     else:
-        evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics)
+        evaluate_all(args.results_dir, args.cache_dir, args.dataset_dir, fast=args.fast_metrics, shard=args.shard)
 
 
 if __name__ == "__main__":
