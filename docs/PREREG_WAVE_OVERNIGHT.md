@@ -155,3 +155,223 @@ equal budget across arms and that the exclusion still binds on the random arm.
 **What it settles.** Whether the two placement choices the architecture is built
 on do measurable work at fixed budget and strength. A null on the ranking is a
 publishable result and would say the budget, not the ordering, is what matters.
+
+---
+
+# Alarm log — fired 2026-08-18, before any result was read
+
+## A1. W1-B: the graded arm numerically diverges on `camel`, all four rungs
+
+`camel` at `downsample_levels: 3` fails the restoration-clipping invariant on
+every rung (1.28–1.31% of output pixels driven to 0/255 against 0.29–0.34% in the
+input it received; the limit is 0.50%). Its **binary** arm is clean on all four
+rungs, and **every other video is clean on both arms** — 7 of 8 videos usable,
+1 of 8 broken and only in the graded arm.
+
+| video | binary ok/n | graded ok/n |
+|---|---|---|
+| bear, bike-packing, color-run, dancing, dogs-jump, drift-turn, motorbike | 4/4 | 4/4 |
+| **camel** | 4/4 | **0/4** |
+
+**This is not a missing datapoint, it is a property of the arm under test.** The
+graded pyramid applies the restorer once per level, so each round re-amplifies
+whatever the previous round pushed toward the rails; the binary arm applies it
+once and does not. That the divergence appears *only* in the graded arm, on all
+four of its rungs, and on none of the seven other clips, is consistent with
+amplification rather than with a bad encode or a corrupt input.
+
+**Consequences, in order.**
+
+1. The graded-vs-binary comparison has **n=7 paired videos**, above the n≥6 floor,
+   so it can still reach significance (minimum two-tailed p at n=7 is 0.0156).
+2. **`camel` must not be silently dropped.** Numerical instability confined to the
+   graded arm is evidence about grading, and reporting "7 of 8" without saying why
+   would hide the most interesting thing the experiment found.
+3. Before the comparison is cited, diagnose the clipping in the multi-round path.
+   If it is fixable, re-run `camel` and report n=8. If it is intrinsic to applying
+   a GAN restorer repeatedly, that is a **finding about λ>1** and belongs in the
+   text as one.
+
+**Not yet done, and it gates the W1-B claim.**
+
+## A2. W1-A: three breadth runs fail the same clipping invariant
+
+`drift-straight` (×2) and `scooter-board` (×1) at 640×360 on the PRESLEY arm.
+Isolated rather than systematic — 3 of 272. They are dropped from the affected
+ladders, and the overlap gate is applied per clip as pre-registered; a ladder that
+loses a rung to this must be checked for overlap ≥ 0.50 before its BD-rate is used.
+
+## A3. W1-C: the ranking bound fired high, and the basis for it was wrong
+
+Observed: arm A beats arm B (random ranking) on **5 of 6** videos, median contrast
+**−52.1 pp** of BD-rate on BG-LPIPS. The pre-registered band was −20%…+5%, so this
+is far outside it.
+
+**The band's basis was the error, not the result.** It was derived from
+`f1-oracle-bits`: "the entire remaining headroom on the cost axis is worth about
+5% of the bitrate". That figure is about **bits freed at fixed coverage** — how
+close the score gets to a bit oracle. This experiment measures **rate at matched
+background quality**, which is a different axis. Random placement degrades blocks
+that are perceptually expensive as well as cheap, so background quality collapses
+at equal rate and the BD-rate integral blows up accordingly. A 5%-of-bits ceiling
+does not bound a quality-matched rate comparison.
+
+**Band revised to −70%…0%, with that reason.** The result stands; the prediction
+was mis-derived. Recorded rather than quietly widened.
+
+## A4. W1-C: the exclusion contrast is INVALID on this clip set — a null by construction
+
+Observed: A vs C shows A **worse** on background BD-rate on 6/6 (median +12.7 pp,
+expected — arm C may degrade more of the frame) and **no foreground difference at
+all**: mean FG-LPIPS 0.2493 (A), 0.2423 (C), spanning 0.2417–0.2541 across all
+four arms. That range is 0.012, far inside the 0.05 perceptual margin. The
+pre-registered bound (A vs C FG-LPIPS delta ≥ 0.03 on most videos) is breached.
+
+**Diagnosis: the exclusion never binds on these six clips.** Measuring directly
+how many foreground blocks arm C actually degrades:
+
+| video | FG blocks | FG degraded by arm C | share of C's selection that is FG |
+|---|---|---|---|
+| bear | 11.8% | **0.3%** | 0.1% |
+| camel | 16.4% | **0.1%** | 0.1% |
+| dog | 12.7% | **0.0%** | 0.0% |
+| pigs | 32.3% | **0.1%** | 0.2% |
+| bike-packing | 24.4% | 2.6% | 2.5% |
+| dogs-jump | 8.2% | 14.5% | 4.7% |
+
+On five of six clips the score-based top-25% contains essentially **no** foreground
+blocks even with protection switched off, because the γ=10 background priority has
+already pushed them out of contention. Hard exclusion therefore has nothing left to
+remove, and A and C run the same selection.
+
+**This is a null by construction, not a measurement.** It must not be reported as
+"the exclusion buys nothing". What it does support, and this is sharper than either
+alternative:
+
+> The soft γ priority is sufficient on typical content; hard exclusion is insurance
+> against the minority of clips whose foreground is complex enough to outrank the
+> background.
+
+**Fix: the clip set was chosen wrong for this contrast.** It needs clips that
+exercise the exclusion — ones where the foreground score distribution overlaps the
+background's. `bmx-trees` is the known example (FG mean score 0.127 against BG
+0.113; a purely score-based top-k degraded 12.8% of its foreground and cost 3 dB of
+FG-PSNR) and it is **not in the six**. Re-run arms A and C on a clip set selected by
+that criterion before the exclusion is claimed either way.
+
+**The A-vs-B ranking contrast is unaffected** — it does not depend on the exclusion
+binding, and both arms carry `fg_protect: true`.
+
+## A5. Gamma cannot replace hard exclusion — measured, not argued (answers the design question)
+
+Sweeping γ over the clips whose foreground the score actually reaches, measuring
+the share of foreground blocks a purely score-based top-25% degrades:
+
+| video | γ=10 | γ=25 | γ=50 | γ=100 | γ=1000 |
+|---|---|---|---|---|---|
+| bmx-trees | 8.56% | 6.74% | 6.16% | 5.90% | **5.66%** |
+| tennis | 11.46% | 9.09% | 8.41% | 8.02% | **7.71%** |
+| dogs-jump | 14.54% | 11.98% | 11.22% | 10.93% | **10.61%** |
+
+**γ asymptotes.** A hundredfold increase buys about three percentage points and the
+curve is flat by γ=50. No value of γ drives foreground degradation to zero.
+
+**Why it is structural rather than a tuning failure.** γ is a *scale* factor applied
+before the clustering blur. The blur then mixes γ-boosted background scores into
+foreground blocks at the mask boundary, and because both the boosted background and
+the leaked foreground scale with γ together, the resulting **ranking converges to a
+fixed limit**. A scale factor cannot express a constraint that the ranking must
+never cross a region boundary; only a rank-independent exclusion can. Deriving γ
+from α/β would not change this, because the leak is scale-invariant.
+
+**Conclusion: keep both mechanisms, change no code.** The soft priority does the
+work on typical content (5 of 6 W1-C clips see ~0% foreground degraded at γ=10) and
+the hard exclusion is what makes the guarantee hold on the minority that need it.
+This is the paragraph already in §3.2 and it is now measured.
+
+**On "if the foreground does get degraded, maybe that is fine":** two existing
+results say otherwise. Without exclusion `bmx-trees` loses **3 dB of FG-PSNR**, and
+`sec:restorability` shows complex blocks are precisely the ones that come back
+*worst* after restoration — so the blocks that would leak are the blocks least
+likely to be recovered.
+
+## A6. W1-B result: the graded retirement survives being measured in regime
+
+| | |
+|---|---|
+| FG-LPIPS delta between arms | max **0.0026** (bound ≤0.02) — **passes**, exclusion holds, comparison valid |
+| overlap | min **0.89** (gate ≥0.50) — **passes** |
+| direction | graded **worse on 6 of 7** clean videos, median BD-rate **+8.2%** |
+| significance | exact two-tailed **p = 0.125** — **underpowered**, not a null |
+| band | ±25% breached by `bear` (+53.5%) and `camel` (+70.5%, excluded) |
+
+**D3 is closed.** The graded transport was previously retired on a measurement taken
+at `block_size 16`, where the λ bound admits one level and the deepest rung carried
+2×2 samples. Re-measured at `block_size 64`/1080p, where the bound admits three, the
+direction is the same. `sec:ablation`'s wording is no longer unsafe.
+
+**But it is underpowered, and must be worded as such.** At n=7, 6/7 gives p=0.125;
+only 7/7 would reach 0.0156. Two more clean videos would settle it.
+
+**`camel` is not a dropped datapoint** — its graded arm breaches the clipping
+invariant on all four rungs while its binary arm is clean, and binary breaches 0 of
+32 runs against graded's 4 of 32. That asymmetry is evidence about the graded
+transport (each pyramid round re-amplifies toward the rails), and it points the same
+way as the BD-rate.
+
+---
+
+# Wave 2 — the two re-runs the alarms require. Registered 2026-08-18, before running.
+
+## W2-A — Exclusion contrast on a clip set that exercises it (fixes A4)
+
+**Why.** A4 voided the original exclusion contrast: on 5 of 6 clips the score-based
+top-25% contained almost no foreground even with protection off, so arms A and C ran
+the same selection.
+
+**Clip selection is on a pre-outcome criterion**, declared here before any run: rank
+the corpus by the share of foreground blocks a purely score-based top-25% degrades,
+and take the top six. Measured:
+
+| clip | FG degraded, protection off |
+|---|---|
+| drift-chicane | 16.07% |
+| lindy-hop | 14.55% |
+| dogs-jump | 14.54% |
+| tennis | 11.46% |
+| dogs-scale | 9.52% |
+| bmx-trees | 8.56% |
+
+This selects on *whether the mechanism is exercised*, never on the outcome. Clips
+where the exclusion cannot bind cannot inform a claim about it in either direction.
+
+**Design.** Arms A (`score`+`fg_protect`) and C (`score`, no protect) only — the
+ranking contrast is already settled by W1-C and does not need repeating. 6 clips × 4
+rungs × 2 arms + baselines, svtav1, 640×360, bs8, downsample+realesrgan.
+
+**Bounds.** FG-LPIPS delta A vs C ≥ **0.03** on ≥4 of 6 clips (the 3 dB FG-PSNR loss
+on `bmx-trees` is the basis); C cheaper on background BD-rate on most clips (it
+degrades more of the frame — expected, and the cost is meant to show in FG).
+
+**Alarm.** If FG still does not separate on clips selected *for* binding, the
+exclusion does not buy measurable quality and the article must say so. That is a
+real possible outcome and is why the criterion was fixed in advance.
+
+## W2-B — W1-B to n≥9 (fixes A6's underpowered verdict)
+
+**Why.** Graded is worse on 6 of 7, but at n=7 that is p=0.125. Only 7/7 reaches
+0.0156 at this n, so the direction cannot be claimed.
+
+**Design.** Three further 1080p clips (`tennis`, `pigs`, `breakdance`) at
+`block_size 64`, 4 rungs, both arms + baselines — same configuration as W1-B.
+Expected 9–10 clean videos after `camel`'s exclusion.
+
+**Bounds.** Graded worse on ≥7 of 9; FG-LPIPS delta between arms ≤0.02 (the validity
+gate — max observed so far is 0.0026); overlap ≥0.50 per clip.
+
+**Alarm.** Any new clip whose graded arm breaches the clipping invariant joins
+`camel` as evidence about the graded transport rather than being dropped. Two or
+more such clips would make instability, not BD-rate, the headline finding.
+
+**Stopping rule, fixed now:** n is set by these three clips. We do not add clips
+until the sign test crosses a threshold.
