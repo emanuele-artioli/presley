@@ -47,7 +47,7 @@ from presley import db  # noqa: E402
 from presley.compare import REGION_METRIC_KEYS  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from analyze_ratematched_n13 import ARMS, LADDERS  # noqa: E402
+from analyze_ratematched_n13 import ARMS, LADDERS, _DEFAULTS, _mismatch  # noqa: E402
 
 HOLM_K = 4          # {quality, bitrate} x {presley vs elvis, presley vs baseline}
 ALPHA = 0.05
@@ -88,7 +88,13 @@ def collect(conn):
         if comp in ARMS:
             if cfg.get("block_size") != 8:
                 continue
-            if any(cfg.get(k) != v for k, v in ARMS[comp].items()):
+            # Use the SAME matcher as analyze_ratematched_n13: ARMS values may be
+            # whitelist tuples (restorer_params) and some keys are absent from
+            # configs produced before the schema gained them (selection_rule), so
+            # a naive `cfg.get(k) != v` rejects every arm -- which is why this
+            # tool reported "no ladder has all three arms" on a tree that has them.
+            if any(_mismatch(cfg.get(k, _DEFAULTS.get(k)), v)
+                   for k, v in ARMS[comp].items()):
                 continue
         out.setdefault(key, {}).setdefault(row["qp"], {})[comp] = doc
     return out

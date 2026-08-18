@@ -428,3 +428,36 @@ degraded-but-present content does not.
 **This supersedes the plan's E1j-2**, which assumed the fix was to redraw everything
 as a BD-rate. The correct fix is per-arm: verify indistinguishability on a metric
 that does not bleed, then report matched-QP rate where it passes.
+
+---
+
+# F11 result — TOST does NOT fire; regime stability stays unproven either way
+
+`analyze_r1_regime_scope.py` was **broken**, not blocked: it imported `ARMS` from
+`analyze_ratematched_n13` but matched with a naive `cfg.get(k) != v`, which cannot
+handle the `restorer_params` whitelist tuple or the `selection_rule` default absent
+from older configs. Every `presley_ai` arm was therefore rejected and the tool
+reported "no ladder has all three arms" on a tree that has them. Patched to use the
+sibling's `_mismatch`/`_DEFAULTS`.
+
+**With that fixed, `CLAIM(sec:regime-stability)` reproduces exactly** — 5/13
+negative, p=0.581, median |contrast| 0.0223. The claim was always sound; the tool
+had regressed. The provenance worry raised earlier is closed.
+
+**TOST on the 13 contrasts: `not_shown_equivalent` at margins 0.05 and 0.03.**
+The 90% CI on the mean is [−0.0168, +0.0128], inside ±0.05 — but two ladders exceed
+the margin outright (`camel` −0.0585, `youtube_vos/0e4068b53f` −0.0535), so max
+|delta| is 0.0585 and equivalence is not established.
+
+**This refutes the fix proposed in plan E1i-1.** I predicted TOST would plausibly
+fire because the *median* |contrast| is 0.0223 against a 0.05 margin. The median was
+the wrong statistic: equivalence needs the whole distribution inside the bound, and
+two ladders are not.
+
+**Consequence for the text: none, and that is the point.** The §4.2 edit already
+rests the operating-range claim on the primary result — the background win is
+present on 13 of 13 ladders spanning both ends of the range — and reports p=0.58 as
+a null rather than as evidence of stability. That wording is now confirmed correct
+by a second test. What must NOT be written is "restoration is regime-stable" as a
+demonstrated equivalence; the honest phrase is that no dependence is detectable and
+none is ruled out.
