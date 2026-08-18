@@ -800,3 +800,42 @@ as a matched pair), so this is not a refutation of the original measurement — 
 article cannot keep quoting 3 dB as *the* cost of dropping exclusion when a controlled
 six-clip experiment puts the median at −0.56 dB. **Replace the 3 dB figure with the
 controlled result.**
+
+---
+
+# W2-B EXTENSION — registered 2026-08-18, before any extension run
+
+**Status of the prior look, disclosed.** W2-B was declared at n=10 with a stopping
+rule, and returned graded worse on 8/10, p=0.109. That interim look has happened and
+is reported. This extension is a **new, larger experiment with n fixed in advance**,
+not a continuation that stops when p crosses a threshold.
+
+**Why this is not optional stopping.** Adding data until significance appears inflates
+the false-positive rate, because each look is a fresh chance to cross the threshold.
+The valid form is to declare the target n, run to it, and report the outcome whatever
+it is. That is what this does.
+
+**Target: n = 16 clips**, adding six to the existing ten. Three have 1080p
+preprocessing already (`bmx-bumps`, `dog`, `train`); three do not and will have it
+built by the runner (`india`, `scooter-black`, `lindy-hop`). Same configuration as
+W2-B throughout: `block_size 64`, 1920×1080, SVT-AV1 preset 8, four rungs, both arms
+plus baselines, `shrink_amount 0.25`, `fg_protect`, Real-ESRGAN.
+
+**Reporting commitment, binding regardless of outcome:**
+
+1. The headline is the **n=16 result**, with the n=10 interim look disclosed beside
+   it. Both numbers appear; neither is presented as if the other had not been taken.
+2. **If it does not reach significance, that is the reported result** and grading is
+   described as a consistent direction that a sixteen-clip suite could not establish.
+3. **n is not extended again.** Sixteen is the final sample for this question.
+4. Any clip whose graded arm breaches the clipping invariant joins `camel` as evidence
+   about the transport and is counted, never silently dropped. Two or more further
+   such clips make instability, not BD-rate, the headline.
+
+**Bounds.** Graded worse on ≥11 of 16 (the n=10 rate of 0.8 would predict ~13);
+FG-LPIPS delta between arms ≤0.02 (validity gate; max so far 0.0026); overlap ≥0.50
+per clip.
+
+**Alarm.** A win rate materially below the 8/10 already observed would suggest the
+first ten clips were a favourable draw, and the pooled estimate — not the extension
+alone — becomes the honest summary.
