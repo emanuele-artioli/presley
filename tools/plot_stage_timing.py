@@ -50,17 +50,21 @@ for st in stages:
             linewidth=0.4, label=st)
     left = [l + v for l, v in zip(left, vals)]
 
+# Seconds alone cannot say whether a configuration is real time, so each bar is
+# labelled with its wall clock as a multiple of the clip's own duration. The
+# three clips are 60-90 frames at 24 fps, a mean of 3.22 s of video.
+CLIP_SECONDS = (82 + 90 + 60) / 3.0 / 24.0
 for i, a in enumerate(arms):
-    share = D["restoration_share_pct"][a]
-    if share:
-        ax.annotate(f"{share:.0f}% restore", xy=(left[i], i), xytext=(3, 0),
-                    textcoords="offset points", va="center", fontsize=6.5,
-                    color="0.25")
+    factor = D["wall_seconds_by_arm"][a] / CLIP_SECONDS
+    txt = (f"{1/factor:.1f}$\\times$ real time" if factor < 1
+           else f"{factor:.1f}$\\times$ slower")
+    ax.annotate(txt, xy=(left[i], i), xytext=(3, 0), textcoords="offset points",
+                va="center", fontsize=6.2, color="0.25")
 
 ax.set_yticks(list(y))
 ax.set_yticklabels([SHORT[a] for a in arms], fontsize=6.5, linespacing=0.95)
-ax.set_xlabel("seconds (mean of 3 trials)")
-ax.set_xlim(0, max(left) * 1.46)
+ax.set_xlabel("seconds per 3.2 s clip (mean of 3 trials)")
+ax.set_xlim(0, max(left) * 1.52)
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3,
           fontsize=6.2, handlelength=0.9, columnspacing=0.8,
           handletextpad=0.35, borderpad=0.1, labelspacing=0.25)

@@ -6,7 +6,8 @@ panel is negative on every ladder; the foreground panel moves in both
 directions, which is the weaker claim the article actually makes -- no
 *systematic* foreground cost, rather than an unchanged foreground.
 
-Authored at half textwidth so it can pair with another figure.
+Authored at 0.44 textwidth and tall enough to match fig:breadth beside it,
+which costs no page height because that float is already breadth-driven.
 """
 from __future__ import annotations
 
@@ -15,7 +16,7 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from paper_figure_style import HALF, despine, use_paper_style, width_in  # noqa: E402
+from paper_figure_style import despine, use_paper_style, width_in  # noqa: E402
 
 import matplotlib.pyplot as plt  # noqa: E402
 
@@ -33,7 +34,7 @@ bg = [D["bd_rate_bg_lpips_pct"][i] for i in order]
 fg = [D["bd_rate_fg_lpips_pct"][i] for i in order]
 y = range(len(order))
 
-fig, (axb, axf) = plt.subplots(1, 2, figsize=(width_in(HALF), 1.78), sharey=True)
+fig, (axb, axf) = plt.subplots(1, 2, figsize=(width_in(0.44), 3.15), sharey=True)
 
 axb.barh(list(y), bg, color="#4878a8", edgecolor="black", linewidth=0.4)
 axb.axvline(0, color="black", lw=0.7)
