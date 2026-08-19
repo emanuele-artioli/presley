@@ -28,6 +28,9 @@ import matplotlib
 matplotlib.use("Agg")  # headless host: never a GUI backend
 import matplotlib.pyplot as plt  # noqa: E402
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from paper_figure_style import FULL, use_paper_style, width_in  # noqa: E402
+
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
 from bd_rate import bd_rate  # noqa: E402
 
@@ -130,27 +133,26 @@ def main() -> int:
     # Print conventions: colourblind-safe, and separable in greyscale through
     # marker shape and line style, not colour alone.
     C_BASE, C_BRIDGE = "#4d4d4d", "#0072B2"
-    fig, axes = plt.subplots(2, 2, figsize=(7.0, 5.2))
+    use_paper_style()
+    fig, axes = plt.subplots(1, 4, figsize=(width_in(FULL), 1.58), sharey=False)
     for ax, v in zip(axes.ravel(), ORDER):
         b, g = curves[v]
         ax.plot([r for r, _ in b], [q for _, q in b], color=C_BASE,
-                marker="o", ms=4.5, lw=1.3, ls="-", label="pristine SVT-AV1")
+                marker="o", ms=2.6, lw=0.9, ls="-", label="pristine SVT-AV1")
         ax.plot([r for r, _ in g], [q for _, q in g], color=C_BRIDGE,
-                marker="s", ms=4.5, lw=1.6, ls="--", label="bridge (blackout)")
+                marker="s", ms=2.6, lw=1.1, ls="--", label="bridge (blackout)")
         verdict = "frees bits" if PUBLISHED[v] < 0 else "costs bits"
-        ax.set_title(f"\\texttt{{{v}}}  ({PUBLISHED[v]:+.1f}\\% BD-rate, {verdict})"
-                     if False else f"{v}   {PUBLISHED[v]:+.1f}% BD-rate — {verdict}",
-                     fontsize=9, pad=4,
+        ax.set_title(f"{v}\n{PUBLISHED[v]:+.1f}% — {verdict}",
+                     fontsize=6.8, pad=2, linespacing=1.0,
                      fontweight="bold" if v not in INCUMBENTS else "normal")
-        ax.grid(alpha=0.25, lw=0.5)
-        ax.tick_params(labelsize=8)
+        ax.grid(alpha=0.25, lw=0.4)
+        ax.tick_params(labelsize=6.2)
         for s in ("top", "right"):
             ax.spines[s].set_visible(False)
 
-    axes[1][0].set_xlabel("bitrate (kbit/s)", fontsize=9)
-    axes[1][1].set_xlabel("bitrate (kbit/s)", fontsize=9)
-    axes[0][0].set_ylabel("foreground PSNR (dB)", fontsize=9)
-    axes[1][0].set_ylabel("foreground PSNR (dB)", fontsize=9)
+    for ax in axes:
+        ax.set_xlabel("bitrate (kbit/s)", fontsize=6.8, labelpad=1)
+    axes[0].set_ylabel("foreground PSNR (dB)", fontsize=6.8, labelpad=1)
 
     # Say what to look for, once, and show it as the horizontal gap that BD-rate
     # actually integrates -- not as the vertical gap, which is a different claim.
@@ -163,7 +165,7 @@ def main() -> int:
                 return math.exp(math.log(r0) + t * (math.log(r1) - math.log(r0)))
         return None
 
-    for panel, v in ((axes[0][0], "bear"), (axes[1][0], "dog")):
+    for panel, v in ((axes[0], "bear"), (axes[2], "dog")):
         b, g = curves[v]
         # a quality level both ladders actually reach, so nothing is extrapolated
         q = max(b[0][1], g[0][1]) + 0.55 * (min(b[-1][1], g[-1][1]) - max(b[0][1], g[0][1]))
@@ -175,18 +177,18 @@ def main() -> int:
         panel.plot([rb, rg], [q, q], ls=":", lw=0.6, color="#B00020", zorder=1)
         saved = (rb - rg) / rb * 100.0
         word = "fewer" if saved > 0 else "more"
-        panel.annotate(f"at equal FG quality:\n{abs(saved):.0f}% {word} bits",
-                       xy=((rb + rg) / 2, q), xytext=(0.30, 0.08),
-                       textcoords="axes fraction", fontsize=7.0, ha="left",
+        panel.annotate(f"{abs(saved):.0f}% {word} bits\nat equal FG quality",
+                       xy=((rb + rg) / 2, q), xytext=(0.06, 0.05),
+                       textcoords="axes fraction", fontsize=5.8, ha="left",
                        color="#B00020",
                        arrowprops=dict(arrowstyle="-", lw=0.6, color="#B00020"))
 
-    handles, labels = axes[0][0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=2, fontsize=8.5,
-               frameon=False, bbox_to_anchor=(0.5, -0.005))
-    fig.tight_layout(rect=(0, 0.045, 1, 1))
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=2, fontsize=6.8,
+               frameon=False, bbox_to_anchor=(0.5, -0.01))
+    fig.tight_layout(pad=0.3, w_pad=0.9, rect=(0, 0.10, 1, 1))
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT, format="pdf", bbox_inches="tight")  # vector, for print
+    fig.savefig(OUT, format="pdf")  # honour the declared canvas: no tight crop
     print(f"\nwrote {OUT}")
     return 0
 

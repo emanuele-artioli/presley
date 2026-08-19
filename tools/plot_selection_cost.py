@@ -42,7 +42,7 @@ vids = [vids[i] for i in order]
 null = [null[i] for i in order]
 cap = [cap[i] for i in order]
 
-fig, ax = plt.subplots(figsize=(WIDTH_IN, 2.15))
+fig, ax = plt.subplots(figsize=(WIDTH_IN, 1.68))
 y = range(len(vids))
 ax.barh(y, null, color="0.75", edgecolor="black", linewidth=0.5,
         label="random (null)")
