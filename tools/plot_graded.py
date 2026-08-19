@@ -43,7 +43,7 @@ def main() -> int:
 
     use_paper_style()
     rows = sorted(DATA, key=lambda kv: kv[1])
-    fig, ax = plt.subplots(figsize=(width_in(HALF), 0.112 * len(rows) + 0.52))
+    fig, ax = plt.subplots(figsize=(width_in(HALF), 0.076 * len(rows) + 0.46))
     ax.barh(range(len(rows)), [v for _, v in rows],
             color=["#2e7d5b" if v < 0 else "#b5443a" for _, v in rows],
             edgecolor="black", linewidth=0.3, height=0.7)
