@@ -20,6 +20,7 @@ import collections
 import json
 import pathlib
 import statistics
+from math import comb
 
 RESULTS = pathlib.Path(__file__).resolve().parents[1] / "results"
 
@@ -65,6 +66,37 @@ def collect():
     return base, arms
 
 
+def sign_p(k, n):
+    lo = min(k, n - k)
+    return min(1.0, 2 * sum(comb(n, i) * 0.5 ** n for i in range(lo + 1)))
+
+
+def paired_between_arms(arms):
+    """Conditioned arm against each other arm, same operating point.
+
+    The per-arm rows above are each paired against the baseline, but their
+    group sets differ, so reading an ordering off them would compare medians
+    taken over different operating points. This pairs the arms directly.
+    """
+    cond = "PRESLEY downsample + Real-ESRGAN"
+    print("\npaired between arms (same video, codec, QP, resolution):")
+    for other in ARMS.values():
+        if other == cond or other not in arms:
+            continue
+        common = [k for k in arms[cond] if k in arms[other]]
+        for m in ("psnr_mean", "vmaf_mean", "lpips_mean", "dists_mean"):
+            ds = [arms[cond][k][m] - arms[other][k][m] for k in common
+                  if isinstance(arms[cond][k].get(m), (int, float))
+                  and isinstance(arms[other][k].get(m), (int, float))]
+            if len(ds) < 3:
+                continue
+            lower_better = m in ("lpips_mean", "dists_mean")
+            wins = sum(1 for x in ds if (x < 0) == lower_better and x != 0)
+            print(f"  vs {other:34s} {m:11s} n={len(ds):4d} "
+                  f"median {statistics.median(ds):+8.3f} "
+                  f"conditioned better {wins}/{len(ds)} p={sign_p(wins, len(ds)):.4f}")
+
+
 def main() -> int:
     base, arms = collect()
     head = "".join(f"{m.replace('_mean', ''):>10s}" for m in METRICS)
@@ -84,6 +116,7 @@ def main() -> int:
                          if len(deltas) >= 3 else f"{'--':>10s}")
         print(f"{name:34s}{''.join(cells)}{len(common):7d}")
         print(f"{'':34s}" + "".join(f"{'n=' + str(c):>10s}" for c in counts))
+    paired_between_arms(arms)
     return 0
 
 
