@@ -1,0 +1,238 @@
+# Blackout + ProPainter at the conditioned arm's own operating point.
+#
+# tab:wholeframe's between-arm comparison could not report
+# blackout+propainter: the arm existed only on bear/camel/dog/india/pigs/
+# tennis at x265 QP 32, and the conditioned arm at that operating point runs
+# on a disjoint set of videos, so the two shared zero groups. These runs put
+# blackout+propainter on twelve videos where downsample+realesrgan already
+# exists, at identical block size, budget, protection and codec settings, so
+# the arms pair within (video, codec, QP, resolution).
+
+experiments:
+# hash: f00df82f21e5f069
+- component: presley_ai
+  video: bike-packing
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 6837fd76377d2b35
+- component: presley_ai
+  video: color-run
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: e5bfe0789e0761d8
+- component: presley_ai
+  video: dancing
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 9a8ae0ea7b5daf3a
+- component: presley_ai
+  video: dogs-jump
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 11850394084e4701
+- component: presley_ai
+  video: dogs-scale
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 326b04a85d8e9a0f
+- component: presley_ai
+  video: drift-turn
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 247e82d3011e8343
+- component: presley_ai
+  video: elephant
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 8a9de32d64d8e6bf
+- component: presley_ai
+  video: libby
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 08c33eed98e78001
+- component: presley_ai
+  video: lindy-hop
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 40a4a3a42a79ca2a
+- component: presley_ai
+  video: mallard-fly
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 9b7869a56aa6538a
+- component: presley_ai
+  video: motorbike
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
+
+# hash: 468ece8f69c04877
+- component: presley_ai
+  video: train
+  width: 640
+  height: 360
+  block_size: 8
+  alpha: 0.5
+  beta: 0.5
+  shrink_amount: 0.25
+  fg_protect: true
+  degradation: mean_fill
+  restorer: propainter
+  composite_output: true
+  target_bitrate: 0
+  codec: x265
+  codec_params:
+    preset: medium
+    qp: 32
