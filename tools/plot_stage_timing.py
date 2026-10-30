@@ -6,8 +6,8 @@ server-side stages on a log axis, because block selection -- the axis this
 article locates its headroom on -- is three orders below restoration and
 vanishes on a linear scale.
 
-Drawn at half-textwidth so it can sit beside another figure, and authored at
-that width so its labels are not scaled down on inclusion.
+Authored at half the manuscript-format textwidth. In the acmsmall layout it is
+included at 0.66\textwidth, slightly enlarged, beside its caption.
 """
 from __future__ import annotations
 
@@ -63,12 +63,15 @@ for i, a in enumerate(arms):
 
 ax.set_yticks(list(y))
 ax.set_yticklabels([SHORT[a] for a in arms], fontsize=6.5, linespacing=0.95)
-ax.set_xlabel("seconds per 3.2 s clip (mean of 3 trials)")
+# "(mean of 3 trials)" lives in the caption: at this width it overran the canvas.
+ax.set_xlabel("seconds per 3.2 s clip")
 ax.set_xlim(0, max(left) * 1.52)
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3,
           fontsize=6.2, handlelength=0.9, columnspacing=0.8,
           handletextpad=0.35, borderpad=0.1, labelspacing=0.25)
 despine(ax)
 fig.tight_layout(pad=0.25)
-fig.savefig(HERE / "stage_timing.pdf", format="pdf")
+# bbox_inches="tight": tight_layout alone clipped the right end of the x label
+# and the last tick label.
+fig.savefig(HERE / "stage_timing.pdf", format="pdf", bbox_inches="tight", pad_inches=0.02)
 print("wrote", HERE / "stage_timing.pdf")
