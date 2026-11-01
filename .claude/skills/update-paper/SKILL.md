@@ -43,3 +43,10 @@ Read `/home/itec/emanuele/.agent-rules/skills/update-paper/SKILL.md` and follow 
   update Status/Resolution when an item advances; Done only when the text or
   experiment is actually in place.
 - Never edit `archive/elvis-legacy.tex` (read-only reference).
+
+## Current reporting interpretation
+
+Paper Appendix B supersedes historical JND wording in these instructions.
+The numeric margins are uncalibrated reporting margins. Use effect sizes,
+paired tests and `reporting_verdict`; do not infer visibility or equality from
+legacy `JND` fields or verdict codes. Numeric analyses remain unchanged.

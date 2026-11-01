@@ -1,3 +1,8 @@
+> Reporting clarification (2026-11-01): historical JND/perceptual labels below
+> describe the legacy tool interface. Per manuscript Appendix B, these are
+> uncalibrated reporting margins, not established human visibility thresholds.
+> Numerical results and the audit history are retained unchanged.
+
 # Significance audit — re-examining "within JND, therefore a tie"
 
 Companion to the hard-rule 2b amendment (`research-log/hard-rules.md`) and

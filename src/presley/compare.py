@@ -1,34 +1,44 @@
-"""JND-based comparison of finished PRESLEY experiments (results/<hash>/result.json).
+"""Compare finished PRESLEY experiments using declared reporting margins.
 
-Read-only against results/. Computes no metrics itself -- it only reads what
-evaluation.py already wrote, and decides whether two experiments are at
-perceptually indistinguishable quality so their bitrate can be compared.
-
-Why this exists: at fixed QP, degradation methods legitimately win on bits
-while losing a fraction of a dB on FG quality. Reporting that FG loss as a
-"result" without checking whether it's below the just-noticeable-difference
-misrepresents the finding -- see CLAUDE.md's "never dress up imperceptible
-deltas" rule. This module is the single source of truth for the JND
-thresholds so that rule doesn't have to be re-derived by hand each session.
+Read-only against results/. The margins summarize metric effect sizes; they
+are not calibrated human just-noticeable differences, and a within-margin
+comparison does not establish perceptual equivalence (paper Appendix B).
+Numerical calculations and legacy result codes/field names remain unchanged
+for existing analysis scripts. Human-readable reports use reporting_verdict;
+JSON includes both that interpretation and the legacy fields explicitly.
 """
 import json
 import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-# metric -> (JND threshold, lower_is_better, gates_verdict)
-# Thresholds are literature just-noticeable-differences. fid never gates: it is
+# metric -> (reporting margin, lower_is_better, gates_legacy_verdict)
+# These are declared reporting margins, not calibrated perceptual thresholds.
+# fid never gates: it is
 # corroborating-only even in "overall" (whole-frame FID at N~60-90 vs D=2048
 # needs evaluation.py's --fid-validity gate before it's citable at all), and for
 # "foreground" the only available key (fid_fg_bbox) is a bbox crop, not a true
 # region metric -- see REGION_METRIC_KEYS below.
-JND: Dict[str, Tuple[float, bool, bool]] = {
+REPORTING_MARGINS: Dict[str, Tuple[float, bool, bool]] = {
     "psnr":  (0.5,  False, True),
     "ssim":  (0.05, False, True),
     "lpips": (0.05, True,  True),
     "dists": (0.05, True,  True),
     "vmaf":  (6.0,  False, True),
     "fid":   (1.5,  True,  False),
+}
+# Compatibility alias: published analyses import this name and use the legacy
+# jnd/within_jnd fields. Retaining them does not establish perceptual validity.
+JND = REPORTING_MARGINS
+MARGIN_KIND = "uncalibrated_reporting_margin"
+MARGIN_NOTICE = (
+    "Margins are declared reporting margins, not calibrated perceptual thresholds; "
+    "within-margin results do not establish human perceptual equivalence."
+)
+REPORTING_VERDICTS = {
+    "indistinguishable": "within_reporting_margins",
+    "indistinguishable_psnr_only": "within_reporting_margins_psnr_only",
+    "distinguishable": "outside_reporting_margin",
 }
 # FVMD has no established JND anywhere in the literature. Reported for context
 # under every region; never gates the verdict.
@@ -92,6 +102,11 @@ class ComparisonResult:
     bitrate_b_bps: Optional[float] = None
     bitrate_delta_pct: Optional[float] = None
     warnings: List[str] = field(default_factory=list)
+
+    @property
+    def reporting_verdict(self) -> str:
+        """Interpret the legacy verdict without asserting perceptual equality."""
+        return REPORTING_VERDICTS.get(self.verdict, self.verdict)
 
 
 @dataclass
@@ -190,16 +205,16 @@ def _fvmd_comparison(exp_a: Dict[str, Any], exp_b: Dict[str, Any], region: str) 
 
 
 def same_quality(exp_a: Dict[str, Any], exp_b: Dict[str, Any], region: str = "foreground") -> ComparisonResult:
-    """Pairwise JND comparison of two loaded result.json dicts for one region.
+    """Compare two loaded result.json dicts against reporting margins.
 
-    verdict:
-      indistinguishable            - every available gating metric within JND,
-                                      and at least one perceptual metric
+    Legacy verdict codes (not perceptual findings):
+      indistinguishable            - every available gating metric within its reporting margin,
+                                      and at least one feature/structural metric
                                       (lpips/dists/ssim) backed the call.
-      indistinguishable_psnr_only  - within JND but PSNR was the only gating
+      indistinguishable_psnr_only  - within margin but PSNR was the only gating
                                       metric available (e.g. a fast_only entry).
                                       Not a license to claim perceptual parity.
-      distinguishable               - >=1 gating metric outside its JND.
+      distinguishable               - >=1 gating metric outside its reporting margin.
       insufficient_data            - no gating metric available at all.
     """
     hash_a = exp_a.get("experiment_hash", "?")
@@ -219,7 +234,7 @@ def same_quality(exp_a: Dict[str, Any], exp_b: Dict[str, Any], region: str = "fo
         if outside:
             worst = max(outside, key=lambda m: m.jnd_margin or 0)
             result.verdict = "distinguishable"
-            result.binding_metric = f"{region}.{worst.key} (Δ={worst.delta:+.4f}, {worst.jnd_margin:.2f}×JND)"
+            result.binding_metric = f"{region}.{worst.key} (Δ={worst.delta:+.4f}, {worst.jnd_margin:.2f}×reporting margin)"
         else:
             perceptual_backing = any(m.metric in ("lpips", "dists", "ssim") for m in gating)
             result.perceptual_backing = perceptual_backing
@@ -447,7 +462,8 @@ def compare_groups(results_dir: str = "results", group_by: Optional[List[str]] =
 
 def format_pairwise(result: ComparisonResult) -> str:
     lines = [f"=== {result.hash_a} vs {result.hash_b}  (region={result.region}) ==="]
-    lines.append(f"{'metric':<8} {'key':<16} {'A':>10} {'B':>10} {'delta':>10} {'JND':>6} {'within':>7} {'margin':>7}")
+    lines.append(MARGIN_NOTICE)
+    lines.append(f"{'metric':<8} {'key':<16} {'A':>10} {'B':>10} {'delta':>10} {'bound':>6} {'within':>7} {'ratio':>7}")
     for m in result.metrics:
         if not m.available:
             lines.append(f"{m.metric:<8} {str(m.key):<16} {'--':>10} {'--':>10} {'--':>10} {'--':>6} {'--':>7} {'--':>7}")
@@ -466,21 +482,21 @@ def format_pairwise(result: ComparisonResult) -> str:
             f"bitrate: A={result.bitrate_a_bps:.0f} bps  B={result.bitrate_b_bps:.0f} bps  "
             f"delta={result.bitrate_delta_pct:+.1f}%"
         )
-    lines.append(f"verdict: {result.verdict}" + (f"  (binding: {result.binding_metric})" if result.binding_metric else ""))
+    lines.append(f"verdict: {result.reporting_verdict}" + (f"  (binding: {result.binding_metric})" if result.binding_metric else ""))
     for w in result.warnings:
         lines.append(f"warning: {w}")
     return "\n".join(lines)
 
 
 def format_groups(groups: List[GroupComparison]) -> str:
-    lines = []
+    lines = [MARGIN_NOTICE]
     for g in groups:
         header = ", ".join(f"{k}={v}" for k, v in zip(g.group_by, g.group_key))
         lines.append(f"=== {header} ===")
         lines.append(f"  members: {', '.join(g.members)}")
         if g.baseline_hash:
             lines.append(f"  baseline: {g.baseline_hash}")
-        lines.append(f"  quality_indistinguishable: {g.quality_indistinguishable}")
+        lines.append(f"  within_reporting_margins: {g.quality_indistinguishable}")
         if g.quality_indistinguishable:
             saving = f" ({g.bitrate_saving_pct:+.1f}% vs baseline)" if g.bitrate_saving_pct is not None else ""
             lines.append(f"  bitrate winner: {g.bitrate_winner}{saving}")
@@ -492,7 +508,16 @@ def format_groups(groups: List[GroupComparison]) -> str:
 
 def _to_jsonable(obj: Any) -> Any:
     if hasattr(obj, "__dataclass_fields__"):
-        return {k: _to_jsonable(v) for k, v in obj.__dict__.items()}
+        out = {k: _to_jsonable(v) for k, v in obj.__dict__.items()}
+        if isinstance(obj, (ComparisonResult, GroupComparison)) or hasattr(obj, "reporting_verdict"):
+            out["margin_kind"] = MARGIN_KIND
+            out["margin_notice"] = MARGIN_NOTICE
+            if hasattr(obj, "reporting_verdict"):
+                out["reporting_verdict"] = obj.reporting_verdict
+                out["legacy_verdict"] = obj.verdict
+            if isinstance(obj, GroupComparison):
+                out["within_reporting_margins"] = obj.quality_indistinguishable
+        return out
     if isinstance(obj, (list, tuple)):
         return [_to_jsonable(v) for v in obj]
     return obj
@@ -518,8 +543,8 @@ def main():
 
     suite = parser.add_argument_group(
         "suite mode (N>1 paired runs)",
-        "Significance layer on top of JND -- see presley.suite. Never overrides a JND "
-        "verdict; the strongest a sub-JND effect can earn is 'sub_jnd_significant'.")
+        "Paired significance and reporting-margin summaries -- see presley.suite. "
+        "Margins are not calibrated perceptual thresholds; legacy JSON codes are retained.")
     suite.add_argument("--suite", action="store_true",
                         help="Assess a suite of paired runs (arm A vs arm B across several videos)")
     suite.add_argument("--pair-by", type=str, default="video",

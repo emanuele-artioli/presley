@@ -72,3 +72,10 @@ Read `/home/itec/emanuele/.agent-rules/skills/results-report/SKILL.md` and follo
   `suite.equivalence_tost` — failing a difference test is not evidence of no
   difference. Background: `research-log/hard-rules.md` rule 2b,
   `docs/SIGNIFICANCE_AUDIT.md`.
+
+## Current reporting interpretation
+
+Paper Appendix B supersedes historical JND wording in these instructions.
+The numeric margins are uncalibrated reporting margins. Use effect sizes,
+paired tests and `reporting_verdict`; do not infer visibility or equality from
+legacy `JND` fields or verdict codes. Numeric analyses remain unchanged.

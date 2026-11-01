@@ -22,5 +22,5 @@ If you read nothing else:
 - **Degradation experiments must use fixed-QP/CRF — never VBR.** A VBR
   degradation curve is not evidence; do not commission one.
 - **A run with a non-empty `invariant_failures` is never citable.**
-- **Never dress up imperceptible deltas** — run `presley-compare` before claiming
-  a quality difference.
+- **Do not infer human visibility from metric margins** — report effect sizes
+  and paired evidence; the margins in `presley-compare` are not calibrated JNDs.
