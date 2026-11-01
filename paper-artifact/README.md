@@ -22,8 +22,10 @@ checksums first and records generator output in `reproduction.log`.
 The JSON inputs were restored byte-for-byte from paper commit
 `68153d43f6717e7cf362c4cd3bc29d82f505b8dc`, immediately before auxiliary files
 were removed for submission. The manifest records original paths, Git objects
-and SHA-256 digests. The reference PDFs are the existing submitted figures from
-paper revision `de616f9678f488c1e2367bde1417a720e580daa7`.
+and SHA-256 digests. The reference PDFs are the existing manuscript figures from
+paper revision `de616f9678f488c1e2367bde1417a720e580daa7`. The manuscript
+revision after the final wording edits is recorded separately in the manifest;
+its figure files are unchanged.
 
 For restorability, the extra plot-data export contains the original deterministic
 scatter subsample, 120 within-run correlations, and the regression evaluated

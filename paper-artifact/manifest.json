@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "manuscript_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+  "manuscript_revision": "db7a0d69fe855baf3cc1e45c23ef3d4fad157fe6",
   "purpose": "Original published figure inputs, restored byte-for-byte; no experiment results changed.",
   "files": [
     {
@@ -149,5 +149,6 @@
         "method": "Unmodified collect/zscore functions from the existing plotting script; exact original plot subsampling and full-data regression. No training, encoding, restoration or metric backfill."
       }
     }
-  ]
+  ],
+  "reference_figure_revision": "de616f9678f488c1e2367bde1417a720e580daa7"
 }
