@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "manuscript_revision": "db7a0d69fe855baf3cc1e45c23ef3d4fad157fe6",
+  "purpose": "Original published figure inputs, restored byte-for-byte; no experiment results changed.",
+  "files": [
+    {
+      "path": "paper-artifact/figures/breadth.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/breadth.json",
+      "source_blob": "71e0da023240a8341500e69865493dd7e44317c0",
+      "sha256": "46d1403013b19c9fdb87eb1440f9e76e5742595c0720d6667b49c781bbe17574"
+    },
+    {
+      "path": "paper-artifact/figures/ratematched.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/ratematched.json",
+      "source_blob": "4019ba5a892fd6d96c2e4bcbcef9c942538a91e2",
+      "sha256": "a69b2529af75de840d52c83fa086891b1aae5977c8dbcb4b7f00eb0019917c53"
+    },
+    {
+      "path": "paper-artifact/figures/regime_reversal.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/regime_reversal.json",
+      "source_blob": "6dd2de7ff1ce88454952f5b619edd1de1d540b44",
+      "sha256": "61accee69a0ed16654911299181d3a6c3a0a96d73682435b6a7f58dfdeada135"
+    },
+    {
+      "path": "paper-artifact/figures/resolution_ladder.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/resolution_ladder.json",
+      "source_blob": "7d3f8d40a6ed9aadd3c0cd23bd8ec26c3c83d020",
+      "sha256": "b661c4f3e6ad69e7db412009bbd744dee7f84a2a9983af1c4704f0bbf096b095"
+    },
+    {
+      "path": "paper-artifact/figures/restorability.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/restorability.json",
+      "source_blob": "71c5b55fe9f9a776d3d3e911979eb0c593f0ac6d",
+      "sha256": "b8962ac4c14e8498ec35d019928a1fcad8bec277bf8bebb5abfd6c6a982aad6f"
+    },
+    {
+      "path": "paper-artifact/figures/restorer_catalogue.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/restorer_catalogue.json",
+      "source_blob": "4c1303d74f16f551d724c18e1316283d3f80b2cf",
+      "sha256": "e0cbd392aac0c440e358b468def06b04d4b204d2d1effedd613f00bb64119bce"
+    },
+    {
+      "path": "paper-artifact/figures/selection_cost.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/selection_cost.json",
+      "source_blob": "990cb7c24f27968652c4d47c50ee9ca5c77a0c44",
+      "sha256": "1b59a5a3f98fff79153631024ecd6e90ae0e5284694edcb9bf9087ceab8a0658"
+    },
+    {
+      "path": "paper-artifact/figures/stage_timing.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/stage_timing.json",
+      "source_blob": "a3fd3f9f14b613f9f89c33906bf00b7e6db195b4",
+      "sha256": "2522e9f3d1fb68a03a8cd9e2bda1dbfb011ee1523760ad8107f70cefc4de15c5"
+    },
+    {
+      "path": "paper-artifact/figures/qualitative.json",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/qualitative.json",
+      "source_blob": "6563cce0c0558f174e39bef6825f41b516e4fc32",
+      "sha256": "fed13f1bdd5ca63c3eae31fb83f974728b1bf8639254f927534b9b31a2d610de"
+    },
+    {
+      "path": "paper-artifact/figures/resolution_ladder.desc.tex",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "68153d43f6717e7cf362c4cd3bc29d82f505b8dc",
+      "source_path": "Figures/resolution_ladder.desc.tex",
+      "sha256": "9c96604030a6d4a5257487f8a0d3783e3562ac92a526efbe1e583a18660bda11"
+    },
+    {
+      "path": "paper-artifact/reference-figures/breadth.pdf",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+      "source_path": "Figures/breadth.pdf",
+      "sha256": "632fb9b0467298673e49263a5ffd6451182f547cd70a5049885114803a2bcb8b"
+    },
+    {
+      "path": "paper-artifact/reference-figures/ratematched.pdf",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+      "source_path": "Figures/ratematched.pdf",
+      "sha256": "53680c3beff7a246db55f2330a0db0594b9c32ec5c435d248a56745d5b712593"
+    },
+    {
+      "path": "paper-artifact/reference-figures/regime_reversal.pdf",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+      "source_path": "Figures/regime_reversal.pdf",
+      "sha256": "79fc712d567ab923bf29571c6227ccbcf815b80ec383d79eb7b01def456ce398"
+    },
+    {
+      "path": "paper-artifact/reference-figures/restorer_catalogue.pdf",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+      "source_path": "Figures/restorer_catalogue.pdf",
+      "sha256": "4792504143fb3ba118176ca93e57ab46659e7371d3306d81f3058dce5b438df0"
+    },
+    {
+      "path": "paper-artifact/reference-figures/stage_timing.pdf",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+      "source_path": "Figures/stage_timing.pdf",
+      "sha256": "4f8b8d59a3dcdcfbee5f22c5ff01408923a2a4528a394c233754f149ea86bdc4"
+    },
+    {
+      "path": "paper-artifact/reference-figures/selection_cost.pdf",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+      "source_path": "Figures/selection_cost.pdf",
+      "sha256": "dbf1307e8cee636216a7d58a4b77ed17dc229ff9740906ef522d6f2e4c44c3c9"
+    },
+    {
+      "path": "paper-artifact/reference-figures/restorability.pdf",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+      "source_path": "Figures/restorability.pdf",
+      "sha256": "680886199abfe8d4ce715544ab798e48fcf59054dcf28637a05fe00cbf99d41a"
+    },
+    {
+      "path": "paper-artifact/reference-figures/resolution_ladder.pdf",
+      "source_repository": "Overleaf 68e8b6bb11d0dd9e62a67aef",
+      "source_revision": "de616f9678f488c1e2367bde1417a720e580daa7",
+      "source_path": "Figures/resolution_ladder.pdf",
+      "sha256": "a709c8cc4147cffc607037e6dfb0dbd9d56d5491a3c39e46e721477f551009d2"
+    },
+    {
+      "path": "paper-artifact/figures/restorability_plot.json",
+      "sha256": "3493d6134e00fa84f12b5a9048236221240e28fb338706157d67b651a0819836",
+      "source": "Read-only export using the original plotting collect/zscore functions",
+      "provenance": {
+        "source_npz": "results/block_damage_s1b.npz",
+        "source_npz_sha256": "04d9ee5bfc50d504cfc2dd70bfde86d5b5c142a8274c7e134e4d81ea50e98b3e",
+        "collect_source_sha256": "4f43aa1436229eb6ea537dca572e4ec7e652721c0817195d4c4fb9387f109f21",
+        "method": "Unmodified collect/zscore functions from the existing plotting script; exact original plot subsampling and full-data regression. No training, encoding, restoration or metric backfill."
+      }
+    }
+  ],
+  "reference_figure_revision": "de616f9678f488c1e2367bde1417a720e580daa7"
+}

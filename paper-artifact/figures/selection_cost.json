@@ -1,0 +1,56 @@
+{
+  "data": {
+    "capture": [
+      0.51,
+      0.922,
+      0.94,
+      0.765,
+      0.909,
+      0.881,
+      0.824,
+      0.917
+    ],
+    "coding": "inter, SVT-AV1 fixed QP 43, 64x64 superblocks, n=8 probe videos",
+    "gain_over_null": [
+      0.074,
+      0.389,
+      0.394,
+      0.412,
+      0.493,
+      0.499,
+      0.526,
+      0.662
+    ],
+    "headroom_reading": "the oracle's top quarter is 30.1% of total bitrate, so the entire remaining cost-side headroom is worth about 5% of the bitrate",
+    "mean_capture": 0.833,
+    "mean_random_null": 0.402,
+    "near_chance_videos": [
+      "drift-straight"
+    ],
+    "oracle_top25_share_of_total_bits": 0.301,
+    "quantity": "capture ratio: fraction of an exact leave-one-superblock-out oracle's freed bits obtained by degrading the top 25% by score",
+    "random_null": [
+      0.436,
+      0.533,
+      0.546,
+      0.353,
+      0.416,
+      0.382,
+      0.298,
+      0.255
+    ],
+    "videos": [
+      "drift-straight",
+      "dancing",
+      "color-run",
+      "bear",
+      "drift-turn",
+      "bike-packing",
+      "motorbike",
+      "dogs-jump"
+    ],
+    "why_the_null_matters": "a capture ratio without its null reads as '83% of the way to the oracle', which it is not: random selection already captures 0.402"
+  },
+  "figure": "selection_cost",
+  "sentence": "Horizontal stacked bars, one per probe video, showing what fraction of an exact bit oracle's recoverable bits the complexity score captures when the top quarter of superblocks is degraded. Each bar starts with the grey fraction that random selection already captures, then adds the score's contribution, then leaves the hatched remainder open. The mean capture is 0.833 against a random null of 0.402, so the score adds about four tenths over chance and the cost axis has little headroom left. On drift-straight the score is near chance and is drawn in the contrasting colour rather than averaged away."
+}

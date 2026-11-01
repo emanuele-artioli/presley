@@ -12,6 +12,7 @@ Authored at half textwidth, to pair with the selection-cost panel.
 from __future__ import annotations
 
 import collections
+import argparse
 import json
 import pathlib
 import sys
@@ -75,7 +76,20 @@ def collect():
 
 
 def main() -> int:
-    rhos, sc_z, d_z = collect()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--plot-data", type=pathlib.Path,
+                        help="Redraw from the archived original plot points and full-data regression")
+    args = parser.parse_args()
+    archived = None
+    if args.plot_data:
+        archived = json.loads(args.plot_data.read_text())["data"]
+        rhos = np.asarray(archived["rhos"], dtype=float)
+        sc_z = np.asarray(archived["scatter_x"], dtype=float)
+        d_z = np.asarray(archived["scatter_y"], dtype=float)
+        if sc_z.shape != d_z.shape or not np.isfinite(sc_z).all() or not np.isfinite(d_z).all():
+            raise ValueError("Archived scatter coordinates must be paired and finite")
+    else:
+        rhos, sc_z, d_z = collect()
     n, pos, med = len(rhos), int((rhos > 0).sum()), float(np.median(rhos))
     drift = []
     if n != PUB["n_runs"]:
@@ -95,12 +109,18 @@ def main() -> int:
         1, 2, figsize=(width_in(HALF), 1.64),
         gridspec_kw={"width_ratios": [1.15, 1.0]})
 
-    step = max(1, len(sc_z) // 6000)          # keep the PDF light; pattern is dense
+    # Archived scatter points already use the original deterministic subsampling.
+    step = 1 if archived else max(1, len(sc_z) // 6000)
     axs.scatter(sc_z[::step], d_z[::step], s=0.7, alpha=0.16,
                 color="#4878a8", linewidths=0, rasterized=True)
-    m, c = np.polyfit(sc_z, d_z, 1)
-    xs = np.linspace(sc_z.min(), sc_z.max(), 50)
-    axs.plot(xs, m * xs + c, color="#B00020", lw=1.1)
+    if archived:
+        xs = np.asarray(archived["line_x"], dtype=float)
+        ys = np.asarray(archived["line_y"], dtype=float)
+    else:
+        m, c = np.polyfit(sc_z, d_z, 1)
+        xs = np.linspace(sc_z.min(), sc_z.max(), 50)
+        ys = m * xs + c
+    axs.plot(xs, ys, color="#B00020", lw=1.1)
     axs.set_xlabel("spatial complexity ($z$)", labelpad=1)
     axs.set_ylabel("damage after restoration ($z$)", labelpad=1)
     axs.set_title("more complex → more damage", fontsize=6.8, pad=3)
@@ -120,7 +140,9 @@ def main() -> int:
         despine(ax)
         ax.tick_params(labelsize=6.2)
     fig.tight_layout(pad=0.3, w_pad=1.3)
-    fig.savefig(HERE / "restorability.pdf", format="pdf", dpi=400)
+    # Leave extra room for PDF math-text extents at the top/right edges.
+    fig.savefig(HERE / "restorability.pdf", format="pdf", dpi=400,
+                bbox_inches="tight", pad_inches=0.15)
     print("wrote", HERE / "restorability.pdf")
     return 0
 

@@ -54,35 +54,28 @@ This is the same mechanism that already bit the codec-ROI work; see
 the fixed-QP hard rule (rule 1 in
 `68e8b6bb11d0dd9e62a67aef/research-log/hard-rules.md`).
 
-### Reporting rule: never dress up imperceptible deltas
+### Reporting rule: distinguish metric effects from human perception
 
-Imperceptible deltas are not a result or a trend. **Run `presley-compare` to
-decide whether a quality difference is real** — don't eyeball deltas. Its JND
-table (`src/presley/compare.py`) is the single source of truth and is
-deliberately not restated here. `presley-compare results/ --hash-a <h1>
---hash-b <h2>` for a pair; `presley-compare results/ --group-by
-component,video,codec_params.qp --baseline-component baselines` for a
-matched-QP sweep, which reports each group's quality verdict and its bitrate
-winner. At matched QP this is the *whole* analysis: FG differences are small
-by construction, so the question is never "who wins FG" but "who encodes
-fewest bits at indistinguishable FG quality." State it the way it lands: *"at
-FG quality that is indistinguishable, method X costs N% fewer bits than the
-baseline, and BG-LPIPS is Y vs the baseline's Z."*
+Appendix B of the manuscript is authoritative: the declared margins in
+`src/presley/compare.py` are reporting margins, not calibrated human
+just-noticeable differences. `presley-compare` summarizes region metric deltas
+and the bitrate comparison at those margins; being within a margin does not
+establish perceptual equality, and crossing it does not establish visibility.
+Report effect sizes directly. Keep matched-QP quality comparisons separate
+from bitrate savings at equal quality and from comparisons against ELVIS.
 
-For **N>1 paired runs**, JND alone is too blunt: a sub-JND effect that
-reproduces on every video is real even though it stays imperceptible. Add
-`presley-compare results/ --suite --arm-key restorer --arm-a <baseline> --arm-b
-<candidate> --pair-by video --candidates-tried <k>` (`src/presley/suite.py`),
-which layers an exact sign/Wilcoxon test, a bootstrap CI and Holm correction on
-top of the JND verdict without ever overriding it. Three things it exists to
-enforce, all of which have already been got wrong: p-values are **two-tailed**
-(5/5 is p=0.0625, not 0.031); n≤5 cannot reach α=0.05 at all, so a consistent
-small suite is `underpowered`, not "no effect"; and `--candidates-tried` must
-count every candidate ever tried against that baseline, **including the losers**.
-The strongest verdict a sub-JND effect can earn is `sub_jnd_significant`, which
-is never worded as a win. Details and the audit of existing claims:
-`docs/SIGNIFICANCE_AUDIT.md`; the rule itself is rule 2b in
-`68e8b6bb11d0dd9e62a67aef/research-log/hard-rules.md`.
+For N>1 paired runs, use `presley-compare results/ --suite --arm-key restorer
+--arm-a <baseline> --arm-b <candidate> --pair-by video --candidates-tried <k>`.
+Report the exact two-tailed paired test, interval and correction family,
+including candidates that lost. Five unanimous pairs give p=0.0625, so small
+suites are underpowered rather than evidence of equality. A nonsignificant
+difference is not an equivalence test.
+
+Numerical calculations and historical JSON codes/fields (`JND`, `jnd`,
+`within_jnd`, `indistinguishable`, `perceptual_win`, `sub_jnd_significant`)
+remain for compatibility with saved analyses. Use `reporting_verdict` and the
+`margin_kind`/`margin_notice` fields for interpretation; legacy names do not
+constitute evidence about human perception. Do not rewrite historical records.
 
 Never report only overall metrics — the `metrics.foreground`/`metrics.background`
 split is the point (and for bridge runs `overall` is actively misleading, since

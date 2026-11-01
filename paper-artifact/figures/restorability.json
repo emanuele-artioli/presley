@@ -1,0 +1,19 @@
+{
+  "data": {
+    "claim": "post-restoration damage is predictable at transmit time, and correlates POSITIVELY with the complexity the selection score already ranks by",
+    "control": "restricted to superblocks that were actually degraded; over all superblocks the correlation is inflated to +0.684 because complexity predicts whether a block was selected at all",
+    "feature": "sc_mean (EVCA spatial complexity, 64x64 superblocks)",
+    "n_runs": 120,
+    "restorers": [
+      "realesrgan",
+      "propainter"
+    ],
+    "rho_max": 0.8152,
+    "rho_median": 0.5057,
+    "rho_min": 0.0424,
+    "runs_positive": 120,
+    "unit": "the run; statistic is a within-run Spearman rho"
+  },
+  "figure": "restorability",
+  "sentence": "Two panels. Left: a scatter of per-superblock spatial complexity against post-restoration damage, both standardized within each run, with a fitted line sloping upward -- more complex blocks come back worse. Right: a histogram of the per-run rank correlations, all 120 of 120 of them positive, with a median of +0.506. The selection score already ranks blocks by complexity because complex blocks cost the most bits, so the objective preferentially degrades the blocks that survive restoration worst."
+}

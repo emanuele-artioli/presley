@@ -1,49 +1,10 @@
-"""Suite-level significance layer, sitting *on top of* the JND gate in compare.py.
+"""Paired significance tests with declared reporting-margin summaries.
 
-Why this exists: JND is the right rule for one comparison and the wrong rule for
-a suite. Observed motivating case (docs/WAVE1_FALSIFIERS.md, F3): SVT-AV1
-`tune=0` (VQ) vs the PSNR default, rate-matched, moved LPIPS in the same
-direction on 5/5 videos (-0.0150 .. -0.0305) and DISTS on 5/5. Every delta is
-far inside the 0.05 LPIPS JND, so hard rule 2 discards all of it -- yet a
-consistent direction across independent videos is itself evidence, and the
-framework had no way to say "small, but real and reproducible".
-
-What this module does NOT do: it never overrides the JND verdict, and it never
-converts a sub-JND effect into a perceptual claim. `compare.same_quality` is
-untouched, so every existing single-pair verdict is bit-identical to before.
-The strongest thing a sub-JND effect can earn here is the label
-`sub_jnd_significant`, whose mandated wording (`WORDING`) is explicitly not a
-perceptual win.
-
-Three things the design has to get right, in order of how badly they bite:
-
-1. **Small-N sign/rank tests have a p-value floor.** With n paired videos the
-   smallest two-tailed p an exact sign test can return is 2/2**n. At n=5 that
-   is **0.0625** -- so *no* 5/5 result can ever reach a two-tailed alpha of
-   0.05, no matter how clean it looks. (The often-quoted 0.031 for 5/5 is the
-   one-tailed value; one-tailed is not defensible here because the direction
-   was chosen after seeing the data.) Exact Wilcoxon has the same 0.0625 floor
-   at n=5. `min_attainable_p` is therefore reported on every result and an
-   otherwise-consistent suite that cannot clear alpha by construction is
-   verdicted `underpowered`, not `not_significant` -- the two mean very
-   different things for what to do next (add a video vs drop the hypothesis).
-2. **Metrics are not independent replicates.** LPIPS and DISTS agreeing 5/5 is
-   close to one piece of evidence, not two: both are deep perceptual metrics on
-   the same frames. So the multiple-comparisons family is over *candidates
-   tried*, never over metrics, and one primary metric per goal (hard rule 3)
-   carries the claim while the rest corroborate.
-3. **The project explicitly shops for a winner.** The restorer matrix in
-   docs/EXPERIMENTS_QUEUED.md is "try backbones until one beats Real-ESRGAN"
-   -- six candidates so far. An uncorrected per-candidate alpha of 0.05 over
-   six candidates is a ~26% chance of at least one spurious winner. Pass
-   `family_size` (candidates tried against the same baseline for the same
-   claim, *including the ones that lost and including this one*); Holm
-   correction is applied and the count is reported alongside the verdict.
-
-Everything is exact and dependency-light on purpose: binomial and Wilcoxon
-null distributions are enumerated rather than approximated (n is single digits
-here, where normal approximations are worst), and the bootstrap is seeded so a
-number quoted in the paper reproduces.
+Exact tests, seeded bootstrap intervals and multiple-comparison handling are
+unchanged. The historical JND names and verdict codes are retained for analysis
+compatibility, but those margins are not calibrated perceptual thresholds.
+Reports distinguish statistical evidence from margin size and make no claim
+about human visibility without a subjective study (paper Appendix B).
 """
 import math
 import random
@@ -52,6 +13,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from presley.compare import (
     JND,
+    MARGIN_NOTICE,
     REGION_METRIC_KEYS,
     _config_value,
     _metric_value,
@@ -83,34 +45,36 @@ PRIMARY_METRIC = {
 # to over-claim, so its sentence is fixed rather than left to a future session.
 WORDING = {
     "perceptual_win": (
-        "consistent across the suite, statistically significant, and above the "
-        "perceptual threshold -- may be worded as an improvement"
+        "consistent metric improvement, statistically significant and above the "
+        "reporting margin; human perceptual visibility is not established"
     ),
     "perceptual_loss": (
-        "consistent across the suite, statistically significant, and above the "
-        "perceptual threshold, but in the WORSE direction -- this is a "
-        "perceptible degradation; word it as a cost or a regression, never as a "
-        "win, and never report the arm as preferable on this metric"
+        "consistent metric degradation, statistically significant and above the "
+        "reporting margin; human perceptual visibility is not established"
     ),
     "sub_jnd_significant": (
-        "consistent and statistically significant across the suite but BELOW the "
-        "perceptual threshold -- report as a small, reproducible, imperceptible "
-        "effect; never as a perceptual win, a quality improvement, or a 'better' "
-        "result"
+        "consistent and statistically significant metric effect below the reporting "
+        "margin; human visibility is unknown, never as a perceptual win without "
+        "subjective evidence"
     ),
     "consistent_not_significant": (
-        "direction is consistent but does not reach significance -- not evidence; "
-        "report as an observation with n stated, or add pairs"
+        "direction is consistent but does not reach significance; report the "
+        "observation with n and effect sizes, not as evidence of equivalence"
     ),
     "underpowered": (
-        "direction is consistent but n is too small for ANY two-tailed test to "
-        "reach alpha -- this is an unfinished experiment, not a negative result; "
-        "add pairs before drawing either conclusion"
+        "n is too small for a two-tailed sign test to reach the corrected alpha; "
+        "neither a difference nor equivalence is established"
     ),
     "no_consistent_direction": (
-        "direction is not consistent across the suite -- no claim"
+        "direction is not consistent across the suite; report the effect sizes "
+        "and tests without claiming equality"
     ),
-    "insufficient_pairs": "fewer than 2 usable pairs -- fall back to the JND verdict",
+    "insufficient_pairs": "fewer than 2 usable pairs; report descriptive margins only",
+}
+REPORTING_VERDICTS = {
+    "perceptual_win": "significant_metric_improvement_above_reporting_margin",
+    "perceptual_loss": "significant_metric_degradation_above_reporting_margin",
+    "sub_jnd_significant": "significant_metric_effect_below_reporting_margin",
 }
 
 
@@ -384,6 +348,11 @@ class SuiteMetricResult:
     wording: str = ""
     warnings: List[str] = field(default_factory=list)
 
+    @property
+    def reporting_verdict(self) -> str:
+        """Interpret historical verdict codes as metric results, not human JNDs."""
+        return REPORTING_VERDICTS.get(self.verdict, self.verdict)
+
 
 @dataclass
 class SuiteComparison:
@@ -515,7 +484,7 @@ def collect_pairs(results: List[Dict[str, Any]], pair_by: List[str],
 def assess_metric(pairs: List[PairedDelta], metric: str, region: str,
                   family_size: int = 1, alpha: float = ALPHA,
                   is_primary: bool = False) -> SuiteMetricResult:
-    """JND magnitude AND suite significance, combined into one verdict.
+    """Legacy margin classification alongside unchanged paired significance.
 
     The rule, in the order it is applied:
 
@@ -529,7 +498,7 @@ def assess_metric(pairs: List[PairedDelta], metric: str, region: str,
 
     "Clears JND" deliberately requires BOTH |mean delta| >= JND and a majority
     of individual pairs clearing it, so one large video cannot carry a suite of
-    imperceptible ones over the line.
+    below-margin ones over the line; this does not assess human visibility.
 
     Direction is required to be unanimous rather than merely majority: with the
     n<=10 suites this project runs, a 4/6 split has a two-tailed sign p of
@@ -701,6 +670,7 @@ def format_suite(suite: SuiteComparison) -> str:
     lines = [
         f"=== suite: {suite.arm_a} vs {suite.arm_b}  (region={suite.region}, "
         f"paired by {'+'.join(suite.pair_by)}, candidates tried={suite.family_size}) ===",
+        MARGIN_NOTICE,
         "",
     ]
     for m in suite.metrics:
@@ -712,7 +682,7 @@ def format_suite(suite: SuiteComparison) -> str:
             continue
         for p in m.pairs:
             label = ",".join(str(v) for v in p.pair_id)
-            flag = "" if p.within_jnd is None else ("  (within JND)" if p.within_jnd else "  (CLEARS JND)")
+            flag = "" if p.within_jnd is None else ("  (within reporting margin)" if p.within_jnd else "  (above reporting margin)")
             lines.append(f"   {label:<20} {p.value_a:>9.4f} -> {p.value_b:>9.4f}   d={p.delta:>+9.4f}{flag}")
         lines.append(
             f"   n={m.n}  +{m.n_positive}/-{m.n_negative}"
@@ -722,7 +692,7 @@ def format_suite(suite: SuiteComparison) -> str:
         if m.mean_delta is not None:
             ci = (f"[{m.ci_low:+.4f}, {m.ci_high:+.4f}]"
                   if m.ci_low is not None else "--")
-            jnd_ratio = f"{m.jnd_ratio:.2f}xJND" if m.jnd_ratio is not None else "--"
+            jnd_ratio = f"{m.jnd_ratio:.2f}x reporting margin" if m.jnd_ratio is not None else "--"
             dz = f"{m.effect_size_dz:+.2f}" if m.effect_size_dz is not None else "--"
             lines.append(f"   mean d={m.mean_delta:+.4f} ({jnd_ratio})  95% CI {ci}  dz={dz}")
         if m.sign_p is not None:
@@ -732,7 +702,7 @@ def format_suite(suite: SuiteComparison) -> str:
                 f"corrected p={m.sign_p_corrected:.4f}  "
                 f"(floor at this n: {m.min_attainable_p:.4f})"
             )
-        lines.append(f"   VERDICT: {m.verdict}")
+        lines.append(f"   VERDICT: {m.reporting_verdict}")
         lines.append(f"     -> {m.wording}")
         for w in m.warnings:
             lines.append(f"     warning: {w}")

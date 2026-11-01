@@ -1,0 +1,81 @@
+{
+  "data": {
+    "caveat": "Real-ESRGAN here runs full-frame (restorer_params {}), which is faster than the tiled tile=400 configuration the published corpus uses; these timings are not comparable to timings quoted for that configuration",
+    "device": [
+      "cuda:0"
+    ],
+    "mean_seconds_by_arm": {
+      "baseline (SVT-AV1)": {
+        "encode": 0.771,
+        "preprocess": 0.397
+      },
+      "elvis blackout + ProPainter": {
+        "composite": 0.289,
+        "decode": 0.218,
+        "degrade": 2.507,
+        "encode": 1.078,
+        "preprocess": 0.352,
+        "restore": 35.421,
+        "score": 0.001,
+        "sidechannel": 0.003
+      },
+      "presley downsample + Real-ESRGAN": {
+        "composite": 0.24,
+        "decode": 0.199,
+        "degrade": 3.018,
+        "encode": 1.152,
+        "preprocess": 0.38,
+        "restore": 12.092,
+        "score": 0.002,
+        "select": 0.006,
+        "sidechannel": 0.005
+      },
+      "presley freeze + ProPainter": {
+        "composite": 0.21,
+        "decode": 0.203,
+        "degrade": 2.382,
+        "encode": 1.169,
+        "preprocess": 0.356,
+        "restore": 34.021,
+        "score": 0.002,
+        "select": 0.005,
+        "sidechannel": 0.01
+      }
+    },
+    "method": "components called directly into scratch dirs; nothing written under results/; device recorded per trial; cells mixing device populations refused rather than averaged",
+    "restoration_share_pct": {
+      "baseline (SVT-AV1)": 0.0,
+      "elvis blackout + ProPainter": 89.2,
+      "presley downsample + Real-ESRGAN": 69.4,
+      "presley freeze + ProPainter": 88.0
+    },
+    "stage_order": [
+      "preprocess",
+      "score",
+      "select",
+      "degrade",
+      "encode",
+      "sidechannel",
+      "decode",
+      "restore",
+      "composite"
+    ],
+    "trials_per_cell": [
+      3
+    ],
+    "units": "seconds, mean of 3 trials, 640x360, 60-90 frames",
+    "videos": [
+      "bear",
+      "camel",
+      "dog"
+    ],
+    "wall_seconds_by_arm": {
+      "baseline (SVT-AV1)": 1.17,
+      "elvis blackout + ProPainter": 39.69,
+      "presley downsample + Real-ESRGAN": 17.42,
+      "presley freeze + ProPainter": 38.64
+    }
+  },
+  "figure": "stage_timing",
+  "sentence": "Stacked horizontal bars, one per pipeline arm, showing mean seconds per stage over three trials on a pinned GPU. Restoration is the dominant stage in every arm that has one, taking between 70 and 89 percent of wall clock; ProPainter costs about three times Real-ESRGAN. Degradation costs more than encoding, so the server-side bottleneck is the per-block loop rather than the codec. A log-scale panel shows the server-side stages, where block selection costs about one hundredth of a second -- roughly a thousandth of the pipeline, and the axis on which the article locates its remaining headroom."
+}

@@ -1,0 +1,23 @@
+{
+  "data": {
+    "block_size": 8,
+    "blocks_in_crop": 144,
+    "crop_origin_xy": [
+      368,
+      208
+    ],
+    "crop_px": 96,
+    "crop_rule": "most degraded blocks among all windows of this size that contain no foreground block",
+    "degraded_blocks_in_crop": 144,
+    "degraded_fraction_frame": 0.25,
+    "foreground_px_inside_a_selected_block": 9,
+    "foreground_px_total": 25892,
+    "frame_index": 40,
+    "max_abs_delta_outside_selected_blocks": 0,
+    "note": "one frame of one run, chosen by a stated rule -- an illustration of the mechanism, never evidence of an effect size; the quantitative claims are in the restorer catalogue and the rate-matched comparison",
+    "run": "e2cb6bed165d69b1",
+    "video": "bear"
+  },
+  "figure": "qualitative",
+  "sentence": "Four panels from one frame of a single bear run. The first places a 96-by-96 pixel crop in the full frame and shades the blocks the selector chose for degradation in red, with the protected foreground outlined in blue; the selected blocks fall in the background and none overlaps the foreground. The remaining three show the same crop pristine, as transmitted after per-block downsampling, and after client-side restoration: the transmitted crop is visibly softened and the restored crop recovers texture without recovering it exactly."
+}
