@@ -140,8 +140,9 @@ def main() -> int:
         despine(ax)
         ax.tick_params(labelsize=6.2)
     fig.tight_layout(pad=0.3, w_pad=1.3)
+    # Leave extra room for PDF math-text extents at the top/right edges.
     fig.savefig(HERE / "restorability.pdf", format="pdf", dpi=400,
-                bbox_inches="tight", pad_inches=0.02)
+                bbox_inches="tight", pad_inches=0.15)
     print("wrote", HERE / "restorability.pdf")
     return 0
 
