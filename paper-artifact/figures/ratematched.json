@@ -1,0 +1,69 @@
+{
+  "data": {
+    "anchor": "ELVIS; negative means PRESLEY needs fewer bits at equal quality",
+    "bd_rate_bg_lpips_pct": [
+      -78.5,
+      -74.8,
+      -68.8,
+      -67.6,
+      -63.2,
+      -61.6,
+      -60.6,
+      -59.5,
+      -52.8,
+      -43.4,
+      -43.0,
+      -39.2,
+      -20.5
+    ],
+    "bd_rate_fg_lpips_pct": [
+      -14.5,
+      -10.8,
+      1.4,
+      -3.3,
+      -16.5,
+      -22.6,
+      -21.6,
+      -24.3,
+      12.7,
+      1.6,
+      9.4,
+      17.0,
+      28.0
+    ],
+    "bg_mean_pct": -56.4,
+    "bg_wins": 13,
+    "codecs": [
+      "svtav1",
+      "x265"
+    ],
+    "comparison": "PRESLEY vs ELVIS at matched rate",
+    "dataset_families": [
+      "DAVIS",
+      "MOSEv2",
+      "YouTube-VOS"
+    ],
+    "fg_outside_15pct_band": 6,
+    "fg_reading": "the background win does not come at a systematic foreground cost; the foreground is NOT uniformly a wash and moves in both directions",
+    "holm_family_survived": 204,
+    "ladders": [
+      "camel",
+      "youtube_vos/b1a8a404ad",
+      "bear",
+      "youtube_vos/282651c6f7",
+      "pigs",
+      "youtube_vos/0e4068b53f",
+      "dog",
+      "mosev2/jxmcdk8k",
+      "mosev2/ptq7rtia",
+      "mosev2/fii86rku",
+      "youtube_vos/30fe0ed0ce",
+      "mosev2/zofozj6l",
+      "mosev2/8i1uo3x9"
+    ],
+    "n_ladders": 13,
+    "sign_p_two_tailed": 0.000244
+  },
+  "figure": "ratematched",
+  "sentence": "Two sorted horizontal bar charts sharing one axis of 13 ladders. Left: BD-rate on background LPIPS for PRESLEY against ELVIS at matched rate; every one of the 13 bars is below zero, mean -56.4 percent, exact two-tailed sign p = 0.000244, surviving a Holm family of up to 204 candidates. Right: the same ladders on foreground LPIPS, where bars fall on both sides of zero and 6 of 13 lie outside a shaded plus or minus 15 percent band. So the background win does not come at a systematic foreground cost, which is a weaker and more accurate statement than saying the foreground is unchanged."
+}

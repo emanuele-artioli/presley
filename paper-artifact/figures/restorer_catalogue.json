@@ -1,0 +1,141 @@
+{
+  "data": {
+    "arms": [
+      {
+        "family": "conditioned (keeps the prior)",
+        "max_gain": 0.1833,
+        "median_absolute_bg_lpips": 0.2158,
+        "median_gain_over_control": 0.0335,
+        "min_gain": -0.0544,
+        "n_pairs": 76,
+        "restorer": "realesrgan",
+        "transport": "downsample"
+      },
+      {
+        "family": "conditioned (keeps the prior)",
+        "max_gain": 0.0209,
+        "median_absolute_bg_lpips": 0.243,
+        "median_gain_over_control": 0.0202,
+        "min_gain": 0.0195,
+        "n_pairs": 2,
+        "restorer": "unsharp",
+        "transport": "downsample"
+      },
+      {
+        "family": "conditioned (keeps the prior)",
+        "max_gain": 0.0094,
+        "median_absolute_bg_lpips": 0.2615,
+        "median_gain_over_control": 0.0018,
+        "min_gain": -0.1541,
+        "n_pairs": 32,
+        "restorer": "nafnet",
+        "transport": "ac_truncate"
+      },
+      {
+        "family": "conditioned (keeps the prior)",
+        "max_gain": 0.0169,
+        "median_absolute_bg_lpips": 0.2951,
+        "median_gain_over_control": 0.0043,
+        "min_gain": -0.1099,
+        "n_pairs": 26,
+        "restorer": "nafnet",
+        "transport": "blur"
+      },
+      {
+        "family": "conditioned (keeps the prior)",
+        "max_gain": -0.0169,
+        "median_absolute_bg_lpips": 0.3558,
+        "median_gain_over_control": -0.0195,
+        "min_gain": -0.0221,
+        "n_pairs": 2,
+        "restorer": "instantir",
+        "transport": "blur"
+      },
+      {
+        "family": "conditioned (keeps the prior)",
+        "max_gain": 0.0175,
+        "median_absolute_bg_lpips": 0.4355,
+        "median_gain_over_control": 0.0156,
+        "min_gain": 0.0073,
+        "n_pairs": 10,
+        "restorer": "unsharp",
+        "transport": "blur"
+      },
+      {
+        "family": "in-painting (discards the prior)",
+        "max_gain": 0.0894,
+        "median_absolute_bg_lpips": 0.3077,
+        "median_gain_over_control": -0.0144,
+        "min_gain": -0.0533,
+        "n_pairs": 12,
+        "restorer": "propainter",
+        "transport": "freeze"
+      },
+      {
+        "family": "in-painting (discards the prior)",
+        "max_gain": 0.0108,
+        "median_absolute_bg_lpips": 0.3159,
+        "median_gain_over_control": -0.0377,
+        "min_gain": -0.0658,
+        "n_pairs": 8,
+        "restorer": "e2fgvi",
+        "transport": "freeze"
+      },
+      {
+        "family": "in-painting (discards the prior)",
+        "max_gain": 0.1613,
+        "median_absolute_bg_lpips": 0.3483,
+        "median_gain_over_control": 0.087,
+        "min_gain": 0.0623,
+        "n_pairs": 8,
+        "restorer": "e2fgvi",
+        "transport": "blackout"
+      },
+      {
+        "family": "in-painting (discards the prior)",
+        "max_gain": 0.1483,
+        "median_absolute_bg_lpips": 0.3611,
+        "median_gain_over_control": 0.0821,
+        "min_gain": 0.0539,
+        "n_pairs": 8,
+        "restorer": "propainter",
+        "transport": "blackout"
+      },
+      {
+        "family": "in-painting (discards the prior)",
+        "max_gain": 0.0989,
+        "median_absolute_bg_lpips": 0.4289,
+        "median_gain_over_control": 0.0087,
+        "min_gain": -0.0041,
+        "n_pairs": 8,
+        "restorer": "telea",
+        "transport": "blackout"
+      },
+      {
+        "family": "in-painting (discards the prior)",
+        "max_gain": -0.0518,
+        "median_absolute_bg_lpips": 0.43,
+        "median_gain_over_control": -0.1229,
+        "min_gain": -0.1573,
+        "n_pairs": 6,
+        "restorer": "telea",
+        "transport": "freeze"
+      }
+    ],
+    "note": "the gain panel is the MECHANISM and the absolute panel is what the viewer receives; neither is restored-vs-original against a pristine baseline at matched rate, which is the Goal-2 headline and a harder question",
+    "pairing": "exact: same video, transport, block size, budget, codec and QP; runs without an exact `none` control are dropped, never compared against an approximate one",
+    "quantity": "BG-LPIPS of the matched unrestored control minus BG-LPIPS of the restored run; positive means the restorer helped",
+    "replaces_tables": [
+      "tab:inpainters",
+      "tab:conditioned",
+      "tab:conditioned-twins",
+      "tab:conditioned-stream-diffvsr",
+      "tab:instantir-kill",
+      "tab:goal2",
+      "tab:goal2-breadth"
+    ],
+    "trap": "ranking by gain alone ranks the transports that damage most as the ones that restore best: blackout in-painting shows the largest gains while reaching worse absolute quality than downsample with Real-ESRGAN"
+  },
+  "figure": "restorer_catalogue",
+  "sentence": "Two dot plots sharing one axis of restoration backbone and transport pairings, grouped into conditioned restorers that consume the transmitted pixels and in-painters that discard them. Left: each dot is one run minus its exactly matched unrestored control on background LPIPS, so right of zero means the restorer improved the background it was handed; the largest median gain is e2fgvi on blackout at 0.087. Right: the absolute background LPIPS of the restored output, where lower is closer to the original and realesrgan on downsample is best at 0.216. The two panels disagree, and that is the point: the transports that destroy most show the largest recovery while still delivering a worse picture, so gain over a control cannot be read as restoration quality."
+}

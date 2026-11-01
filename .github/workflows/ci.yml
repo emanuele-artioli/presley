@@ -8,6 +8,21 @@ on:
   pull_request:
 
 jobs:
+  figures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: paper-artifact/requirements-figures.txt
+      - name: Install the isolated CPU figure dependencies
+        run: pip install -r paper-artifact/requirements-figures.txt
+      - name: Verify archived inputs and redraw the numerical figures
+        run: python tools/reproduce_paper_figures.py --out "$RUNNER_TEMP/presley-paper-figures"
+
   agent-rules:
     runs-on: ubuntu-latest
     timeout-minutes: 5

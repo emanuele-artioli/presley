@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "Please cite the PRESLEY manuscript when using this research software."
+title: "PRESLEY: Perceptual Refinement of an End-to-End Video Streaming Pipeline via Generative AI Layers"
+type: software
+version: 0.1.0
+repository-code: "https://github.com/emanuele-artioli/presley"
+authors:
+  - family-names: Artioli
+    given-names: Emanuele
+    orcid: "https://orcid.org/0009-0007-9921-0006"
+  - family-names: Tashtarian
+    given-names: Farzad
+    orcid: "https://orcid.org/0000-0002-5584-6690"
+  - family-names: Timmerer
+    given-names: Christian
+    orcid: "https://orcid.org/0000-0002-0031-5243"

@@ -1,0 +1,3 @@
+# CPU-only figure redraw environment. Separate from the pinned GPU pipeline.
+numpy==1.26.4
+matplotlib==3.10.8

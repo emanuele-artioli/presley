@@ -20,6 +20,7 @@ than no figure.
 from __future__ import annotations
 
 import json
+import argparse
 import pathlib
 import sys
 
@@ -97,14 +98,23 @@ def curve(store, video):
 
 
 def main() -> int:
-    base, bridge = load()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--plot-data", type=pathlib.Path,
+                        help="Redraw and reconcile the archived published rate-quality ladders")
+    args = parser.parse_args()
     curves, failures = {}, []
-    for v in ORDER:
-        b, g = curve(base, v), curve(bridge, v)
-        if b is None or g is None:
-            failures.append(f"{v}: missing rungs (baseline={b is not None}, bridge={g is not None})")
-            continue
-        curves[v] = (b, g)
+    if args.plot_data:
+        ladders = json.loads(args.plot_data.read_text())["data"]["ladders"]
+        for v in ORDER:
+            curves[v] = (sorted(ladders[v]["baseline"]), sorted(ladders[v]["bridge"]))
+    else:
+        base, bridge = load()
+        for v in ORDER:
+            b, g = curve(base, v), curve(bridge, v)
+            if b is None or g is None:
+                failures.append(f"{v}: missing rungs (baseline={b is not None}, bridge={g is not None})")
+                continue
+            curves[v] = (b, g)
 
     if failures:
         print("ABORT — incomplete ladders:")

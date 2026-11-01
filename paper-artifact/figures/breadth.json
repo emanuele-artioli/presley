@@ -1,0 +1,344 @@
+{
+ "data": {
+  "arms": {
+   "ELVIS (block removal)": {
+    "clips_costing_bits": 6,
+    "clips_saving_bits": 17,
+    "median_pct": -10.9,
+    "n_clips": 23,
+    "per_clip": [
+     {
+      "bitrate_delta_pct": -6.2,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.029,
+      "video": "bike-packing"
+     },
+     {
+      "bitrate_delta_pct": 12.7,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.2602,
+      "video": "bmx-bumps"
+     },
+     {
+      "bitrate_delta_pct": -9.6,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0366,
+      "video": "breakdance"
+     },
+     {
+      "bitrate_delta_pct": -13.8,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.1065,
+      "video": "color-run"
+     },
+     {
+      "bitrate_delta_pct": -13.2,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0487,
+      "video": "dancing"
+     },
+     {
+      "bitrate_delta_pct": -17.7,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.1212,
+      "video": "dogs-jump"
+     },
+     {
+      "bitrate_delta_pct": 0.0,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.1075,
+      "video": "dogs-scale"
+     },
+     {
+      "bitrate_delta_pct": -12.6,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0737,
+      "video": "drift-turn"
+     },
+     {
+      "bitrate_delta_pct": -23.1,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0247,
+      "video": "elephant"
+     },
+     {
+      "bitrate_delta_pct": -3.2,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0632,
+      "video": "libby"
+     },
+     {
+      "bitrate_delta_pct": 4.7,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.1408,
+      "video": "lindy-hop"
+     },
+     {
+      "bitrate_delta_pct": 0.6,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.148,
+      "video": "mallard-fly"
+     },
+     {
+      "bitrate_delta_pct": -56.0,
+      "family": "MOSEv2 (held out)",
+      "fg_lpips_delta": 0.0247,
+      "video": "mosev2/8i1uo3x9"
+     },
+     {
+      "bitrate_delta_pct": -31.6,
+      "family": "MOSEv2 (held out)",
+      "fg_lpips_delta": 0.0349,
+      "video": "mosev2/fii86rku"
+     },
+     {
+      "bitrate_delta_pct": -10.9,
+      "family": "MOSEv2 (held out)",
+      "fg_lpips_delta": 0.1067,
+      "video": "mosev2/jxmcdk8k"
+     },
+     {
+      "bitrate_delta_pct": -28.9,
+      "family": "MOSEv2 (held out)",
+      "fg_lpips_delta": 0.0053,
+      "video": "mosev2/zofozj6l"
+     },
+     {
+      "bitrate_delta_pct": -15.9,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0582,
+      "video": "motorbike"
+     },
+     {
+      "bitrate_delta_pct": 75.9,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.1722,
+      "video": "planes-water"
+     },
+     {
+      "bitrate_delta_pct": -21.5,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0495,
+      "video": "scooter-black"
+     },
+     {
+      "bitrate_delta_pct": 3.3,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0424,
+      "video": "train"
+     },
+     {
+      "bitrate_delta_pct": -7.4,
+      "family": "YouTube-VOS (held out)",
+      "fg_lpips_delta": 0.0661,
+      "video": "youtube_vos/282651c6f7"
+     },
+     {
+      "bitrate_delta_pct": -61.9,
+      "family": "YouTube-VOS (held out)",
+      "fg_lpips_delta": 0.1424,
+      "video": "youtube_vos/30fe0ed0ce"
+     },
+     {
+      "bitrate_delta_pct": -5.0,
+      "family": "YouTube-VOS (held out)",
+      "fg_lpips_delta": 0.0616,
+      "video": "youtube_vos/b1a8a404ad"
+     }
+    ],
+    "saving_with_foreground_cost": [
+     "bike-packing",
+     "breakdance",
+     "color-run",
+     "dancing",
+     "dogs-jump",
+     "drift-turn",
+     "elephant",
+     "libby",
+     "mosev2/8i1uo3x9",
+     "mosev2/fii86rku",
+     "mosev2/jxmcdk8k",
+     "mosev2/zofozj6l",
+     "motorbike",
+     "scooter-black",
+     "youtube_vos/282651c6f7",
+     "youtube_vos/30fe0ed0ce",
+     "youtube_vos/b1a8a404ad"
+    ]
+   },
+   "PRESLEY (downsample)": {
+    "clips_costing_bits": 8,
+    "clips_saving_bits": 15,
+    "median_pct": -5.0,
+    "n_clips": 23,
+    "per_clip": [
+     {
+      "bitrate_delta_pct": -5.0,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0004,
+      "video": "bike-packing"
+     },
+     {
+      "bitrate_delta_pct": 1.9,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0147,
+      "video": "bmx-bumps"
+     },
+     {
+      "bitrate_delta_pct": -7.7,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0074,
+      "video": "breakdance"
+     },
+     {
+      "bitrate_delta_pct": 0.2,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0009,
+      "video": "color-run"
+     },
+     {
+      "bitrate_delta_pct": -5.9,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0045,
+      "video": "dancing"
+     },
+     {
+      "bitrate_delta_pct": -23.6,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0031,
+      "video": "dogs-jump"
+     },
+     {
+      "bitrate_delta_pct": 3.8,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0046,
+      "video": "dogs-scale"
+     },
+     {
+      "bitrate_delta_pct": -4.4,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0032,
+      "video": "drift-turn"
+     },
+     {
+      "bitrate_delta_pct": -21.6,
+      "family": "DAVIS",
+      "fg_lpips_delta": -0.0006,
+      "video": "elephant"
+     },
+     {
+      "bitrate_delta_pct": -4.5,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0027,
+      "video": "libby"
+     },
+     {
+      "bitrate_delta_pct": 0.8,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0099,
+      "video": "lindy-hop"
+     },
+     {
+      "bitrate_delta_pct": -5.4,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0172,
+      "video": "mallard-fly"
+     },
+     {
+      "bitrate_delta_pct": -40.9,
+      "family": "MOSEv2 (held out)",
+      "fg_lpips_delta": 0.0048,
+      "video": "mosev2/8i1uo3x9"
+     },
+     {
+      "bitrate_delta_pct": -21.4,
+      "family": "MOSEv2 (held out)",
+      "fg_lpips_delta": 0.0042,
+      "video": "mosev2/fii86rku"
+     },
+     {
+      "bitrate_delta_pct": -6.3,
+      "family": "MOSEv2 (held out)",
+      "fg_lpips_delta": 0.0026,
+      "video": "mosev2/jxmcdk8k"
+     },
+     {
+      "bitrate_delta_pct": -14.0,
+      "family": "MOSEv2 (held out)",
+      "fg_lpips_delta": -0.0006,
+      "video": "mosev2/zofozj6l"
+     },
+     {
+      "bitrate_delta_pct": -6.4,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0021,
+      "video": "motorbike"
+     },
+     {
+      "bitrate_delta_pct": 26.8,
+      "family": "DAVIS",
+      "fg_lpips_delta": -0.0015,
+      "video": "planes-water"
+     },
+     {
+      "bitrate_delta_pct": -4.5,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.0048,
+      "video": "scooter-black"
+     },
+     {
+      "bitrate_delta_pct": 0.2,
+      "family": "DAVIS",
+      "fg_lpips_delta": 0.001,
+      "video": "train"
+     },
+     {
+      "bitrate_delta_pct": 0.1,
+      "family": "YouTube-VOS (held out)",
+      "fg_lpips_delta": 0.0021,
+      "video": "youtube_vos/282651c6f7"
+     },
+     {
+      "bitrate_delta_pct": -42.6,
+      "family": "YouTube-VOS (held out)",
+      "fg_lpips_delta": 0.0198,
+      "video": "youtube_vos/30fe0ed0ce"
+     },
+     {
+      "bitrate_delta_pct": 5.4,
+      "family": "YouTube-VOS (held out)",
+      "fg_lpips_delta": 0.0065,
+      "video": "youtube_vos/b1a8a404ad"
+     }
+    ],
+    "saving_with_foreground_cost": [
+     "bike-packing",
+     "breakdance",
+     "dancing",
+     "dogs-jump",
+     "drift-turn",
+     "libby",
+     "mallard-fly",
+     "mosev2/8i1uo3x9",
+     "mosev2/fii86rku",
+     "mosev2/jxmcdk8k",
+     "motorbike",
+     "scooter-black",
+     "youtube_vos/30fe0ed0ce"
+    ]
+   }
+  },
+  "by_family": {
+   "DAVIS": 16,
+   "MOSEv2 (held out)": 4,
+   "YouTube-VOS (held out)": 3
+  },
+  "n_clips": 23,
+  "qps": [
+   32,
+   37
+  ],
+  "quantity": "median over QP of (configuration bitrate - baseline bitrate) / baseline bitrate, percent, paired within (video, QP)"
+ },
+ "figure": "breadth"
+}
